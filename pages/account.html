@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<script src="../js/jquery-latest.js"></script>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<meta name="description" content="Responsive Bootstrap 4 Admin Template">
+	<meta name="author" content="Bootlab">
+
+	<title>SCRN</title>
+
+	<link href="../css/app.css" rel="stylesheet">
+	<script src="./print_log.js"></script>
+
+	<script type="text/javascript">
+		var first_mem_road = false;
+		var photo_url = "no";
+		
+		$(document).ready(function () {
+			var rand = Math.random();
+
+			$('#sidebar_navi').load('menu.html');
+			$('#footer').load('footer.html');
+			$('#navbar').load('navbar_item.html');
+			upper_navi_1("My Account");
+
+			var xhttp = new XMLHttpRequest();
+			xhttp.onreadystatechange = function () {
+				if (this.readyState == this.DONE && this.status == 200) {
+					var result_array = xhttp.responseText.split("&");
+
+					var img_src = result_array[2];
+					document.getElementById("nav_img").setAttribute("src", img_src + "?" + rand);
+					document.getElementById("user_img").setAttribute("src", img_src + "?" + rand);
+
+					var user_name = result_array[3];
+					document.getElementById("user_name").appendChild(document.createTextNode(user_name));
+
+
+					var info_data_pre = result_array[0];
+					var info_data = eval(info_data_pre);
+					info_data = info_data[0];
+
+					var user_name = document.createTextNode(info_data.name);
+					document.getElementById("user_name2").appendChild(user_name);
+
+					var user_corp = document.createTextNode(info_data.corp_name + "  " + info_data.dept);
+					document.getElementById("user_corp").appendChild(user_corp);
+
+					var user_position = document.createTextNode("");
+					if (info_data.position != null){
+						switch(info_data.position){
+							case 'nurse':
+								user_position = document.createTextNode("간호사");
+							break;
+
+							case 'doctor':
+								user_position = document.createTextNode("의사");
+							break;
+
+							case 'administrative':
+								user_position = document.createTextNode("행정");
+							break;
+
+							case 'etc':
+								user_position = document.createTextNode("기타");
+							break;
+						}
+					}
+					document.getElementById("user_position").appendChild(user_position);
+
+					var user_role = document.createTextNode("");
+					if (info_data.role != null){
+						switch(info_data.role){
+							case 'system_admin':
+								user_role = document.createTextNode("시스템 관리자");
+							break;
+
+							case 'Administrator':
+								user_role = document.createTextNode("관리자");
+							break;
+
+							case 'Basic':
+								user_role = document.createTextNode("Basic User");
+							break;
+
+							case 'Advanced':
+								user_role = document.createTextNode("Advanced User");
+							break;
+						}
+					}
+					document.getElementById("user_role").appendChild(user_role);
+
+
+					var user_email = document.createTextNode(info_data.mail);
+					document.getElementById("user_email").appendChild(user_email);
+
+					var user_mobile_data;
+					if(info_data.mobile != ""){ 
+						user_mobile_data = info_data.mobile.split("-");
+
+						var mobile1 = user_mobile_data[0];
+						document.getElementById("mobile1").value = mobile1;
+
+						var mobile2 = user_mobile_data[1];
+						document.getElementById("mobile2").value = mobile2;
+
+						var mobile3 = user_mobile_data[2];
+						document.getElementById("mobile3").value = mobile3;
+					}
+
+					var user_phone_data;
+					if(info_data.phone != ""){
+						var user_phone_data = info_data.phone.split("-");
+						var phone1 = user_phone_data[0];
+						document.getElementById("phone1").value = phone1;
+
+						var phone2 = user_phone_data[1];
+						document.getElementById("phone2").value = phone2;
+
+						var phone3 = user_phone_data[2];
+						if(phone3 == "undefined")
+							document.getElementById("phone3").value="";
+						else document.getElementById("phone3").value = phone3;
+					}
+				}
+			}
+			xhttp.open("GET", "./account.jsp?action=load");
+			xhttp.send();
+		});
+
+		function img_save_button_cliked_in() {
+			var form = document.getElementById("upload_form");
+			var formData = new FormData(form);
+			var xhr = new XMLHttpRequest();
+			xhr.onreadystatechange = function () {
+				if (this.readyState == this.DONE && this.status == 200) {
+					photo_url = xhr.responseText;
+					alert("사진이 업로드 되었습니다.");
+				}
+			}
+			xhr.open("POST", "imgup.jsp", true);
+			xhr.send(formData);
+		}
+
+		function save_button_cliked() {
+			var mobile1 = document.getElementById("mobile1").value;
+			var mobile2 = document.getElementById("mobile2").value;
+			var mobile3 = document.getElementById("mobile3").value;
+
+			var phone1 = document.getElementById("phone1").value;
+			var phone2 = document.getElementById("phone2").value;
+			var phone3 = document.getElementById("phone3").value;
+
+			var mobile = mobile1 + "-" + mobile2 + "-" + mobile3;
+			var phone = phone1 + "-" + phone2 + "-" + phone3;
+
+			var password = document.getElementById("password").value;
+			if (photo_url != "no") {
+				photo = photo_url.split("webapps");
+				photo_url = photo[1];
+			}
+			var xhttp = new XMLHttpRequest();
+			xhttp.onreadystatechange = function () {
+				if (this.readyState == this.DONE && this.status == 200) {
+					print_log("modify_account");
+					location.reload();
+				}
+			}
+			xhttp.open("GET", "./account.jsp?action=save&mobile=" + mobile + "&phone=" + phone + "&password=" + password + "&imgfile=" + photo_url);
+			xhttp.send();
+		}
+	</script>
+</head>
+
+<body>
+	<div class="wrapper">
+		<div class="d-flex">
+			<nav class="sidebar" id="sidebar_navi">
+			</nav>
+
+			<div class="main bg-white">
+				<nav class="navbar navbar-expand navbar-light bg-white">
+					<a class="sidebar-toggle d-flex mr-2">
+						<i class="hamburger align-self-center"></i>
+					</a>
+
+					<form class="form-inline d-none d-sm-inline-block" id="upper_navi">
+					</form>
+
+					<div class="navbar-collapse collapse">
+						<ul class="navbar-nav ml-auto" id="navbar">
+						</ul>
+					</div>
+				</nav>
+
+				<main class="content bg-white">
+					<div class="container-fluid p-0">
+
+						<h1 class="h2 mb-3" id="study_title" style="color:rgb(52, 60, 67); font-weight: bold">
+
+						</h1>
+
+						<div class="row">
+							<div class="col-12 ">
+								<div class="tab tab-vertical">
+									<ul class="nav nav-tabs" role="tablist">
+										<li class="nav-item">
+											<a class="nav-link active" data-toggle="tab" role="tab">
+												<p style="text-align: center;">
+													<img class="rounded-circle rounded mr-2 mb-2" id="user_img" width="200" height="200">
+												</p>
+											</a>
+										</li>
+										<li class="nav-item">
+											<a class="nav-link" href="#my_account" data-toggle="tab" role="tab">
+												<i class="align-middle" data-feather="settings" style="margin-right: 10px"></i>My ACCOUNT
+											</a>
+										</li>
+									</ul>
+									<div class="tab-content">
+										<div class="tab-pane active" id="my_account" role="tabpanel">
+											<table id="member_table" class="table table-borderless" style="width: 100%">
+												<tbody id="account_table">
+													<tr>
+														<td style="font-weight: bold; text-align: right; width: 15%;">이름</td>
+														<td id="user_name2"></td>
+													</tr>
+													<tr>
+														<td style="font-weight: bold; text-align: right; width: 15%;">소속</td>
+														<td id="user_corp"></td>
+													</tr>
+													<tr>
+														<td style="font-weight: bold; text-align: right; width: 15%;">직책</td>
+														<td id="user_position"></td>
+													</tr>
+													<tr>
+														<td style="font-weight: bold; text-align: right; width: 15%;">권한</td>
+														<td id="user_role"></td>
+													</tr>
+													<tr>
+														<td style="font-weight: bold; text-align: right; width: 15%;">이메일</td>
+														<td id="user_email"></td>
+													</tr>
+													<tr>
+														<td style="font-weight: bold; text-align: right; width: 15%;">핸드폰</td>
+														<td>
+															<form class="form-inline">
+																<input type="text" class="form-control" placeholder="" id="mobile1" style="width: 60px;">
+																<label type="text" style="margin-left: 10px; margin-right: 10px">─</label>
+																<input type="text" class="form-control" placeholder="" id="mobile2" style="width: 70px;">
+																<label type="text" style="margin-left: 10px; margin-right: 10px">─</label>
+																<input type="text" class="form-control" placeholder="" id="mobile3" style="width: 70px;">
+															</form>
+														</td>
+													</tr>
+													<tr>
+														<td style="font-weight: bold; text-align: right; width: 15%;">유선전화</td>
+														<td>
+															<form class="form-inline">
+																<input type="text" class="form-control" placeholder="" id="phone1" style="width: 60px;">
+																<label type="text" style="margin-left: 10px; margin-right: 10px">─</label>
+																<input type="text" class="form-control" placeholder="" id="phone2" style="width: 70px;">
+																<label type="text" style="margin-left: 10px; margin-right: 10px">─</label>
+																<input type="text" class="form-control" placeholder="" id="phone3" style="width: 70px;">
+															</form>
+														</td>
+													</tr>
+													<tr>
+														<td style="font-weight: bold; text-align: right; width: 15%;">NEW PASSWORD</td>
+														<td>
+															<input type="password" class="form-control" name="validation-password" placeholder="Password" id="password"
+															 style="width: 170px;">
+														</td>
+													</tr>
+													<tr>
+														<td style="font-weight: bold; text-align: right; width: 15%; ">CONFIRM PASSWORD</td>
+														<td>
+															<form id="validation-form">
+																<div class="form-group">
+																	<input type="password" class="form-control" name="validation-password-confirmation" placeholder="Confirm password"
+																	 id="confirm_password" style="width: 170px;">
+																</div>
+															</form>
+														</td>
+													</tr>
+													<tr>
+														<td style="font-weight: bold; text-align: right; width: 15%;">USER IMAGE</td>
+														<td>
+															<button type="button" class="btn btn-outline-info" data-toggle="modal" data-target="#imgupModal">UPLOAD IMAGE</button>
+														</td>
+													</tr>
+												</tbody>
+											</table>
+										</div>
+										<script>
+											document.addEventListener("DOMContentLoaded", function (event) {
+												// Initialize validation
+												$('#validation-form').validate({
+													ignore: '.ignore, .select2-input',
+													focusInvalid: false,
+													rules: {
+														'validation-password-confirmation': {
+															required: true,
+															equalTo: 'input[name="validation-password"]'
+														}
+													},
+													// Errors
+													errorPlacement: function errorPlacement(error, element) {
+														var $parent = $(element).parents('.form-group');
+														// Do not duplicate errors
+														if ($parent.find('.jquery-validation-error').length) {
+															return;
+														}
+														$parent.append(
+															error.addClass('jquery-validation-error small form-text invalid-feedback')
+														);
+													}
+												});
+											});
+										</script>
+
+										<div class="tab-pane" id="info_range" role="tabpanel">
+											<table id="range_table" class="table table-borderless" style="width: 100%">
+												<tbody>
+													<tr>
+														<td style="font-weight: bold; text-align: right; width: 15%;">공개 여부</td>
+														<td>
+															<div class="form-check form-check-inline" style="margin-left: 50px">
+																<label class="custom-control-inline custom-radio" style="margin-right: 30px">
+																	<input name="custom-radio" id="open" type="radio" class="custom-control-input" checked>
+																	<span class="custom-control-label">공개</span>
+																</label>
+																<label class="custom-control-inline custom-radio" style="margin-right: 30px">
+																	<input name="custom-radio" id="close" type="radio" class="custom-control-input">
+																	<span class="custom-control-label">비공개</span>
+																</label>
+															</div>
+														</td>
+													</tr>
+													<tr>
+														<td style="font-weight: bold; text-align: right; width: 15%;">공개 정보</td>
+														<td>
+															<form class="form-inline">
+																<div class="form-check form-check-inline" style="margin-left: 50px">
+																	<label class="custom-control-inline custom-radio" style="margin-right: 30px">
+																		<input name="custom-radio" id="All" type="radio" class="custom-control-input" checked>
+																		<span class="custom-control-label">모두공개</span>
+																	</label>
+																	<label class="custom-control-inline custom-radio" style="margin-right: 30px">
+																		<input name="custom-radio" id="p_num" type="radio" class="custom-control-input">
+																		<span class="custom-control-label">환자 수</span>
+																	</label>
+																	<label class="custom-control-inline custom-radio" style="margin-right: 30px">
+																		<input name="custom-radio" id="statistic" type="radio" class="custom-control-input">
+																		<span class="custom-control-label">통계자료(남녀비율, 나이 등)</span>
+																	</label>
+																</div>
+															</form>
+														</td>
+													</tr>
+												</tbody>
+											</table>
+										</div>
+									</div>
+								</div>
+								<button class="btn btn-info float-sm-right" style="margin-left: 10px; margin-right: 10px" onclick="save_button_cliked();">SAVE</button>
+								<button class="btn btn-outline-info float-sm-right" onclick="cancel_button_cliked();">CANCEL</button>
+							</div>
+						</div>
+					</div>
+					<div class="modal fade" id="imgupModal" tabindex="-1" role="dialog" aria-hidden="true">
+						<div class="modal-dialog modal-md" role="document">
+							<div class="modal-content">
+								<div class="modal-header">
+									<h5 class="modal-title" id="item_modal_title"></h5>
+									<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+										<span aria-hidden="true">&times;</span>
+									</button>
+								</div>
+								<div class="modal-body m-3">
+									<form method="POST" enctype="multipart/form-data" id="upload_form">
+										<input type="file" value="파일선택" name="fileName1">
+									</form>
+								</div>
+								<div class="modal-footer">
+									<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+									<button type="button" class="btn btn-primary" data-dismiss="modal" onclick="img_save_button_cliked_in()">Save</button>
+								</div>
+							</div>
+						</div>
+					</div>
+				</main>
+
+				<footer class="footer" id="footer"></footer>
+			</div>
+		</div>
+	</div>
+
+	<script src="../js/app.js"></script>
+	<script src="../js/tables.js"></script>
+	<script src="../js/forms.js"></script>
+	<script src="../js/feather.js"></script>
+	<script src="upper_navi.js"></script>
+
+</body>
+
+</html>

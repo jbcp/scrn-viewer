@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<script src="../js/jquery-latest.js"></script>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<meta name="description" content="Responsive Bootstrap 4 Admin Template">
+	<meta name="author" content="Bootlab">
+
+	<title>SCRN</title>
+
+	<link href="../css/app.css" rel="stylesheet">
+
+	<style>
+		.tooltip > .tooltip-inner {
+			background-color: #73AD21;
+			border-color: 1px solid green;
+		}
+	</style>
+
+	<script src="./print_log.js"></script>
+
+	<script type="text/javascript">
+		var delete_id;
+		var rand = Math.random();
+
+		$(document).ready(function () {
+			$('#sidebar_navi').load('menu.html');
+			$('#footer').load('footer.html');
+			$('#navbar').load('navbar_item.html');
+			
+			upper_navi_1("Projects");
+
+			var xhttp = new XMLHttpRequest();
+
+			xhttp.onreadystatechange = function () {
+				if (this.readyState == this.DONE && this.status == 200) {
+					var result_array = xhttp.responseText.split("&");
+
+					var img_src = result_array[1];
+					document.getElementById("nav_img").setAttribute("src", img_src + "?" + rand);
+
+					var user_name = result_array[2];
+					document.getElementById("user_name").appendChild(document.createTextNode(user_name));
+
+
+					var project_array = result_array[0];
+					var project_data = eval(project_array);
+					var project_output = Object.keys(project_data);
+
+					for (var i = project_output.length - 1; i >= 0; i--) {
+						var createTR = document.createElement("tr");
+						document.getElementById("project_list").appendChild(createTR);
+
+						var project_title_Td = document.createElement("td");
+						project_title_Td.setAttribute("style", "cursor:pointer; width:40%")
+						project_title_Td.setAttribute("onclick", "page_move('project_detail.html', '"+project_data[i].project_id+"')");
+						var project_title = document.createTextNode(project_data[i].project_title);
+						project_title_Td.appendChild(project_title);
+						createTR.appendChild(project_title_Td);
+
+						var project_start_Td = document.createElement("td");
+						project_start_Td.setAttribute("style", "cursor:pointer")
+						project_start_Td.setAttribute("onclick", "page_move('project_detail.html', '"+project_data[i].project_id+"')");
+						var project_start = document.createTextNode(project_data[i].project_start);
+						project_start_Td.appendChild(project_start);
+						createTR.appendChild(project_start_Td);
+
+						var project_status_Td = document.createElement("td");
+						project_status_Td.setAttribute("style", "cursor:pointer")
+						project_status_Td.setAttribute("onclick", "page_move('project_detail.html', '"+project_data[i].project_id+"')");
+						var project_status;
+						switch (project_data[i].project_status) {
+							case 'Draft':
+								project_status = document.createElement("span");
+								project_status.setAttribute("class", "badge badge-warning");
+								break;
+
+							case 'Running':
+								project_status = document.createElement("span");
+								project_status.setAttribute("class", "badge badge-success");
+								break;
+
+							case 'Finished':
+								project_status = document.createElement("span");
+								project_status.setAttribute("class", "badge");
+								project_status.setAttribute("style", "background-color:rgb(127, 127, 127);");
+								break;
+						}
+						project_status.appendChild(document.createTextNode(project_data[i].project_status));
+						project_status_Td.appendChild(project_status);
+						createTR.appendChild(project_status_Td);
+
+						var project_creator_Td = document.createElement("td");
+						project_creator_Td.setAttribute("style", "cursor:pointer")
+						project_creator_Td.setAttribute("onclick", "page_move('project_detail.html', '"+project_data[i].project_id+"')");
+
+						var project_creator = document.createTextNode(project_data[i].project_creator);
+
+						project_creator_Td.appendChild(project_creator);
+
+						createTR.appendChild(project_creator_Td);
+
+						var project_action_Td = document.createElement("td");
+						var project_delete_button = document.createElement("button");
+						project_delete_button.setAttribute("class", "btn btn-primary btn-sm");
+						project_delete_button.setAttribute("style", "background-color:transparent; border-color:transparent; color: rgb(52, 60, 67)");
+						project_delete_button.setAttribute('onclick', 'project_delete_alert(' + project_data[i].project_id + ')');
+						project_delete_icon = document.createElement("i");
+						project_delete_icon.setAttribute("class", "fas fa-trash");
+						project_delete_button.appendChild(project_delete_icon);
+						project_action_Td.appendChild(project_delete_button);
+						createTR.appendChild(project_action_Td);
+
+					}
+					$('#datatables-basic').DataTable({
+						responsive: true,
+						"order": [[ 1, "desc" ]]					
+					});
+				}
+			}
+			xhttp.open("GET", "./projects.jsp?action=load");
+			xhttp.send();
+
+		})
+
+		function page_move(url, data) {
+			localStorage.setItem("project_id", data);
+			location.href=url;
+		}
+
+		function show_delete_message() {
+
+			var message = '연구를 삭제했습니다.';
+			var title = 'success';
+			var type = 'success';
+			toastr[type](message, title, {
+				positionClass: 'toast-top-right',
+				closeButton: true,
+				progressBar: true,
+				newestOnTop: true,
+				rtl: $('body').attr('dir') === 'rtl' || $('html').attr('dir') === 'rtl',
+				timeOut: '7500'
+			});
+		}
+
+		function create_project_click() {
+			var project_title = document.getElementById("new_project_title").value;
+			project_title = escape(encodeURIComponent(project_title));
+			var project_category = document.getElementById("new_project_category").value;
+
+			project_category = escape(encodeURIComponent(project_category));
+			var project_content = document.getElementById("new_project_content").value;
+			project_content = escape(encodeURIComponent(project_content));
+
+			var protocol_id = document.getElementById("new_project_protocol_id").value;
+			protocol_id = escape(encodeURIComponent(protocol_id));
+
+			var xhttp = new XMLHttpRequest();
+			xhttp.onreadystatechange = function () {
+				if (this.readyState == this.DONE && this.status == 200) {
+					print_log("create_project", project_title);
+					location.reload();
+				}
+			}
+			xhttp.open("GET", "./projects.jsp?action=save&title=" + project_title + "&category=" + project_category + "&content=" + project_content +"&protocol_id=" + protocol_id);
+			xhttp.send();
+		}
+
+		function project_delete_alert(project_id) {
+			$('#deleteModal').modal();
+			delete_id = project_id;
+		}
+
+		function project_delete() {
+			var xhttp = new XMLHttpRequest();
+			project_id = delete_id;
+			xhttp.onreadystatechange = function () {
+				if (this.readyState == this.DONE && this.status == 200) {
+					var return_value = xhttp.responseText;
+
+					if (return_value == 0) {
+						print_log("delete_project", project_id);
+						location.reload();
+					}
+					else
+						alert("연구를 삭제할 수 없습니다. 관리자에게 문의하시기 바랍니다.");
+				}
+			}
+
+			xhttp.open("GET", "./projects.jsp?action=delete&id=" + project_id);
+			xhttp.send();
+		}
+
+	</script>
+</head>
+
+<body>
+	<div class="wrapper">
+		<div class="d-flex">
+			<nav class="sidebar" id="sidebar_navi">
+			</nav>
+
+			<div class="main bg-white">
+				<nav class="navbar navbar-expand navbar-light bg-white">
+					<a class="sidebar-toggle d-flex mr-2">
+						<i class="hamburger align-self-center"></i>
+					</a>
+
+					<form class="form-inline d-none d-inline-block" id="upper_navi">
+						
+					</form>
+
+					<div class="navbar-collapse collapse">
+						<ul class="navbar-nav ml-auto" id="navbar">
+						</ul>
+					</div>
+				</nav>
+
+				<main class="content bg-white">
+					<div class="container-fluid p-0">
+
+						<h1 class="h3 mb-3"></h1>
+
+						<div class="row">
+							<div class="col-12">
+								<div class="card" style="border-color: transparent">
+									<div class="card-header" style="border-color: transparent">
+										<button type="button" class="btn btn-outline-primary float-right" data-toggle="modal" data-target="#createproject">Create</button>
+
+										<div class="modal fade" id="createproject" tabindex="-1" role="dialog" aria-hidden="true">
+											<div class="modal-dialog modal-dialog-centered" role="document">
+												<div class="modal-content">
+													<div class="modal-header">
+														<h5 class="modal-title">Create Project</h5>
+														<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+															<span aria-hidden="true">&times;</span>
+														</button>
+													</div>
+													<div class="modal-body m-3">
+														<table class="table table-borderless">
+															<tbody>
+																<tr>
+																	<td style="width: 20%;">Protocol ID</td>
+																	<td>
+																		<input type="text" class="form-control" placeholder="Protocol ID" id="new_project_protocol_id" maxlength="30">
+																	</td>
+																</tr>
+		
+																<tr>
+																	<td style="width: 20%;">Title</td>
+																	<td>
+																		<input type="text" class="form-control" placeholder="Title" id="new_project_title">
+																	</td>
+																</tr>
+																<tr>
+																	<td>Category</td>
+																	<td>
+																		<input type="text" class="form-control" placeholder="Category" id="new_project_category">
+																	</td>
+																</tr>
+																<tr>
+																	<td class="align-top">Description</td>
+																	<td>
+																		<textarea class="form-control" rows="14" palceholder="Description" id="new_project_content"></textarea>
+																	</td>
+																</tr>
+															</tbody>
+														</table>
+													</div>
+													<div class="modal-footer">
+														<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+														<button type="button" class="btn btn-primary" onclick="create_project_click()" data-dismiss="modal">Save</button>
+													</div>
+												</div>
+											</div>
+										</div>
+
+
+									</div>
+									<div class="card-body" id="project_table">
+										<table id="datatables-basic" class="table " style="width: 100%">
+											<thead>
+												<tr>
+													<th style="width:60%">Title</th>
+													<th style="width:10%">Created</th>
+													<th style="width:5%">Status</th>
+													<th style="width:10%">Authors</th>
+													<th style="width:5%"></th>
+												</tr>
+											</thead>
+											<tbody id="project_list">
+											</tbody>
+										</table>
+									</div>
+								</div>
+
+							</div>
+						</div>
+
+					</div>
+				</main>
+
+				<footer class="footer" id="footer"></footer>
+
+				<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-hidden="true">
+					<div class="modal-dialog modal-sm" role="document">
+						<div class="modal-content">
+							<div class="modal-header">
+								<h5 class="modal-title">Delete project</h5>
+								<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+									<span aria-hidden="true">&times;</span>
+								</button>
+							</div>
+							<div class="modal-body m-3">
+								<p class="mb-0">본 연구를 삭제하시겠습니까?</p>
+							</div>
+							<div class="modal-footer">
+								<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+								<button type="button" class="btn btn-primary" onclick="project_delete()" data-dismiss="modal">Delete</button>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../js/app.js"></script>
+	<script src="../js/tables.js"></script>
+	<script src="../js/feather.js"></script>
+	<script src="upper_navi.js"></script>
+
+</body>
+
+</html>

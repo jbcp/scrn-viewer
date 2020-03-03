@@ -1,0 +1,135 @@
+<script type="text/javascript">
+    var role;
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange=function(){
+        if(this.readyState == this.DONE && this.status == 200){
+            role = xhttp.responseText.trim();
+
+            if(role == "Basic"){
+                document.getElementById("advanced_menu").remove();
+                document.getElementById("site_menu").remove();
+            }
+            if(role == "Advanced")
+                document.getElementById("site_menu").remove();
+        }
+    }
+    xhttp.open("GET", "./role_check.jsp?");
+	xhttp.send();
+
+    function CheckSession() { 
+        var session = '<%=Session["user_id"] != null%>'; 
+        if (session == false) { 
+            alert("로그인 시간이 초과되었습니다."); 
+            window.location = "login.jsp"; 
+        } 
+    } 
+    setInterval(CheckSession(),500); 
+    
+    function demo_result_clicked(){
+        location.href="result_basic.html";
+    }
+    function drug_result_clicked(){
+        location.href="protocol_detail_drug.html";
+    }
+
+    function disease_result_clicked(){
+        location.href="protocol_detail_disease.html";
+    }
+
+    function criteria_result_clicked(){
+        location.href="protocol_detail_criteria.html";
+    }
+
+    function measurement_result_clicked(){
+        location.href="protocol_detail_measurement.html";
+    }
+
+    function procedure_result_clicked(){
+        location.href="protocol_detail_procedure.html";
+    }
+
+    function r_result_clicked(){
+        location.href="protocol_detail_r.html";
+    }
+
+    function advanced_result_clicked(){
+        location.href="protocol_detail_advanced.html";
+    }
+
+    function site_result_clicked(){
+        location.href="query_result_doctor.html";
+    }
+
+    function patient_result_clicked(){
+        location.href="patient_result.html";
+    }
+
+    
+
+
+</script>
+<a class="sidebar-brand" href="#">
+    <i class="align-middle" data-feather="navigation"></i>
+    <span class="align-middle">SCRN</span>
+</a>
+
+<ul class="sidebar-nav">
+
+    <li class="sidebar-item">
+        <a class="sidebar-link" href="#" onclick="demo_result_clicked()">
+            <i class="align-middle" data-feather="clipboard"></i> <span class="align-middle">Basic</span>
+        </a>
+    </li>
+
+    <li class="sidebar-item">
+        <a class="sidebar-link" href="#" onclick="patient_result_clicked()">
+            <i class="align-middle" data-feather="users"></i> <span class="align-middle">Patient</span>
+        </a>
+    </li>
+
+    <li class="sidebar-item">
+        <a class="sidebar-link" href="#" onclick="drug_result_clicked()">
+            <i class="align-middle" data-feather="droplet"></i> <span class="align-middle">Drug</span>
+        </a>
+    </li>
+
+    <li class="sidebar-item active">
+        <a class="sidebar-link" href="#" onclick="disease_result_clicked()">
+            <i class="align-middle" data-feather="aperture"></i> <span class="align-middle">Diagnosis</span>
+        </a>
+    </li>
+
+    <li class="sidebar-item active">
+        <a class="sidebar-link" href="#" onclick="measurement_result_clicked()">
+            <i class="align-middle" data-feather="activity"></i> <span class="align-middle">Lab</span>
+        </a>
+    </li> 
+
+    <li class="sidebar-item active">
+        <a class="sidebar-link" href="#" onclick="procedure_result_clicked()">
+            <i class="align-middle" data-feather="scissors"></i> <span class="align-middle">Procedure</span>
+        </a>
+    </li>    
+ 
+    <li class="sidebar-item">
+        <a class="sidebar-link" href="#" onclick="r_result_clicked()">
+            <i class="align-middle" data-feather="user"></i> <span class="align-middle">R</span>
+        </a>
+    </li>
+    <li class="sidebar-item" id="advanced_menu">
+        <a class="sidebar-link" href="#" onclick="advanced_result_clicked()">
+            <i class="align-middle" data-feather="pie-chart"></i> <span class="align-middle">Pivot</span>
+        </a>
+    </li>
+    
+    <li class="sidebar-item" id="site_menu">
+        <a class="sidebar-link" href="#" onclick="site_result_clicked()">
+            <i class="align-middle" data-feather="map-pin"></i> <span class="align-middle">Site</span>
+        </a>
+    </li>
+
+</ul>
+<script>
+    feather.replace()
+</script>
+<script src="../js/feather.js"></script>

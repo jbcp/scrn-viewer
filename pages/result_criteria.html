@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	
+	<meta charset="utf-8">
+	<script src="../js/jquery-latest.js"></script>
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<meta name="description" content="Responsive Bootstrap 4 Admin Template">
+	<meta name="author" content="Bootlab">
+
+	<title>SCRN</title>
+
+	<link href="../css/app.css" rel="stylesheet">
+
+	<style>
+	button {
+		min-width: 5px;
+	}
+	</style>
+	<script type="text/javascript">
+		function numberWithCommas(x) {
+		    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+		}
+	
+		var inclu_first = false;
+		var exclu_first = false;
+
+		study_id = localStorage.getItem("project_id");
+		query_id = localStorage.getItem("eligibility_id");
+
+		$(document).ready(function () {
+			var xhttp = new XMLHttpRequest();
+
+			xhttp.onreadystatechange = function () {
+				if (this.readyState == this.DONE && this.status == 200) {
+
+					var result_array = xhttp.responseText.split("&");
+					var incriteria_array_pre = result_array[2];
+					var incriteria_array = eval(incriteria_array_pre);
+					var incriteria_array_output = Object.keys(incriteria_array);
+
+					var total_patient = incriteria_array[0].count;
+
+					for (var i = 0; i < incriteria_array_output.length; i++) {
+						var createTR = document.createElement("tr");
+						document.getElementById("total_criteria").appendChild(createTR);
+
+						if (incriteria_array[i].table == 'Visit_occurrence'){
+							var visit_TD = document.createElement("td");
+							var visit_text = document.createTextNode("");
+							
+							visit_text = document.createElement("button");
+							visit_text.setAttribute("class", "btn btn-outline-info btn-sm");
+							visit_text.appendChild(document.createTextNode("Population"));
+							visit_text.setAttribute("disabled","");
+							
+							visit_TD.appendChild(visit_text);
+							createTR.appendChild(visit_TD);
+							
+							var visit_title_TD = document.createElement("td");
+
+							var context_div = document.createElement("div");
+							context_div.setAttribute("style", "margin-left : 10px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; width: 90%; color:rgb(78,85,92)")
+
+							var visit_domain = document.createElement("button");
+							visit_domain.setAttribute("class", "btn btn-info btn-sm");
+							visit_domain.appendChild(document.createTextNode("방문"));
+							visit_domain.setAttribute("disabled","");
+							context_div.appendChild(visit_domain);
+							
+							var visit_title = document.createElement("label");
+							visit_title.setAttribute("style", "font-weight:bold; font-size: 15px; margin-left: 5px");
+							visit_title.appendChild(document.createTextNode("Period"));
+							context_div.appendChild(visit_title);
+							visit_title_TD.appendChild(context_div);
+							createTR.appendChild(visit_title_TD);
+
+							var inclusion_addition_TD = document.createElement("td");
+							var inclusion_addition = document.createElement("label");
+							inclusion_addition.setAttribute("style", "font-weight: normal; margin-top: 5px");
+							inclusion_addition.appendChild(document.createTextNode("기간: "+incriteria_array[i].date_addition_value));
+							inclusion_addition_TD.appendChild(inclusion_addition);
+							createTR.appendChild(inclusion_addition_TD);
+
+							var visit_count_TD = document.createElement("td");
+							visit_count_TD.setAttribute("style", "text-align:right");
+							var visit_count = document.createTextNode(numberWithCommas(incriteria_array[i].count) + "명");
+							visit_count_TD.appendChild(visit_count);
+							createTR.appendChild(visit_count_TD);
+
+							var visit_site_TD = document.createElement("td");
+							var visit_site = document.createTextNode(incriteria_array[i].site);
+							visit_site_TD.appendChild(visit_site);
+							createTR.appendChild(visit_site_TD);
+
+							var visit_percent_data_TD = document.createElement("td");
+							var visit_cal = Math.round(Number(incriteria_array[i].count)*100/Number(incriteria_array[0].count));
+							var visit_percent = document.createTextNode(visit_cal + "%");
+							visit_percent_data_TD.appendChild(visit_percent);
+							createTR.append(visit_percent_data_TD);
+
+							var visit_percent_TD = document.createElement("td");
+							var visit_percent_button = document.createElement("button");
+							visit_percent_button.setAttribute("class", "btn btn-info btn-lg btn-square");
+							visit_percent_button.setAttribute("disabled","");
+							var visit_percent = document.createTextNode(visit_cal + "%");
+							if (incriteria_array[i].count != 0) {
+								if(Number(visit_cal) >= 7){
+									visit_percent_button.setAttribute("style", "height:30px; width:" + visit_cal+ "%");
+								}
+								else{
+									visit_percent_button.setAttribute("style", "height:30px; background-color:transparent; border-right:transparent; border-top:transparent; border-bottom:transparent; border-width:"+ (visit_cal+1)+ "px");
+								}
+								visit_percent_TD.appendChild(visit_percent_button);
+
+							}
+							createTR.appendChild(visit_percent_TD);
+
+						}
+						
+						else if (incriteria_array[i].table == 'Person') {
+							var population_TD = document.createElement("td");
+							var population_text = document.createTextNode("");
+							population_text = document.createElement("button");
+							population_text.setAttribute("class", "btn btn-outline-success btn-sm");
+							population_text.appendChild(document.createTextNode("Inclusion"));
+							population_text.setAttribute("disabled","");
+
+							population_TD.appendChild(population_text);
+							createTR.appendChild(population_TD);
+
+							var population_title_TD = document.createElement("td");
+							var population_addition_TD = document.createElement("td");
+
+							var context_div = document.createElement("div");
+							context_div.setAttribute("style", "margin-left : 10px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; width: 90%; color:rgb(78,85,92)")
+
+							var population_domain = document.createElement("button");
+							var population_title = document.createElement("label");
+							population_title.setAttribute("style", "font-weight:bold; font-size: 15px; margin-left: 5px");
+							population_title.appendChild(document.createTextNode(incriteria_array[i].title));
+
+							var population_addition = document.createElement("label");
+							population_addition.setAttribute("style", "font-weight: normal; margin-top: 5px");
+
+							if (incriteria_array[i].title == 'Year') {
+								population_domain.setAttribute("class", "btn btn-warning btn-sm");
+								population_domain.appendChild(document.createTextNode("나이"));
+								population_domain.setAttribute("disabled","");
+								var age_title = document.createElement("label");
+								age_title.setAttribute("style", "font-weight:bold; font-size: 15px; margin-left: 5px");
+								age_title.appendChild(document.createTextNode('Age'));
+								context_div.appendChild(population_domain);
+								context_div.appendChild(age_title);
+								population_title_TD.appendChild(context_div);
+								createTR.appendChild(population_title_TD);
+
+								population_addition.appendChild(document.createTextNode(incriteria_array[i].value_min + " ~ " + incriteria_array[i].value_max + " years"));
+								population_addition_TD.appendChild(population_addition);
+								createTR.appendChild(population_addition_TD);
+
+
+							}
+							else {//gender
+								population_domain.setAttribute("class", "btn btn-warning btn-sm");
+								population_domain.appendChild(document.createTextNode("성별"));
+								population_domain.setAttribute("disabled","");
+								var gender_title = document.createElement("label");
+								gender_title.setAttribute("style", "font-weight:bold; font-size: 15px; margin-left: 5px");
+								context_div.appendChild(population_domain);
+								gender_title.appendChild(document.createTextNode("Sex"));
+								context_div.appendChild(gender_title);
+								population_title_TD.appendChild(context_div);
+								createTR.appendChild(population_title_TD);
+
+								var gender_addition = document.createElement("label");
+								gender_addition.setAttribute("style", "font-weight:bold; font-size: 15px; margin-left: 5px");
+
+								gender_addition.appendChild(document.createTextNode(incriteria_array[i].title));
+								population_addition_TD.appendChild(gender_addition);
+								createTR.appendChild(population_addition_TD);
+
+							}
+
+							var population_count_TD = document.createElement("td");
+							population_count_TD.setAttribute("style", "text-align:right");
+							var population_count = document.createTextNode(numberWithCommas(incriteria_array[i].count) + "명");
+							population_count_TD.appendChild(population_count);
+							createTR.appendChild(population_count_TD);
+
+							var population_site_TD = document.createElement("td");
+							var population_site = document.createTextNode(incriteria_array[i].site);
+							population_site_TD.appendChild(population_site);
+							createTR.appendChild(population_site_TD);
+
+							var population_percent_data_TD= document.createElement("td");
+							var population_cal = Math.round(Number(incriteria_array[i].count)*100/Number(incriteria_array[0].count));
+
+							var population_percent = document.createTextNode(population_cal + "%");
+							population_percent_data_TD.appendChild(population_percent);
+							createTR.appendChild(population_percent_data_TD);
+
+							var population_percent_TD = document.createElement("td");
+							var population_percent_button = document.createElement("button");
+							population_percent_button.setAttribute("class", "btn btn-info btn-square");
+							population_percent_button.setAttribute("disabled","");
+							if (incriteria_array[i].count != 0) {
+								if(Number(population_cal)>=7){
+									population_percent_button.setAttribute("style", "height:30px; width:" + population_cal + "%");
+								}
+								else{
+									population_percent_button.setAttribute("style", "height:30px; background-color:transparent; border-right:transparent; border-top:transparent; border-bottom:transparent; border-width:"+(population_cal+1) + "px");
+								}
+								population_percent_TD.appendChild(population_percent_button);
+							}
+							createTR.appendChild(population_percent_TD);
+						}
+
+						else {
+							var inclusion_TD = document.createElement("td");
+							var inclusion_text = document.createTextNode("");
+							inclusion_text = document.createElement("button");
+							inclusion_text.setAttribute("class", "btn btn-outline-success btn-sm");
+							inclusion_text.appendChild(document.createTextNode("Inclusion"));
+							inclusion_text.setAttribute("disabled","");
+
+							inclusion_TD.appendChild(inclusion_text);
+							createTR.appendChild(inclusion_TD);
+
+							var inclusion_title_TD = document.createElement("td");
+							var context_div = document.createElement("div");
+							context_div.setAttribute("style", "margin-left : 10px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; width: 90%; color:rgb(78,85,92)");
+							var inclusion_domain = document.createElement("button");
+							var inclusion_title = document.createElement("label");
+							inclusion_title.setAttribute("style", "font-weight:bold; font-size: 15px; margin-left: 5px");
+
+							switch (incriteria_array[i].table) {
+								case "Drug_exposure":
+									inclusion_domain.setAttribute("class", "btn btn-danger btn-sm");
+									inclusion_domain.appendChild(document.createTextNode("약물"));
+									inclusion_title.appendChild(document.createTextNode("Drug"));
+									break;
+
+								case "Condition_occurrence":
+									inclusion_domain.setAttribute("class", "btn btn-success btn-sm");
+									inclusion_domain.appendChild(document.createTextNode("진단"));
+									inclusion_title.appendChild(document.createTextNode("Diagnosis"));
+									break;
+
+								case "Measurement":
+									inclusion_domain.setAttribute("class", "btn btn-primary btn-sm");
+									inclusion_domain.appendChild(document.createTextNode("검사"));
+									inclusion_title.appendChild(document.createTextNode("Lab"));
+									break;
+
+								case "User_Define":
+									inclusion_domain.setAttribute("class", "btn btn-secondary btn-sm");
+									inclusion_domain.appendChild(document.createTextNode("U.D"));
+									inclusion_title.appendChild(document.createTextNode("User Define"));
+									break;
+
+								case "SQL":
+									inclusion_domain.setAttribute("class", "btn btn-warning btn-sm");
+									inclusion_domain.appendChild(document.createTextNode("SQL"));
+									inclusion_title.appendChild(document.createTextNode(incriteria_array[i].title));
+									break;
+							}
+							inclusion_domain.setAttribute("disabled", "");
+							context_div.appendChild(inclusion_domain);
+
+							context_div.appendChild(inclusion_title);
+							inclusion_title_TD.appendChild(context_div);
+							createTR.appendChild(inclusion_title_TD);
+
+							var inclusion_title_text = document.createElement("label");
+							inclusion_title_text.setAttribute("style", "font-weight:bold; font-size: 15px; margin-left: 5px");
+
+							var context_div_add = document.createElement("div");
+							context_div_add.setAttribute("style", "white-space: nowrap; text-overflow: ellipsis; overflow: hidden; width: 90%; color:rgb(78,85,92)");
+							inclusion_title_text.appendChild(document.createTextNode(incriteria_array[i].title));
+							var inclusion_addition_text_TD = document.createElement("td");
+							if (incriteria_array[i].table != "SQL"){
+								context_div_add.appendChild(inclusion_title_text);
+							}
+							if (incriteria_array[i].criteria_addition_text != null) {
+								if (incriteria_array[i].criteria_addition_text != "") {
+									context_div_add.appendChild(document.createElement("br"));
+									var inclusion_addition = document.createElement("label");
+									inclusion_addition.setAttribute("style", "font-weight: normal");
+									inclusion_addition.appendChild(document.createTextNode(incriteria_array[i].criteria_addition_text));
+									context_div_add.appendChild(inclusion_addition);
+								}
+							}
+							inclusion_addition_text_TD.appendChild(context_div_add);
+							createTR.appendChild(inclusion_addition_text_TD);
+
+							var inclusion_count_TD = document.createElement("td");
+							inclusion_count_TD.setAttribute("style", "text-align:right");
+							var inclusion_count = document.createTextNode(numberWithCommas(incriteria_array[i].count) + "명");
+							inclusion_count_TD.appendChild(inclusion_count);
+							createTR.appendChild(inclusion_count_TD);
+
+							var inclusion_site_TD = document.createElement("td");
+							var inclusion_site = document.createTextNode(incriteria_array[i].site);
+							inclusion_site_TD.appendChild(inclusion_site);
+							createTR.appendChild(inclusion_site_TD);
+
+							var inclusion_percent_data_TD = document.createElement("td");
+							var inclusion_cal = Math.round(Number(incriteria_array[i].count)*100/Number(incriteria_array[0].count));
+
+							var inclusion_percent = document.createTextNode(inclusion_cal + "%");
+							inclusion_percent_data_TD.appendChild(inclusion_percent);
+							createTR.appendChild(inclusion_percent_data_TD);
+
+							var inclusion_percent_TD = document.createElement("td");
+							var inclusion_percent_button = document.createElement("button");
+							inclusion_percent_button.setAttribute("class", "btn btn-info btn-lg btn-square");
+							inclusion_percent_button.setAttribute("disabled","");
+
+							if (incriteria_array[i].count != 0) {
+								if(Number(inclusion_cal) >= 7){
+									inclusion_percent_button.setAttribute("style", "height:30px; width:" + inclusion_cal + "%");
+								}
+								else{
+									inclusion_percent_button.setAttribute("style", "height:30px; background-color:transparent; border-right:transparent; border-top:transparent; border-bottom:transparent; border-width:"+(inclusion_cal+1)+"px");
+								}
+								inclusion_percent_TD.appendChild(inclusion_percent_button);
+							}
+							createTR.appendChild(inclusion_percent_TD);
+
+						}
+					}
+
+					var excriteria_array_pre = result_array[3];
+					var excriteria_array = eval(excriteria_array_pre);
+					var excriteria_array_output = Object.keys(excriteria_array);
+
+					for (var i = 0; i < excriteria_array_output.length; i++) {
+						var createTR = document.createElement("tr");
+						document.getElementById("total_criteria").appendChild(createTR);
+
+						if (excriteria_array[i].table == 'Person') {
+							var population_TD = document.createElement("td");
+							var population_text = document.createTextNode("");
+							population_text = document.createElement("button");
+							population_text.setAttribute("class", "btn btn-outline-warning btn-sm");
+							population_text.appendChild(document.createTextNode("Exclusion"));
+							population_text.setAttribute("disabled","");
+
+							population_TD.appendChild(population_text);
+							createTR.appendChild(population_TD);
+
+							var population_title_ex_TD = document.createElement("td");
+							var population_addition_TD = document.createElement("td");
+
+							var context_div = document.createElement("div");
+							context_div.setAttribute("style", "margin-left : 10px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; width: 90%; color:rgb(78,85,92)")
+
+							var population_domain = document.createElement("button");
+							var population_title = document.createElement("label");
+							population_title.setAttribute("style", "font-weight:bold; font-size: 15px; margin-left: 5px");
+							population_title.appendChild(document.createTextNode(excriteria_array[i].title));
+
+							var population_addition = document.createElement("label");
+							population_addition.setAttribute("style", "font-weight: normal; margin-top: 5px");
+
+							if (excriteria_array[i].title == 'Year') {
+								population_domain.setAttribute("class", "btn btn-warning btn-sm");
+								population_domain.appendChild(document.createTextNode("나이"));
+								population_domain.setAttribute("disabled","");
+								var age_title = document.createElement("label");
+								age_title.setAttribute("style", "font-weight:bold; font-size: 15px; margin-left: 5px");
+								age_title.appendChild(document.createTextNode('Age'));
+								context_div.appendChild(population_domain);
+								context_div.appendChild(population_title);
+								population_title_ex_TD.appendChild(context_div);
+								createTR.appendChild(population_title_ex_TD);
+								population_addition.appendChild(document.createTextNode(excriteria_array[i].value_min + " ~ " + excriteria_array[i].value_max + " years"));
+								population_addition_TD.append(population_addition);
+								createTR.appendChild(population_addition_TD);
+							}
+							else {//gender
+								population_domain.setAttribute("class", "btn btn-warning btn-sm");
+								population_domain.appendChild(document.createTextNode("성별"));
+								population_domain.setAttribute("disabled","");
+								var gender_title = document.createElement("label");
+								gender_title.setAttribute("style", "font-weight:bold; font-size: 15px; margin-left: 5px");
+								context_div.appendChild(population_domain);
+								gender_title.appendChild(document.createTextNode("Sex"));
+								context_div.appendChild(gender_title);
+								population_title_ex_TD.appendChild(context_div);
+								createTR.appendChild(population_title_ex_TD);
+
+								var gender_addition_ex = document.createElement("label");
+								gender_addition_ex.setAttribute("style", "font-weight:bold; font-size: 15px; margin-left: 5px");
+
+								gender_addition_ex.appendChild(document.createTextNode(excriteria_array[i].title));
+								population_addition_TD.append(gender_addition_ex);
+								createTR.appendChild(population_addition_TD);
+							}
+
+							var population_count_TD = document.createElement("td");
+							population_count_TD.setAttribute("style", "text-align:right");
+							var population_count = document.createTextNode(numberWithCommas(excriteria_array[i].count) + "명");
+							population_count_TD.appendChild(population_count);
+							createTR.appendChild(population_count_TD);
+
+							var population_site_TD = document.createElement("td");
+							var population_site = document.createTextNode(excriteria_array[i].site);
+							population_site_TD.appendChild(population_site);
+							createTR.appendChild(population_site_TD);
+
+							var population_percent_data_TD= document.createElement("td");
+							var population_calc = Math.round(Number(excriteria_array[i].count)*100/Number(incriteria_array[0].count));
+
+							var population_percent = document.createTextNode(population_calc + "%");
+							population_percent_data_TD.appendChild(population_percent);
+							createTR.appendChild(population_percent_data_TD);
+
+							var population_percent_TD = document.createElement("td");
+							var population_percent_button = document.createElement("button");
+							population_percent_button.setAttribute("class", "btn btn-info btn-lg btn-square");
+							population_percent_button.setAttribute("disabled","");
+							if (excriteria_array[i].count != 0) {
+								if(Number(population_calc)>=7){
+									population_percent_button.setAttribute("style", "height:30px; width:" + population_calc + "%");
+								}
+								else{
+									population_percent_button.setAttribute("style", "height:30px; background-color:transparent; border-right:transparent; border-top:transparent; border-bottom:transparent; border-width:"+(population_calc+1)+"px");
+								}
+								population_percent_TD.appendChild(population_percent_button);
+							}
+							createTR.appendChild(population_percent_TD);
+						}
+
+
+						else {
+							var exclusion_TD = document.createElement("td");
+							var exclusion_text = document.createTextNode("");
+							exclusion_text = document.createElement("button");
+							exclusion_text.setAttribute("class", "btn btn-outline-warning btn-sm");
+							exclusion_text.appendChild(document.createTextNode("Exclusion"));
+							exclusion_text.setAttribute("disabled","");
+
+							exclusion_TD.appendChild(exclusion_text);
+							createTR.appendChild(exclusion_TD);
+
+							var exclusion_title_TD = document.createElement("td");
+							var context_div = document.createElement("div");
+							context_div.setAttribute("style", "margin-left : 10px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; width: 90%; color:rgb(78,85,92)")
+
+							var exclusion_title = document.createElement("label");
+							exclusion_title.setAttribute("style", "font-weight:bold; font-size: 15px; margin-left: 5px");
+
+							var exclusion_domain = document.createElement("button");
+							switch (excriteria_array[i].table) {
+								case "Drug_exposure":
+									exclusion_domain.setAttribute("class", "btn btn-danger btn-sm");
+									exclusion_domain.appendChild(document.createTextNode("약물"));
+									exclusion_title.appendChild(document.createTextNode("Drug"));
+									break;
+
+								case "Condition_occurrence":
+									exclusion_domain.setAttribute("class", "btn btn-success btn-sm");
+									exclusion_domain.appendChild(document.createTextNode("진단"));
+									exclusion_title.appendChild(document.createTextNode("Diagnosis"));
+									break;
+
+								case "Measurement":
+									exclusion_domain.setAttribute("class", "btn btn-primary btn-sm");
+									exclusion_domain.appendChild(document.createTextNode("검사"));
+									exclusion_title.appendChild(document.createTextNode("Lab"));
+									break;
+
+								case "User_Define":
+									exclusion_domain.setAttribute("class", "btn btn-secondary btn-sm");
+									exclusion_domain.appendChild(document.createTextNode("U.D"));
+									exclusion_title.appendChild(document.createTextNode("User Define"));
+									break;
+
+								case "SQL":
+									exclusion_domain.setAttribute("class", "btn btn-warning btn-sm");
+									exclusion_domain.appendChild(document.createTextNode("SQL"));
+									exclusion_title.appendChild(document.createTextNode(excriteria_array[i].title));
+									break;
+
+							}
+							exclusion_domain.setAttribute("disabled", "");
+							context_div.appendChild(exclusion_domain);
+
+							context_div.appendChild(exclusion_title);
+							exclusion_title_TD.appendChild(context_div);
+							createTR.appendChild(exclusion_title_TD);
+
+							var exclusion_title_text = document.createElement("label");
+							exclusion_title_text.setAttribute("style", "font-weight:bold; font-size: 15px; margin-left: 5px");
+
+							var context_div_add = document.createElement("div");
+							context_div_add.setAttribute("style", "white-space: nowrap; text-overflow: ellipsis; overflow: hidden; width: 90%; color:rgb(78,85,92)");
+							exclusion_title_text.appendChild(document.createTextNode(excriteria_array[i].title));
+
+							var exclusion_addition_text_TD = document.createElement("td");
+							if (excriteria_array[i].table != "SQL"){
+								context_div_add.appendChild(exclusion_title_text);
+							}
+
+							if (excriteria_array[i].criteria_addition_text != null) {
+								if (excriteria_array[i].criteria_addition_text != "") {
+									context_div_add.appendChild(document.createElement("br"));
+									var exclusion_addition = document.createElement("label");
+									exclusion_addition.setAttribute("style", "font-weight: normal");
+									exclusion_addition.appendChild(document.createTextNode(excriteria_array[i].criteria_addition_text));
+									context_div_add.appendChild(exclusion_addition);
+								}
+							}
+
+							exclusion_addition_text_TD.appendChild(context_div_add);
+							createTR.appendChild(exclusion_addition_text_TD);
+
+							var exclusion_count_TD = document.createElement("td");
+							exclusion_count_TD.setAttribute("style", "text-align:right");
+							var exclusion_count = document.createTextNode(numberWithCommas(excriteria_array[i].count) + "명");
+							exclusion_count_TD.appendChild(exclusion_count);
+							createTR.appendChild(exclusion_count_TD);
+
+							var exclusion_site_TD = document.createElement("td");
+							var exclusion_site = document.createTextNode(excriteria_array[i].site);
+							exclusion_site_TD.appendChild(exclusion_site);
+							createTR.appendChild(exclusion_site_TD);
+
+							var exclusion_percent_data_TD = document.createElement("td");
+							var exclusion_calc = Math.round(Number(excriteria_array[i].count)*100/Number(incriteria_array[0].count));
+
+							var exclusion_percent = document.createTextNode(exclusion_calc +"%");
+							exclusion_percent_data_TD.appendChild(exclusion_percent);
+							createTR.appendChild(exclusion_percent_data_TD);
+
+							var exclusion_percent_TD = document.createElement("td");
+							var exclusion_percent_button = document.createElement("button");
+							exclusion_percent_button.setAttribute("class", "btn btn-info btn-lg btn-square");
+							exclusion_percent_button.setAttribute("disabled","");
+
+							if (excriteria_array[i].count != 0) {
+								if(Number(exclusion_calc) >= 7){
+									exclusion_percent_button.setAttribute("style", "height:30px; width:" + exclusion_calc + "%");
+								}
+								else{
+									exclusion_percent_button.setAttribute("style", "height:30px; background-color:transparent; border-right:transparent; border-top:transparent; border-bottom:transparent; border-width:"+(exclusion_calc+1) + "px");
+
+								}
+								exclusion_percent_TD.appendChild(exclusion_percent_button);
+							}
+
+							createTR.appendChild(exclusion_percent_TD);
+						}
+					}
+
+				}
+			}
+			xhttp.open("GET", "./result_criteria.jsp?action=load&project_id=" + study_id+"&eligibility_id="+query_id);
+			xhttp.send();
+		})
+
+	</script>
+</head>
+
+
+
+	<div class="col-12">
+		<div class="card">
+			<div class="align-self-center w-100">
+				<table id="datatables-basic" class="table" style="width:100%">
+					<thead>
+						<tr>
+							<th style="width: 5%">Type</th>
+							<th style="width:10%">Item</th>
+							<th style="width:30%; vertical-align: 0%">Value</th>
+							<th style="width:10%">Patients</th>
+							<th style="width:5%">Site</th>
+							<th style="width:5%">Percent</th>
+							<th style="width:35%"></th>
+						</tr>
+					</thead>
+					<tbody id="total_criteria">
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+
+	<script src="../js/tables.js"></script>
+	<script src="upper_navi.js"></script>

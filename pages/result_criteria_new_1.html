@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	
+	<meta charset="utf-8">
+	<script src="../js/jquery-latest.js"></script>
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<meta name="description" content="Responsive Bootstrap 4 Admin Template">
+	<meta name="author" content="Bootlab">
+
+	<title>SCRN</title>
+
+	<link href="../css/app.css" rel="stylesheet">
+
+	<style>
+	button {
+		min-width: 5px;
+	}
+	</style>
+	<script type="text/javascript">
+		function numberWithCommas(x) {
+		    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+		}
+	
+		var inclu_first = false;
+		var exclu_first = false;
+		var small_itemlist = [];
+
+		study_id = localStorage.getItem("project_id");
+		query_id = localStorage.getItem("eligibility_id");
+
+		$(document).ready(function () {
+			var xhttp = new XMLHttpRequest();
+
+			xhttp.onreadystatechange = function () {
+				if (this.readyState == this.DONE && this.status == 200) {
+					var result_array = xhttp.responseText.split("&");
+					var visit_array_pre = result_array[2];
+					var visit_array = eval(visit_array_pre);
+					var visit_array_output = Object.keys(visit_array);
+					var total_patient = 0;
+					for (var i = 0; i < visit_array_output.length; i++) {
+						total_patient = visit_array[0].count;
+						var createTR = document.createElement("tr");
+						document.getElementById("total_criteria").appendChild(createTR);
+
+						var visit_TD = document.createElement("td");
+						var visit_text = document.createTextNode("");
+						
+						visit_text = document.createElement("button");
+						visit_text.setAttribute("class", "btn btn-outline-info btn-sm");
+						visit_text.appendChild(document.createTextNode("Population"));
+						visit_text.setAttribute("disabled","");
+						
+						visit_TD.appendChild(visit_text);
+						createTR.appendChild(visit_TD);
+
+						var visit_title_TD = document.createElement("td");
+
+						var context_div = document.createElement("div");
+						context_div.setAttribute("style", "margin-left : 10px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; width: 90%; color:rgb(78,85,92)")
+
+						var visit_domain = document.createElement("button");
+						visit_domain.setAttribute("class", "btn btn-info btn-sm");
+						visit_domain.appendChild(document.createTextNode("Period"));
+						visit_domain.setAttribute("disabled","");
+						context_div.appendChild(visit_domain);
+						
+						var inclusion_addition = document.createElement("label");
+						inclusion_addition.setAttribute("style", "font-weight: normal; margin-left: 5px");
+						inclusion_addition.appendChild(document.createTextNode("기간: "+visit_array[i].date_addition_value));
+						context_div.appendChild(inclusion_addition);
+						visit_title_TD.appendChild(context_div);
+						createTR.appendChild(visit_title_TD);
+
+						var visit_count_TD = document.createElement("td");
+						visit_count_TD.setAttribute("style", "text-align:right");
+						var visit_count = document.createTextNode(numberWithCommas(visit_array[i].count) + "명");
+						visit_count_TD.appendChild(visit_count);
+						createTR.appendChild(visit_count_TD);
+
+						var visit_site_TD = document.createElement("td");
+						var visit_site = document.createTextNode(visit_array[i].site);
+						visit_site_TD.appendChild(visit_site);
+						createTR.appendChild(visit_site_TD);
+
+						var visit_percent_data_TD = document.createElement("td");
+						var visit_cal = Math.round(Number(visit_array[i].count)*100/Number(visit_array[0].count));
+						var visit_percent = document.createTextNode(visit_cal + "%");
+						visit_percent_data_TD.appendChild(visit_percent);
+						createTR.append(visit_percent_data_TD);
+
+						var visit_percent_TD = document.createElement("td");
+						var visit_percent_button = document.createElement("button");
+						visit_percent_button.setAttribute("class", "btn btn-info btn-lg btn-square");
+						visit_percent_button.setAttribute("disabled","");
+						var visit_percent = document.createTextNode(visit_cal + "%");
+						if (visit_array[i].count != 0) {
+							if(Number(visit_cal) >= 7){
+								visit_percent_button.setAttribute("style", "height:30px; width:" + visit_cal+ "%");
+							}
+							else{
+								visit_percent_button.setAttribute("style", "height:30px; background-color:transparent; border-right:transparent; border-top:transparent; border-bottom:transparent; border-width:"+ (visit_cal+1)+ "px");
+							}
+							visit_percent_TD.appendChild(visit_percent_button);
+
+						}
+						createTR.appendChild(visit_percent_TD);
+					}
+						
+					var mid_in_array_pre = result_array[5];
+					var mid_in_array = eval(mid_in_array_pre);
+					var mid_in_array_output = Object.keys(mid_in_array);
+
+					var inclusion_array_pre = result_array[3];
+					var inclusion_array = eval(inclusion_array_pre);
+					var inclusion_array_output = Object.keys(inclusion_array);
+
+					for(var i = 0; i < mid_in_array_output.length; i++){
+						total_patient = inclusion_array[0].count;
+						var small_count = 0;
+						small_itemlist[mid_in_array[i].mid_id] = [];
+						var createTR = document.createElement("tr");
+						document.getElementById("total_criteria").appendChild(createTR);
+
+						var state_TD = document.createElement("td");
+						state_TD.setAttribute("style", "cursor:pointer;")
+						state_TD.setAttribute("onclick", "open_small('"+mid_in_array[i].mid_id+"')");
+						var state_Text = document.createElement("button");
+						
+						state_Text.setAttribute("class", "btn btn-outline-info btn-sm");
+						state_Text.appendChild(document.createTextNode("Inclusion"));
+						state_Text.setAttribute("disabled","");
+						state_TD.appendChild(state_Text);
+						createTR.appendChild(state_TD);
+
+						var mid_title_TD = document.createElement("td");
+						mid_title_TD.setAttribute("style", "cursor:pointer;")
+						mid_title_TD.setAttribute("onclick", "open_small('"+mid_in_array[i].mid_id+"')");
+						var mid_title_Text = document.createElement("label");
+						mid_title_Text.setAttribute("style", "font-weight: normal; margin-left: 5px");
+						mid_title_Text.appendChild(document.createTextNode(mid_in_array[i].title));
+						mid_title_TD.appendChild(mid_title_Text);
+						createTR.appendChild(mid_title_TD);
+
+						var mid_count_TD = document.createElement("td");
+						mid_count_TD.setAttribute("style", "text-align:right; cursor:pointer;");
+						mid_count_TD.setAttribute("onclick", "open_small('"+mid_in_array[i].mid_id+"')");
+						var mid_count = document.createTextNode(mid_in_array[i].count+"명");
+						mid_count_TD.appendChild(mid_count);
+						createTR.appendChild(mid_count_TD);
+
+						var mid_site_TD = document.createElement("td");
+						mid_site_TD.setAttribute("style", "cursor:pointer;")
+						mid_site_TD.setAttribute("onclick", "open_small('"+mid_in_array[i].mid_id+"')");
+						var mid_site = document.createTextNode(mid_in_array[i].site);
+						mid_site_TD.appendChild(mid_site);
+						createTR.appendChild(mid_site_TD);
+
+						var mid_percent_data_TD = document.createElement("td");
+						mid_percent_data_TD.setAttribute("style", "cursor:pointer; ")
+						mid_percent_data_TD.setAttribute("onclick", "open_small('"+mid_in_array[i].mid_id+"')");
+						var mid_cal = Math.round(Number(mid_in_array[i].count)*100/Number(mid_in_array[0].count));
+						var mid_percent = document.createTextNode(mid_cal+"%");
+						mid_percent_data_TD.appendChild(mid_percent);
+						createTR.appendChild(mid_percent_data_TD);
+
+						var mid_percent_Td = document.createElement("td");
+						var mid_percent_button = document.createElement("button");
+						mid_percent_button.setAttribute("disabled","");
+						mid_percent_button.setAttribute("class", "btn btn-info btn-lg btn-square");
+						var mid_percent = document.createTextNode(mid_cal + "%");
+						if (mid_in_array[i].count != 0) {
+							if(Number(mid_cal) >= 7){
+								mid_percent_button.setAttribute("style", "height:30px; width:" + mid_cal+ "%");
+							}
+							else{
+								mid_percent_button.setAttribute("style", "height:30px; background-color:transparent; border-right:transparent; border-top:transparent; border-bottom:transparent; border-width:"+ (mid_cal+1)+ "px");
+							}
+							mid_percent_Td.appendChild(mid_percent_button);
+						}
+						createTR.appendChild(mid_percent_Td);
+
+						for(var j = 0; j < inclusion_array_output.length; j++){
+							if(inclusion_array[j].mid_id == mid_in_array[i].mid_id){
+								add_small(inclusion_array[j], small_count, inclusion_array[j].divider);
+								small_count++;
+							}
+						}
+					}
+
+					var mid_ex_array_pre = result_array[6];
+					var mid_ex_array = eval(mid_ex_array_pre);
+					var mid_ex_array_output = Object.keys(mid_ex_array);
+
+					var exclusion_array_pre = result_array[4];
+					var exclusion_array = eval(exclusion_array_pre);
+					var exclusion_array_output = Object.keys(exclusion_array);
+
+					for(var i = 0; i < mid_ex_array_output.length; i++){
+						var small_count = 0;
+						small_itemlist[mid_ex_array[i].mid_id] = [];
+						var createTR = document.createElement("tr");
+						document.getElementById("total_criteria").appendChild(createTR);
+
+						var state_TD = document.createElement("td");
+						state_TD.setAttribute("style", "cursor:pointer;")
+						state_TD.setAttribute("onclick", "open_small('"+mid_ex_array[i].mid_id+"')");
+						var state_Text = document.createElement("button");
+						
+						state_Text.setAttribute("class", "btn btn-outline-danger btn-sm");
+						state_Text.appendChild(document.createTextNode("Exclusion"));
+						state_Text.setAttribute("disabled","");
+						state_TD.appendChild(state_Text);
+						createTR.appendChild(state_TD);
+
+						var mid_title_TD = document.createElement("td");
+						mid_title_TD.setAttribute("style", "cursor:pointer;")
+						mid_title_TD.setAttribute("onclick", "open_small('"+mid_ex_array[i].mid_id+"')");
+						var mid_title_Text = document.createElement("label");
+						mid_title_Text.setAttribute("style", "font-weight: normal; margin-left: 5px");
+						mid_title_Text.appendChild(document.createTextNode(mid_ex_array[i].title));
+						mid_title_TD.appendChild(mid_title_Text);
+						createTR.appendChild(mid_title_TD);
+
+						var mid_count_TD = document.createElement("td");
+						mid_count_TD.setAttribute("style", "text-align:right; cursor:pointer;");
+						mid_count_TD.setAttribute("onclick", "open_small('"+mid_ex_array[i].mid_id+"')");
+						var mid_count = document.createTextNode(mid_ex_array[i].count+"명");
+						mid_count_TD.appendChild(mid_count);
+						createTR.appendChild(mid_count_TD);
+
+						var mid_site_TD = document.createElement("td");
+						mid_site_TD.setAttribute("style", "cursor:pointer;")
+						mid_site_TD.setAttribute("onclick", "open_small('"+mid_ex_array[i].mid_id+"')");
+						var mid_site = document.createTextNode(mid_ex_array[i].site);
+						mid_site_TD.appendChild(mid_site);
+						createTR.appendChild(mid_site_TD);
+
+						var mid_percent_data_TD = document.createElement("td");
+						mid_percent_data_TD.setAttribute("style", "cursor:pointer; ")
+						mid_percent_data_TD.setAttribute("onclick", "open_small('"+mid_ex_array[i].mid_id+"')");
+						var mid_cal = Math.round(Number(mid_ex_array[i].count)*100/Number(mid_in_array[0].count));
+						var mid_percent = document.createTextNode(mid_cal+"%");
+						mid_percent_data_TD.appendChild(mid_percent);
+						createTR.appendChild(mid_percent_data_TD);
+
+						var mid_percent_Td = document.createElement("td");
+						var mid_percent_button = document.createElement("button");
+						mid_percent_button.setAttribute("class", "btn btn-info btn-lg btn-square");
+						mid_percent_button.setAttribute("disabled","");
+						var mid_percent = document.createTextNode(mid_cal + "%");
+						if (mid_ex_array[i].count != 0) {
+							if(Number(mid_cal) >= 7){
+								mid_percent_button.setAttribute("style", "height:30px; width:" + mid_cal+ "%");
+							}
+							else{
+								mid_percent_button.setAttribute("style", "height:30px; background-color:transparent; border-right:transparent; border-top:transparent; border-bottom:transparent; border-width:"+ (mid_cal+1)+ "px");
+							}
+							mid_percent_Td.appendChild(mid_percent_button);
+
+						}
+						createTR.appendChild(mid_percent_Td);
+
+						for(var j = 0; j < exclusion_array.length; j++){
+							if(exclusion_array[j].mid_id == mid_ex_array[i].mid_id){
+								add_small(exclusion_array[j], small_count);
+								small_count++;
+							}
+						}
+					}
+				}
+			}
+			xhttp.open("GET", "./result_criteria_new.jsp?action=load&project_id=" + study_id+"&eligibility_id="+query_id);
+			xhttp.send();
+		})
+
+        function add_small(small_array, small_count, divider=0){
+			var createTR = document.createElement("tr");
+			createTR.setAttribute("id", "small_tr_"+small_array.mid_id+"_"+small_count);
+			createTR.setAttribute("style", "display:none; background-color: rgb(91,125,255,230)");
+			document.getElementById("total_criteria").appendChild(createTR);
+			small_itemlist[small_array.mid_id].push(small_count);
+            if (small_array.table == 'Person') {
+				var population_TD = document.createElement("td");
+				population_TD.setAttribute("style", "background-color: rgba(91,125,255,0.02); text-align:right");
+				var population_text = document.createTextNode("");
+
+				if(small_count > 0 && divider == 0){
+					population_text = document.createElement("button");
+					switch(small_array.state){
+						case 'AND':
+							population_text.setAttribute("class", "btn btn-info btn-sm");
+						break;
+
+						case 'OR':
+							population_text.setAttribute("class", "btn btn-success btn-sm");						
+						break;
+
+						case 'NOT':
+							population_text.setAttribute("class", "btn btn-danger btn-sm");
+						break;
+					}
+					population_text.appendChild(document.createTextNode(small_array.state));             
+					population_text.setAttribute("disabled","");
+				} 
+
+				population_TD.appendChild(population_text);
+				createTR.appendChild(population_TD);
+
+				if(divider == 0){
+					var population_title_TD = document.createElement("td");
+					population_title_TD.setAttribute("style", "background-color: rgba(91,125,255,0.02)");
+					var context_div = document.createElement("div");
+					context_div.setAttribute("style", "margin-left : 10px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; width: 90%; color:rgb(78,85,92)")
+
+					var population_domain = document.createElement("button");
+					var population_title = document.createElement("label");
+					population_title.setAttribute("style", "font-weight:bold; font-size: 15px; margin-left: 5px");
+					population_title.appendChild(document.createTextNode(small_array.title));
+
+					var population_addition = document.createElement("label");
+					population_addition.setAttribute("style", "font-weight: normal; margin-left: 5px");
+
+					if (small_array.title == 'Year') {
+						population_domain.setAttribute("class", "btn btn-warning btn-sm");
+						population_domain.appendChild(document.createTextNode("Age"));
+						population_domain.setAttribute("disabled","");
+						context_div.appendChild(population_domain);
+
+						population_addition.appendChild(document.createTextNode(small_array.value_min + " ~ " + small_array.value_max + " years"));
+						context_div.appendChild(population_addition);
+						population_title_TD.appendChild(context_div);
+						createTR.appendChild(population_title_TD);
+					}
+					else {//gender
+						population_domain.setAttribute("class", "btn btn-warning btn-sm");
+						population_domain.appendChild(document.createTextNode("Sex"));
+						population_domain.setAttribute("disabled","");
+						context_div.appendChild(population_domain);
+
+						var gender_addition = document.createElement("label");
+						gender_addition.setAttribute("style", "font-size: 15px; margin-left: 5px");
+
+						gender_addition.appendChild(document.createTextNode(small_array.title));
+						context_div.appendChild(gender_addition);
+						population_title_TD.appendChild(context_div);
+						createTR.appendChild(population_title_TD);
+
+					}
+
+					var population_count_TD = document.createElement("td");
+					population_count_TD.setAttribute("style", "text-align:right; background-color: rgba(91,125,255,0.02)");
+					var population_count = document.createTextNode("");
+					population_count_TD.appendChild(population_count);
+					createTR.appendChild(population_count_TD);
+
+					var population_site_TD = document.createElement("td");
+					population_site_TD.setAttribute("style", "background-color: rgba(91,125,255,0.02)");
+					var population_site = document.createTextNode("");
+					population_site_TD.appendChild(population_site);
+					createTR.appendChild(population_site_TD);
+
+					var population_percent_data_TD= document.createElement("td");
+					population_percent_data_TD.setAttribute("style", "background-color: rgba(91,125,255,0.02)");
+					var population_cal = Math.round(Number(small_array.count)*100/Number(small_array.count));
+
+					var population_percent = document.createTextNode("");
+					population_percent_data_TD.appendChild(population_percent);
+					createTR.appendChild(population_percent_data_TD);
+
+					var population_percent_TD = document.createElement("td");
+					population_percent_TD.setAttribute("style", "background-color: rgba(91,125,255,0.02)");
+					var population_percent_button = document.createElement("button");
+					population_percent_button.setAttribute("class", "btn btn-info btn-square");
+					population_percent_button.setAttribute("disabled","");
+					if (small_array.count != 0) {
+						if(Number(population_cal)>=7){
+							population_percent_button.setAttribute("style", "height:30px; width:" + population_cal + "%");
+						}
+						else{
+							population_percent_button.setAttribute("style", "height:30px; background-color:transparent; border-right:transparent; border-top:transparent; border-bottom:transparent; border-width:"+(population_cal+1) + "px");
+						}
+						population_percent_TD.appendChild(population_percent_button);
+					}
+					createTR.appendChild(population_percent_TD);
+				}
+				else if(divider == 1){
+					var population_title_TD = document.createElement("td");
+					population_title_TD.setAttribute("style", "background-color: rgba(91,125,255,0.02)");
+
+					var population_domain = document.createElement("button");
+					population_domain.setAttribute("style", "width:100%");
+					switch(small_array.state){
+						case 'AND':
+							population_domain.setAttribute("class", "btn btn-info btn-sm");
+							population_domain.appendChild(document.createTextNode("AND"));
+							population_domain.setAttribute("disabled","");
+							population_title_TD.appendChild(population_domain);
+						break;
+
+						case 'OR':
+							population_domain.setAttribute("class", "btn btn-success btn-sm");
+							population_domain.appendChild(document.createTextNode("OR"));
+							population_domain.setAttribute("disabled","");
+							population_title_TD.appendChild(population_domain);
+						break;
+
+						case 'NOT':
+							population_domain.setAttribute("class", "btn btn-danger btn-sm");
+							population_domain.appendChild(document.createTextNode("NOT"));
+							population_domain.setAttribute("disabled","");
+							population_title_TD.appendChild(population_domain);
+						break;
+					}
+					createTR.appendChild(population_title_TD);
+					var population_count_TD = document.createElement("td");
+					population_count_TD.setAttribute("style", "background-color: rgba(91,125,255,0.02)");
+					createTR.appendChild(population_count_TD);
+					var population_site_TD = document.createElement("td");
+					population_site_TD.setAttribute("style", "background-color: rgba(91,125,255,0.02)");
+					createTR.appendChild(population_site_TD);
+					var population_percent_data_TD= document.createElement("td");
+					population_percent_data_TD.setAttribute("style", "background-color: rgba(91,125,255,0.02)");
+					createTR.appendChild(population_percent_data_TD);
+					var population_percent_TD = document.createElement("td");
+					population_percent_TD.setAttribute("style", "background-color: rgba(91,125,255,0.02)");
+					createTR.appendChild(population_percent_TD);
+
+					var createTR1 = document.createElement("tr");
+					createTR1.setAttribute("id", "small_tr_"+small_array.mid_id+"_"+small_count+"_div");
+					createTR1.setAttribute("style", "display:none; background-color: rgb(91,125,255,230)");
+					document.getElementById("total_criteria").appendChild(createTR1);
+
+					var domain_TD = document.createElement("td");
+					domain_TD.setAttribute("style", "background-color: rgba(91,125,255,0.02)");
+					createTR1.appendChild(domain_TD);
+
+					var population_title_TD = document.createElement("td");
+					population_title_TD.setAttribute("style", "background-color: rgba(91,125,255,0.02)");
+
+					var context_div = document.createElement("div");
+					context_div.setAttribute("style", "margin-left : 10px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; width: 90%; color:rgb(78,85,92)")
+
+					var population_addition = document.createElement("label");
+					population_addition.setAttribute("style", "font-weight: normal; margin-left: 5px");
+
+					if (small_array.title == 'Year') {
+						context_div.appendChild(document.createTextNode("Age : "));
+						context_div.appendChild(population_domain);
+
+						population_addition.appendChild(document.createTextNode(small_array.value_min + " ~ " + small_array.value_max + " years"));
+						context_div.appendChild(population_addition);
+						population_title_TD.appendChild(context_div);
+						createTR1.appendChild(population_title_TD);
+					}
+					else {//gender
+						population_domain.setAttribute("class", "btn btn-warning btn-sm");
+						population_domain.appendChild(document.createTextNode("Sex"));
+						population_domain.setAttribute("disabled","");
+						context_div.appendChild(population_domain);
+
+						var gender_addition = document.createElement("label");
+						gender_addition.setAttribute("style", "font-size: 15px; margin-left: 5px");
+
+						gender_addition.appendChild(document.createTextNode(small_array.title));
+						context_div.appendChild(gender_addition);
+						population_title_TD.appendChild(context_div);
+						createTR1.appendChild(population_title_TD);
+
+					}
+
+					var population_count_TD = document.createElement("td");
+					population_count_TD.setAttribute("style", "background-color: rgba(91,125,255,0.02); text-align:right");
+					var population_count = document.createTextNode("");
+					population_count_TD.appendChild(population_count);
+					createTR1.appendChild(population_count_TD);
+
+					var population_site_TD = document.createElement("td");
+					population_site_TD.setAttribute("style", "background-color: rgba(91,125,255,0.02)");
+					var population_site = document.createTextNode("");
+					population_site_TD.appendChild(population_site);
+					createTR1.appendChild(population_site_TD);
+
+					var population_percent_data_TD= document.createElement("td");
+					population_percent_data_TD.setAttribute("style", "background-color: rgba(91,125,255,0.02)");
+					var population_cal = Math.round(Number(small_array.count)*100/Number(small_array.count));
+
+					var population_percent = document.createTextNode("");
+
+					population_percent_data_TD.appendChild(population_percent);
+					createTR1.appendChild(population_percent_data_TD);
+
+					var population_percent_TD = document.createElement("td");
+					population_percent_TD.setAttribute("style", "background-color: rgba(91,125,255,0.02)");
+					var population_percent_button = document.createElement("button");
+					population_percent_button.setAttribute("class", "btn btn-info btn-square");
+					population_percent_button.setAttribute("disabled","");
+					if (small_array.count != 0) {
+						if(Number(population_cal)>=7){
+							population_percent_button.setAttribute("style", "height:30px; width:" + population_cal + "%");
+						}
+						else{
+							population_percent_button.setAttribute("style", "height:30px; background-color:transparent; border-right:transparent; border-top:transparent; border-bottom:transparent; border-width:"+(population_cal+1) + "px");
+						}
+						population_percent_TD.appendChild(population_percent_button);
+					}
+					createTR1.appendChild(population_percent_TD);
+				}
+			}
+            else {
+				var inclusion_TD = document.createElement("td");
+				inclusion_TD.setAttribute("style", "background-color: rgba(91,125,255,0.02); text-align:right");
+				var inclusion_text = document.createTextNode("");
+
+				if(small_count > 0 && divider == 0){
+					inclusion_text = document.createElement("button");
+					switch(small_array.state){
+						case 'AND':
+							inclusion_text.setAttribute("class", "btn btn-info btn-sm");
+						break;
+
+						case 'OR':
+							inclusion_text.setAttribute("class", "btn btn-success btn-sm");						
+						break;
+
+						case 'NOT':
+							inclusion_text.setAttribute("class", "btn btn-danger btn-sm");
+						break;
+					}
+					inclusion_text.appendChild(document.createTextNode(small_array.state));
+					inclusion_text.setAttribute("disabled","");
+				}
+
+                inclusion_TD.appendChild(inclusion_text);
+				createTR.appendChild(inclusion_TD);
+				
+				if(divider == 0){
+
+					var inclusion_title_TD = document.createElement("td");
+					inclusion_title_TD.setAttribute("style", "background-color: rgba(91,125,255,0.02)");
+					var context_div = document.createElement("div");
+					context_div.setAttribute("style", "margin-left : 10px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; width: 90%; color:rgb(78,85,92)");
+					var inclusion_domain = document.createElement("button");
+
+					switch (small_array.table) {
+						case "Drug_exposure":
+							inclusion_domain.setAttribute("class", "btn btn-danger btn-sm");
+							inclusion_domain.appendChild(document.createTextNode("Drug"));
+							break;
+
+						case "Condition_occurrence":
+							inclusion_domain.setAttribute("class", "btn btn-success btn-sm");
+							inclusion_domain.appendChild(document.createTextNode("Diagnosis"));
+							break;
+
+						case "Measurement":
+							inclusion_domain.setAttribute("class", "btn btn-primary btn-sm");
+							inclusion_domain.appendChild(document.createTextNode("Lab"));
+							break;
+
+						case "User_Define":
+							inclusion_domain.setAttribute("class", "btn btn-secondary btn-sm");
+							inclusion_domain.appendChild(document.createTextNode("U.D"));
+							break;
+
+						case "SQL":
+							inclusion_domain.setAttribute("class", "btn btn-warning btn-sm");
+							inclusion_domain.appendChild(document.createTextNode("SQL"));
+							break;
+					}
+					inclusion_domain.setAttribute("disabled", "");
+					context_div.appendChild(inclusion_domain);
+
+					var inclusion_title_text = document.createElement("label");
+					inclusion_title_text.setAttribute("style", "font-weight:bold; font-size: 15px; margin-left: 5px");
+
+					var context_div_add = document.createElement("div");
+					context_div_add.setAttribute("style", "white-space: nowrap; text-overflow: ellipsis; overflow: hidden; width: 90%; color:rgb(78,85,92)");
+					inclusion_title_text.appendChild(document.createTextNode(small_array.title));
+
+					var inclusion_addition_text_TD = document.createElement("td");
+					inclusion_addition_text_TD.setAttribute("style", "background-color: rgba(91,125,255,0.02)");
+					if (small_array.table != "SQL"){
+						context_div.appendChild(inclusion_title_text);
+						if(small_array.table == "User_Define"){
+							var show_ud = document.createElement("a");
+							show_ud.setAttribute("href", "#");
+							show_ud.setAttribute("onclick", "show_user_define('"+small_array.id+"')");
+							show_ud.appendChild(document.createTextNode("[Show Detail]"));
+							context_div.appendChild(show_ud);
+						}
+					}
+					
+					if (small_array.criteria_addition_text != null) {
+						if (small_array.criteria_addition_text != "") {
+							var inclusion_addition = document.createElement("label");
+							inclusion_addition.setAttribute("style", "font-weight: normal; margin-left:5px");
+							inclusion_addition.appendChild(document.createTextNode(small_array.criteria_addition_text));
+							context_div.appendChild(inclusion_addition);
+						}
+					}
+					inclusion_title_TD.appendChild(context_div);
+					createTR.appendChild(inclusion_title_TD);
+
+					var inclusion_count_TD = document.createElement("td");
+					inclusion_count_TD.setAttribute("style", "text-align:right; background-color:rgba(91,125,255,0.02)");
+					var inclusion_count = document.createTextNode("");
+
+					inclusion_count_TD.appendChild(inclusion_count);
+					createTR.appendChild(inclusion_count_TD);
+
+					var inclusion_site_TD = document.createElement("td");
+					inclusion_site_TD.setAttribute("style", "background-color: rgba(91,125,255,0.02)");
+					var inclusion_site = document.createTextNode("");
+					inclusion_site_TD.appendChild(inclusion_site);
+					createTR.appendChild(inclusion_site_TD);
+
+					var inclusion_percent_data_TD = document.createElement("td");
+					inclusion_percent_data_TD.setAttribute("style", "background-color: rgba(91,125,255,0.02)");
+					var inclusion_cal = Math.round(Number(small_array.count)*100/Number(small_array.count));
+
+					var inclusion_percent = document.createTextNode("");
+
+					inclusion_percent_data_TD.appendChild(inclusion_percent);
+					createTR.appendChild(inclusion_percent_data_TD);
+
+					var inclusion_percent_TD = document.createElement("td");
+					inclusion_percent_TD.setAttribute("style", "background-color: rgba(91,125,255,0.02)");
+					var inclusion_percent_button = document.createElement("button");
+					inclusion_percent_button.setAttribute("class", "btn btn-info btn-lg btn-square");
+					inclusion_percent_button.setAttribute("disabled","");
+
+					if (small_array.count != 0) {
+						if(Number(inclusion_cal) >= 7){
+							inclusion_percent_button.setAttribute("style", "height:30px; width:" + inclusion_cal + "%");
+						}
+						else{
+							inclusion_percent_button.setAttribute("style", "height:30px; background-color:transparent; border-right:transparent; border-top:transparent; border-bottom:transparent; border-width:"+(inclusion_cal+1)+"px");
+						}
+						inclusion_percent_TD.appendChild(inclusion_percent_button);
+					}
+					createTR.appendChild(inclusion_percent_TD);
+
+				}
+				else if(divider == 1){
+					var population_title_TD = document.createElement("td");
+					population_title_TD.setAttribute("style", "background-color: rgba(91,125,255,0.02)");
+
+					var population_domain = document.createElement("button");
+					population_domain.setAttribute("style", "width:100%");
+
+					switch(small_array.state){
+						case 'AND':
+							population_domain.setAttribute("class", "btn btn-info btn-sm");
+							population_domain.appendChild(document.createTextNode("AND"));
+							population_domain.setAttribute("disabled","");
+							population_title_TD.appendChild(population_domain);
+						break;
+
+						case 'OR':
+							population_domain.setAttribute("class", "btn btn-success btn-sm");
+							population_domain.appendChild(document.createTextNode("OR"));
+							population_domain.setAttribute("disabled","");
+							population_title_TD.appendChild(population_domain);
+						break;
+
+						case 'NOT':
+							population_domain.setAttribute("class", "btn btn-danger btn-sm");
+							population_domain.appendChild(document.createTextNode("NOT"));
+							population_domain.setAttribute("disabled","");
+							population_title_TD.appendChild(population_domain);
+						break;
+					}
+					createTR.appendChild(population_title_TD);
+					var population_count_TD = document.createElement("td");
+					population_count_TD.setAttribute("style", "background-color: rgba(91,125,255,0.02)");
+					createTR.appendChild(population_count_TD);
+					var population_site_TD = document.createElement("td");
+					population_site_TD.setAttribute("style", "background-color: rgba(91,125,255,0.02)");
+					createTR.appendChild(population_site_TD);
+					var population_percent_data_TD= document.createElement("td");
+					population_percent_data_TD.setAttribute("style", "background-color: rgba(91,125,255,0.02)");
+					createTR.appendChild(population_percent_data_TD);
+					var population_percent_TD = document.createElement("td");
+					population_percent_TD.setAttribute("style", "background-color: rgba(91,125,255,0.02)");
+					createTR.appendChild(population_percent_TD);
+					
+					var createTR1 = document.createElement("tr");
+					createTR1.setAttribute("id", "small_tr_"+small_array.mid_id+"_"+small_count+"_div");
+					createTR1.setAttribute("style", "display:none");
+					document.getElementById("total_criteria").appendChild(createTR1);
+
+					var domain_TD = document.createElement("td");
+					var domain_TD = document.createElement("td");
+					domain_TD.setAttribute("style", "background-color: rgba(91,125,255,0.02)");
+					createTR1.appendChild(domain_TD);
+
+					var inclusion_title_TD = document.createElement("td");
+					inclusion_title_TD.setAttribute("style", "background-color: rgba(91,125,255,0.02)");
+					var context_div = document.createElement("div");
+					context_div.setAttribute("style", "margin-left : 10px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; width: 90%; color:rgb(78,85,92)");
+					var inclusion_domain = document.createElement("button");
+
+					switch (small_array.table) {
+						case "Drug_exposure":
+							inclusion_domain.setAttribute("class", "btn btn-danger btn-sm");
+							inclusion_domain.appendChild(document.createTextNode("Drug"));
+							break;
+
+						case "Condition_occurrence":
+							inclusion_domain.setAttribute("class", "btn btn-success btn-sm");
+							inclusion_domain.appendChild(document.createTextNode("Diagnosis"));
+							break;
+
+						case "Measurement":
+							inclusion_domain.setAttribute("class", "btn btn-primary btn-sm");
+							inclusion_domain.appendChild(document.createTextNode("Lab"));
+							break;
+
+						case "User_Define":
+							inclusion_domain.setAttribute("class", "btn btn-secondary btn-sm");
+							inclusion_domain.appendChild(document.createTextNode("U.D"));
+							break;
+
+						case "SQL":
+							inclusion_domain.setAttribute("class", "btn btn-warning btn-sm");
+							inclusion_domain.appendChild(document.createTextNode("SQL"));
+							break;
+					}
+					inclusion_domain.setAttribute("disabled", "");
+					context_div.appendChild(inclusion_domain);
+
+					var inclusion_title_text = document.createElement("label");
+					inclusion_title_text.setAttribute("style", "font-weight:bold; font-size: 15px; margin-left: 5px");
+
+					var context_div_add = document.createElement("div");
+					context_div_add.setAttribute("style", "white-space: nowrap; text-overflow: ellipsis; overflow: hidden; width: 90%; color:rgb(78,85,92)");
+					inclusion_title_text.appendChild(document.createTextNode(small_array.title));
+					var inclusion_addition_text_TD = document.createElement("td");
+					if (small_array.table != "SQL"){
+						context_div.appendChild(inclusion_title_text);
+						if(small_array.table == "User_Define"){
+							var show_ud = document.createElement("a");
+							show_ud.setAttribute("href", "#");
+							show_ud.setAttribute("onclick", "show_user_define('"+small_array.id+"')");
+							show_ud.appendChild(document.createTextNode("[Show Detail]"));
+							context_div.appendChild(show_ud);
+						}
+
+					}
+					if (small_array.criteria_addition_text != null) {
+						if (small_array.criteria_addition_text != "") {
+							var inclusion_addition = document.createElement("label");
+							inclusion_addition.setAttribute("style", "font-weight: normal; margin-left:5px");
+							inclusion_addition.appendChild(document.createTextNode(small_array.criteria_addition_text));
+							context_div.appendChild(inclusion_addition);
+						}
+					}
+					inclusion_title_TD.appendChild(context_div);
+					createTR1.appendChild(inclusion_title_TD);
+
+					var inclusion_count_TD = document.createElement("td");
+					inclusion_count_TD.setAttribute("style", "background-color: rgba(91,125,255,0.02); text-align:right");
+					var inclusion_count = document.createTextNode("");
+					inclusion_count_TD.appendChild(inclusion_count);
+					createTR1.appendChild(inclusion_count_TD);
+
+					var inclusion_site_TD = document.createElement("td");
+					inclusion_site_TD.setAttribute("style", "background-color: rgba(91,125,255,0.02)");
+					var inclusion_site = document.createTextNode("");
+					inclusion_site_TD.appendChild(inclusion_site);
+					createTR1.appendChild(inclusion_site_TD);
+
+					var inclusion_percent_data_TD = document.createElement("td");
+					inclusion_percent_data_TD.setAttribute("style", "background-color: rgba(91,125,255,0.02)");
+					var inclusion_cal = Math.round(Number(small_array.count)*100/Number(small_array.count));
+
+					var inclusion_percent = document.createTextNode("");
+					createTR1.appendChild(inclusion_percent_data_TD);
+
+					var inclusion_percent_TD = document.createElement("td");
+					inclusion_percent_TD.setAttribute("style", "background-color: rgba(91,125,255,0.02)");
+					var inclusion_percent_button = document.createElement("button");
+					inclusion_percent_button.setAttribute("class", "btn btn-info btn-lg btn-square");
+					inclusion_percent_button.setAttribute("disabled","");
+
+					if (small_array.count != 0) {
+						if(Number(inclusion_cal) >= 7){
+							inclusion_percent_button.setAttribute("style", "height:30px; width:" + inclusion_cal + "%");
+						}
+						else{
+							inclusion_percent_button.setAttribute("style", "height:30px; background-color:transparent; border-right:transparent; border-top:transparent; border-bottom:transparent; border-width:"+(inclusion_cal+1)+"px");
+						}
+						inclusion_percent_TD.appendChild(inclusion_percent_button);
+					}
+					createTR1.appendChild(inclusion_percent_TD);
+
+				}
+
+			}
+			
+		}
+		
+		
+		function open_small(mid_id){
+			for(var i = 0; i < small_itemlist[mid_id].length; i++){
+				var small_tr = document.getElementById("small_tr_"+mid_id+"_"+small_itemlist[mid_id][i]);
+				if(small_tr.getAttribute("style") == "display:none"){
+					small_tr.removeAttribute("style");
+					small_tr.setAttribute("style", "display:true");
+					if(jQuery("#small_tr_"+mid_id+"_"+small_itemlist[mid_id][i]+"_div").length > 0){
+						document.getElementById("small_tr_"+mid_id+"_"+small_itemlist[mid_id][i]+"_div").removeAttribute("style");
+						document.getElementById("small_tr_"+mid_id+"_"+small_itemlist[mid_id][i]+"_div").setAttribute("style", "display:true");
+					}
+				}
+				else{
+					small_tr.removeAttribute("style");
+					small_tr.setAttribute("style", "display:none");
+					if(jQuery("#small_tr_"+mid_id+"_"+small_itemlist[mid_id][i]+"_div").length > 0){
+						document.getElementById("small_tr_"+mid_id+"_"+small_itemlist[mid_id][i]+"_div").removeAttribute("style");
+						document.getElementById("small_tr_"+mid_id+"_"+small_itemlist[mid_id][i]+"_div").setAttribute("style", "display:none");
+					}
+				}
+
+			}
+		}
+	
+	</script>
+</head>
+
+
+
+	<div class="col-12">
+		<div class="card mb-1">
+			<div class="align-self-center w-100">
+				<table id="datatables-basic" class="table mb-1" style="width:100%">
+					<thead>
+						<tr>
+							<th style="width: 5%">Type</th>
+							<th style="width:40%; vertical-align: 0%">Value</th>
+							<th style="width:10%">Patients</th>
+							<th style="width:5%">Site</th>
+							<th style="width:5%">Percent</th>
+							<th style="width:35%"></th>
+						</tr>
+					</thead>
+					<tbody id="total_criteria">
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+
+	<script src="../js/tables.js"></script>
+	<script src="upper_navi.js"></script>

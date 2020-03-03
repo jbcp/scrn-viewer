@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	
+	<meta charset="utf-8">
+	<script src="../js/jquery-latest.js"></script>
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<meta name="description" content="Responsive Bootstrap 4 Admin Template">
+	<meta name="author" content="Bootlab">
+
+	<title>SCRN</title>
+
+	<link href="../css/app.css" rel="stylesheet">
+
+	<style>
+	button {
+		min-width: 5px;
+	}
+
+	.hr-sect {
+	display: flex;
+	flex-basis: 100%;
+	align-items: center;
+	color: rgba(0, 0, 0, 0.35);
+	margin: 8px 0px;
+	}
+	.hr-sect::before,
+	.hr-sect::after {
+		content: "";
+		flex-grow: 1;
+		background: rgba(0, 0, 0, 0.35);
+		height: 1px;
+		font-size: 0px;
+		line-height: 0px;
+		margin: 0px 8px;
+		border-top : dashed 0.5px;
+	}
+	</style>
+	<script type="text/javascript">
+		function numberWithCommas(x) {
+		    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+		}
+	
+		var inclu_first = false;
+		var exclu_first = false;
+		var small_itemlist = [];
+
+		study_id = localStorage.getItem("project_id");
+		query_id = localStorage.getItem("eligibility_id");
+
+		$(document).ready(function () {
+			var xhttp = new XMLHttpRequest();
+
+			xhttp.onreadystatechange = function () {
+				if (this.readyState == this.DONE && this.status == 200) {
+					var result_array = xhttp.responseText.split("&");
+					var visit_array_pre = result_array[2];
+					var visit_array = eval(visit_array_pre);
+					var visit_array_output = Object.keys(visit_array);
+					var total_patient = 0;
+					for (var i = 0; i < visit_array_output.length; i++) {
+						total_patient = visit_array[0].count;
+						var createTR = document.createElement("tr");
+						document.getElementById("total_criteria").appendChild(createTR);
+
+						var visit_TD = document.createElement("td");
+						var visit_text = document.createTextNode("");
+						
+						visit_text = document.createElement("button");
+						visit_text.setAttribute("class", "btn btn-outline-info btn-sm");
+						visit_text.appendChild(document.createTextNode("Population"));
+						visit_text.setAttribute("disabled","");
+						
+						visit_TD.appendChild(visit_text);
+						createTR.appendChild(visit_TD);
+
+						var visit_title_TD = document.createElement("td");
+
+						var context_div = document.createElement("div");
+						context_div.setAttribute("style", "margin-left : 10px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; width: 90%; color:rgb(78,85,92)")
+
+						var visit_domain = document.createElement("button");
+						visit_domain.setAttribute("class", "btn btn-info btn-sm");
+						visit_domain.appendChild(document.createTextNode("Period"));
+						visit_domain.setAttribute("disabled","");
+						context_div.appendChild(visit_domain);
+						
+						var inclusion_addition = document.createElement("label");
+						inclusion_addition.setAttribute("style", "font-weight: normal; margin-left: 5px");
+						inclusion_addition.appendChild(document.createTextNode("기간: "+visit_array[i].date_addition_value));
+						context_div.appendChild(inclusion_addition);
+						visit_title_TD.appendChild(context_div);
+						createTR.appendChild(visit_title_TD);
+
+						var visit_count_TD = document.createElement("td");
+						visit_count_TD.setAttribute("style", "text-align:right");
+						var visit_count = document.createTextNode(numberWithCommas(visit_array[i].count) + "명");
+						visit_count_TD.appendChild(visit_count);
+						createTR.appendChild(visit_count_TD);
+
+						var visit_site_TD = document.createElement("td");
+						var visit_site = document.createTextNode(visit_array[i].site);
+						visit_site_TD.appendChild(visit_site);
+						createTR.appendChild(visit_site_TD);
+
+						var visit_percent_data_TD = document.createElement("td");
+						var visit_cal = Math.round(Number(visit_array[i].count)*100/Number(visit_array[0].count));
+						var visit_percent = document.createTextNode(visit_cal + "%");
+						visit_percent_data_TD.appendChild(visit_percent);
+						createTR.append(visit_percent_data_TD);
+
+						var visit_percent_TD = document.createElement("td");
+						var visit_percent_button = document.createElement("button");
+						visit_percent_button.setAttribute("class", "btn btn-info btn-lg btn-square");
+						visit_percent_button.setAttribute("disabled","");
+						var visit_percent = document.createTextNode(visit_cal + "%");
+						if (visit_array[i].count != 0) {
+							if(Number(visit_cal) >= 7){
+								visit_percent_button.setAttribute("style", "height:30px; width:" + visit_cal+ "%");
+							}
+							else{
+								visit_percent_button.setAttribute("style", "height:30px; background-color:transparent; border-right:transparent; border-top:transparent; border-bottom:transparent; border-width:"+ (visit_cal+1)+ "px");
+							}
+							visit_percent_TD.appendChild(visit_percent_button);
+
+						}
+						createTR.appendChild(visit_percent_TD);
+					}
+						
+					var mid_in_array_pre = result_array[5];
+					var mid_in_array = eval(mid_in_array_pre);
+					var mid_in_array_output = Object.keys(mid_in_array);
+
+					for(var i = 0; i < mid_in_array_output.length; i++){
+						total_patient = mid_in_array[0].count;
+						var small_count = 0;
+						var block_count = 0;
+						small_itemlist.push(mid_in_array[i].mid_id);
+						var createTR = document.createElement("tr");
+						document.getElementById("total_criteria").appendChild(createTR);
+
+						var state_TD = document.createElement("td");
+						state_TD.setAttribute("style", "cursor:pointer;")
+						state_TD.setAttribute("onclick", "open_small('"+mid_in_array[i].mid_id+"')");
+						var state_Text = document.createElement("button");
+						
+						state_Text.setAttribute("class", "btn btn-info btn-sm");
+						state_Text.appendChild(document.createTextNode("Inclusion"));
+						state_Text.setAttribute("disabled","");
+						state_TD.appendChild(state_Text);
+						createTR.appendChild(state_TD);
+
+						var mid_title_TD = document.createElement("td");
+						mid_title_TD.setAttribute("style", "cursor:pointer;")
+						mid_title_TD.setAttribute("onclick", "open_small('"+mid_in_array[i].mid_id+"')");
+						var mid_title_Text = document.createElement("label");
+						mid_title_Text.setAttribute("style", "font-weight: normal; margin-left: 5px");
+						mid_title_Text.appendChild(document.createTextNode(mid_in_array[i].title));
+						mid_title_TD.appendChild(mid_title_Text);
+						createTR.appendChild(mid_title_TD);
+
+						var mid_count_TD = document.createElement("td");
+						mid_count_TD.setAttribute("style", "text-align:right; cursor:pointer;");
+						mid_count_TD.setAttribute("onclick", "open_small('"+mid_in_array[i].mid_id+"')");
+						var mid_count = document.createTextNode(numberWithCommas(mid_in_array[i].count)+"명");
+						mid_count_TD.appendChild(mid_count);
+						createTR.appendChild(mid_count_TD);
+
+						var mid_site_TD = document.createElement("td");
+						mid_site_TD.setAttribute("style", "cursor:pointer;")
+						mid_site_TD.setAttribute("onclick", "open_small('"+mid_in_array[i].mid_id+"')");
+						var mid_site = document.createTextNode(mid_in_array[i].site);
+						mid_site_TD.appendChild(mid_site);
+						createTR.appendChild(mid_site_TD);
+
+						var mid_percent_data_TD = document.createElement("td");
+						mid_percent_data_TD.setAttribute("style", "cursor:pointer; ")
+						mid_percent_data_TD.setAttribute("onclick", "open_small('"+mid_in_array[i].mid_id+"')");
+						var mid_cal = Math.round(Number(mid_in_array[i].count)*100/Number(mid_in_array[0].count));
+						var mid_percent = document.createTextNode(mid_cal+"%");
+						mid_percent_data_TD.appendChild(mid_percent);
+						createTR.appendChild(mid_percent_data_TD);
+
+						var mid_percent_Td = document.createElement("td");
+						var mid_percent_button = document.createElement("button");
+						mid_percent_button.setAttribute("disabled","");
+						mid_percent_button.setAttribute("class", "btn btn-info btn-lg btn-square");
+						var mid_percent = document.createTextNode(mid_cal + "%");
+						if (mid_in_array[i].count != 0) {
+							if(Number(mid_cal) >= 7){
+								mid_percent_button.setAttribute("style", "height:30px; width:" + mid_cal+ "%");
+							}
+							else{
+								mid_percent_button.setAttribute("style", "height:30px; background-color:transparent; border-right:transparent; border-top:transparent; border-bottom:transparent; border-width:"+ (mid_cal+1)+ "px");
+							}
+							mid_percent_Td.appendChild(mid_percent_button);
+
+						}
+						createTR.appendChild(mid_percent_Td);
+
+						add_small(mid_in_array[i].small, mid_in_array[i].status);
+					}
+
+					var mid_ex_array_pre = result_array[6];
+					var mid_ex_array = eval(mid_ex_array_pre);
+					var mid_ex_array_output = Object.keys(mid_ex_array);
+
+					for(var i = 0; i < mid_ex_array_output.length; i++){
+						var small_count = 0;
+						var block_count = 0;
+						small_itemlist.push(mid_ex_array[i].mid_id);
+						var createTR = document.createElement("tr");
+						document.getElementById("total_criteria").appendChild(createTR);
+
+						var state_TD = document.createElement("td");
+						state_TD.setAttribute("style", "cursor:pointer;")
+						state_TD.setAttribute("onclick", "open_small('"+mid_ex_array[i].mid_id+"')");
+						var state_Text = document.createElement("button");
+						
+						state_Text.setAttribute("class", "btn btn-danger btn-sm");
+						state_Text.appendChild(document.createTextNode("Exclusion"));
+						state_Text.setAttribute("disabled","");
+						state_TD.appendChild(state_Text);
+						createTR.appendChild(state_TD);
+
+						var mid_title_TD = document.createElement("td");
+						mid_title_TD.setAttribute("style", "cursor:pointer;")
+						mid_title_TD.setAttribute("onclick", "open_small('"+mid_ex_array[i].mid_id+"')");
+						var mid_title_Text = document.createElement("label");
+						mid_title_Text.setAttribute("style", "font-weight: normal; margin-left: 5px");
+						mid_title_Text.appendChild(document.createTextNode(mid_ex_array[i].title));
+						mid_title_TD.appendChild(mid_title_Text);
+						createTR.appendChild(mid_title_TD);
+
+						var mid_count_TD = document.createElement("td");
+						mid_count_TD.setAttribute("style", "text-align:right; cursor:pointer;");
+						mid_count_TD.setAttribute("onclick", "open_small('"+mid_ex_array[i].mid_id+"')");
+						var mid_count = document.createTextNode(mid_ex_array[i].count+"명");
+						mid_count_TD.appendChild(mid_count);
+						createTR.appendChild(mid_count_TD);
+
+						var mid_site_TD = document.createElement("td");
+						mid_site_TD.setAttribute("style", "cursor:pointer;")
+						mid_site_TD.setAttribute("onclick", "open_small('"+mid_ex_array[i].mid_id+"')");
+						var mid_site = document.createTextNode(mid_ex_array[i].site);
+						mid_site_TD.appendChild(mid_site);
+						createTR.appendChild(mid_site_TD);
+
+						var mid_percent_data_TD = document.createElement("td");
+						mid_percent_data_TD.setAttribute("style", "cursor:pointer; ")
+						mid_percent_data_TD.setAttribute("onclick", "open_small('"+mid_ex_array[i].mid_id+"')");
+						var mid_cal = Math.round(Number(mid_ex_array[i].count)*100/Number(mid_in_array[0].count));
+						var mid_percent = document.createTextNode(mid_cal+"%");
+						mid_percent_data_TD.appendChild(mid_percent);
+						createTR.appendChild(mid_percent_data_TD);
+
+						var mid_percent_Td = document.createElement("td");
+						var mid_percent_button = document.createElement("button");
+						mid_percent_button.setAttribute("class", "btn btn-info btn-lg btn-square");
+						mid_percent_button.setAttribute("disabled","");
+						var mid_percent = document.createTextNode(mid_cal + "%");
+						if (mid_ex_array[i].count != 0) {
+							if(Number(mid_cal) >= 7){
+								mid_percent_button.setAttribute("style", "height:30px; width:" + mid_cal+ "%");
+							}
+							else{
+								mid_percent_button.setAttribute("style", "height:30px; background-color:transparent; border-right:transparent; border-top:transparent; border-bottom:transparent; border-width:"+ (mid_cal+1)+ "px");
+							}
+							mid_percent_Td.appendChild(mid_percent_button);
+
+						}
+						createTR.appendChild(mid_percent_Td);
+						add_small(mid_ex_array[i].small, mid_ex_array[i].status);
+					}
+				}
+			}
+			xhttp.open("GET", "./result_criteria_new.jsp?action=load&project_id=" + study_id+"&eligibility_id="+query_id);
+			xhttp.send();
+		})
+
+		function add_small(small_array, status){
+
+			var createTR = document.createElement("tr");
+			createTR.setAttribute("id", "small_tr_"+small_array[0].mid_id);
+			createTR.setAttribute("style", "display:none; background-color: rgba(91,125,255,0.02)");
+			document.getElementById("total_criteria").appendChild(createTR);
+
+			var status_TD = document.createElement("td");
+			status_TD.setAttribute("style", "background-color: rgba(91,125,255,0.02); text-align:right");
+			createTR.appendChild(status_TD);
+
+			var criteria_title_TD = document.createElement("td");
+			criteria_title_TD.setAttribute("id", "criteria_title_TD_"+small_array[0].mid_id);
+			criteria_title_TD.setAttribute("style", "background-color: rgba(91,125,255,0.02)");
+
+			for(var i = 0; i < small_array.length; i++){
+				if(i > 0 && small_array[i].divider == 0){
+					var criteria_state = document.createElement("label");
+					criteria_state.setAttribute("style", "font-weight:bold; font-size: 13px; margin-left: 13px; color:rgba(0, 0, 0, 0.45)");
+
+					switch(small_array[i].state){
+						case 'AND':
+							criteria_state.appendChild(document.createTextNode("[AND]"));
+						break;
+
+						case 'OR':
+							criteria_state.appendChild(document.createTextNode("[OR]"));
+						break;
+
+						case 'NOT':
+							criteria_state.appendChild(document.createTextNode("[NOT]"));
+						break;
+					}
+
+					criteria_title_TD.appendChild(criteria_state);
+				}
+
+				else if(i > 0 && small_array[i].divider == 1){
+
+					var criteria_divider_div = document.createElement("div");
+					criteria_divider_div.setAttribute("class", "hr-sect w-100");
+					var criteria_divider_span = document.createElement("span");
+					criteria_divider_span.setAttribute("style", "font-style:italic; font-weight:bold");
+
+					switch(small_array[i].state){
+						case 'AND':
+						criteria_divider_span.appendChild(document.createTextNode("AND"));
+						break;
+
+						case 'OR':
+						criteria_divider_span.appendChild(document.createTextNode("OR"));
+						break;
+
+						case 'NOT':
+						criteria_divider_span.appendChild(document.createTextNode("NOT"));
+						break;
+					}
+
+					criteria_divider_div.appendChild(criteria_divider_span);
+					criteria_title_TD.appendChild(criteria_divider_div);
+
+				}
+
+				var context_div = document.createElement("div");
+				context_div.setAttribute("style", "margin-left : 10px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; width: 90%; color:rgb(78,85,92)")
+
+				var criteria_domain = document.createElement("button");
+				var criteria_title = document.createElement("label");
+				criteria_title.setAttribute("style", "font-weight:bold; font-size: 15px; margin-left: 5px");
+
+				switch (small_array[i].table) {
+					case "Drug_exposure":
+						criteria_domain.setAttribute("class", "btn btn-outline-danger btn-sm");
+						criteria_domain.appendChild(document.createTextNode("Drug"));
+						break;
+
+					case "Condition_occurrence":
+						criteria_domain.setAttribute("class", "btn btn-outline-success btn-sm");
+						criteria_domain.appendChild(document.createTextNode("Diagnosis"));
+						break;
+
+					case "Measurement":
+						criteria_domain.setAttribute("class", "btn btn-outline-primary btn-sm");
+						criteria_domain.appendChild(document.createTextNode("Lab"));
+						break;
+
+					case "Procedure":
+						criteria_domain.setAttribute("class", "btn btn-outline-primary btn-sm");
+						criteria_domain.appendChild(document.createTextNode("Procedure"));
+						break;
+
+					case "User_Define":
+						criteria_domain.setAttribute("class", "btn btn-outline-secondary btn-sm");
+						criteria_domain.appendChild(document.createTextNode("U.D"));
+						break;
+
+					case "SQL":
+						criteria_domain.setAttribute("class", "btn btn-outline-warning btn-sm");
+						criteria_domain.appendChild(document.createTextNode("SQL"));
+						break;
+
+					default:
+						if (small_array[i].title == 'Year') {
+							criteria_domain.setAttribute("class", "btn btn-outline-warning btn-sm");
+							criteria_domain.setAttribute("style", "border-color:rgb(255, 162,0); color : rgb(255, 152, 0)");
+						}
+						else {//gender
+							criteria_domain.setAttribute("class", "btn btn-outline-warning btn-sm");
+							criteria_domain.setAttribute("style", "border-color:rgb(255, 162,0); color : rgb(255, 152, 0)");
+						}
+
+					break;
+				}
+				criteria_domain.setAttribute("disabled", "");
+
+				if( small_array[i].table != "Person" ){
+					criteria_title.appendChild(document.createTextNode(small_array[i].title));
+
+				}
+				else{
+					if (small_array[i].title == 'Year') {
+						criteria_domain.appendChild(document.createTextNode("Age"));
+					}
+					else {//gender
+						criteria_domain.appendChild(document.createTextNode("Sex"));
+					}
+				}
+				context_div.appendChild(criteria_domain);
+
+				var criteria_addition = document.createElement("label");
+				criteria_addition.setAttribute("style", "font-weight: normal; margin-left: 5px; font-size:12px");
+				if( small_array[i].table != "Person" ){
+					criteria_addition.appendChild(document.createTextNode(small_array[i].criteria_addition_text));
+				}
+				else{
+					criteria_title.appendChild(document.createTextNode(small_array[i].title));
+					if (small_array[i].title == 'Year') {
+						criteria_addition.appendChild(document.createTextNode(small_array[i].criteria_addition_text));
+					}
+				}
+
+				context_div.appendChild(criteria_title);
+
+				if(small_array[i].table == "User_Define"){
+ 					var show_ud = document.createElement("a");
+					show_ud.setAttribute("href", "#");
+					show_ud.setAttribute("onclick", "show_user_define('"+small_array[i].id+"')");
+					show_ud.appendChild(document.createTextNode("[Show Detail]"));
+					context_div.appendChild(show_ud);
+				}
+				else if(small_array[i].table == "SQL"){
+					var show_ud = document.createElement("a");
+					show_ud.setAttribute("href", "#");
+					show_ud.setAttribute("onclick", "show_sql('"+(small_array[i].criteria_addition_text).replace(/\n/g," ")+"')");
+					show_ud.appendChild(document.createTextNode("[Show Detail]"));
+					context_div.appendChild(show_ud);
+				}
+				context_div.appendChild(criteria_addition);
+				criteria_title_TD.appendChild(context_div);
+
+			}
+			createTR.appendChild(criteria_title_TD);
+
+			var criteria_patient_TD = document.createElement("td");
+			criteria_patient_TD.setAttribute("style", "background-color: rgba(91,125,255,0.02); text-align:right");
+			createTR.appendChild(criteria_patient_TD);
+
+			var criteria_site_TD = document.createElement("td");
+			criteria_site_TD.setAttribute("style", "background-color: rgba(91,125,255,0.02); text-align:right");
+			createTR.appendChild(criteria_site_TD);
+
+			var criteria_percent_TD = document.createElement("td");
+			criteria_percent_TD.setAttribute("style", "background-color: rgba(91,125,255,0.02); text-align:right");
+			createTR.appendChild(criteria_percent_TD);
+
+			var criteria_bar_TD = document.createElement("td");
+			criteria_bar_TD.setAttribute("style", "background-color: rgba(91,125,255,0.02); text-align:right");
+			createTR.appendChild(criteria_bar_TD);
+
+		}
+
+		function open_small(mid_id){
+			var small_tr = document.getElementById("small_tr_"+mid_id);
+			if(small_tr.getAttribute("style") == "display:none; background-color: rgba(91,125,255,0.02)"){
+				small_tr.removeAttribute("style");
+				small_tr.setAttribute("style", "display:true; background-color: rgba(91,125,255,0.02)");
+				if(jQuery("#small_tr_"+mid_id).length > 0){
+					document.getElementById("small_tr_"+mid_id).removeAttribute("style");
+					document.getElementById("small_tr_"+mid_id).setAttribute("style", "display:true; background-color: rgba(91,125,255,0.02)");
+				}
+			}
+			else{
+				small_tr.removeAttribute("style");
+				small_tr.setAttribute("style", "display:none; background-color: rgba(91,125,255,0.02)");
+				if(jQuery("#small_tr_"+mid_id).length > 0){
+					document.getElementById("small_tr_"+mid_id).removeAttribute("style");
+					document.getElementById("small_tr_"+mid_id).setAttribute("style", "display:none; background-color: rgba(91,125,255,0.02)");
+				}
+			}
+
+		}
+	
+		function show_user_define(id){
+			var newWindow = window.open("ud_detail", "about:blank", "toolbar=no", "menubar=no", "status = no", "directory=no", "location=no");
+			newWindow.location.href = "ud_detail.html?define_id="+id;
+		}
+
+		function show_sql(text){
+			document.getElementById("sql_text").appendChild(document.createTextNode(text));
+			$('#sqlModal').modal('show');
+		}
+	</script>
+</head>
+
+
+
+	<div class="col-12">
+		<div class="card mb-1">
+			<div class="align-self-center w-100">
+				<table id="datatables-basic" class="table mb-1" style="width:100%">
+					<thead>
+						<tr>
+							<th style="width: 5%">Type</th>
+							<th style="width:40%; vertical-align: 0%">Value</th>
+							<th style="width:10%; text-align:right">Patients</th>
+							<th style="width:5%">Site</th>
+							<th style="width:5%">Percent</th>
+							<th style="width:35%"></th>
+						</tr>
+					</thead>
+					<tbody id="total_criteria">
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+
+	<div class="modal fade" id="sqlModal" tabindex="-1" role="dialog" aria-hidden="true">
+			<div class="modal-dialog modal-dialog-centered modal-md" role="document">
+				<div class="modal-content">
+					<div class="modal-header" >
+						<h5 class="modal-title" id="sql_log_title"></h5>
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+					<div class="modal-body m-3" >
+						<code class="SQL" id="sql_text" ></code>
+					</div>
+				</div>
+			</div>
+		</div>
+	
+	<script src="../js/app.js"></script>
+	<script src="../js/tables.js"></script>
+	<script src="upper_navi.js"></script>

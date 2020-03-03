@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8">
+	<script src="../js/jquery-latest.js"></script>
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<meta name="description" content="Responsive Bootstrap 4 Admin Template">
+	<meta name="author" content="Bootlab">
+
+	<title>SCRN</title>
+
+	<link href="../css/app.css" rel="stylesheet">
+	<script src='../js/ip_execute.js?version=2'>
+		var ip_execute = Get_ip_execute();
+	</script>
+
+	<script type="text/javascript">
+		project_id = localStorage.getItem("project_id");
+		eligibility_id = localStorage.getItem("eligibility_id");
+		var chart_data_disease = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+		var chart_data_patient = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+
+		$(document).ready(function () {
+			$('#sidebar_navi').load('result_menu.html');
+			$('#footer').load('footer.html');
+			upper_navi_1("Lab");
+			upper_navi_4(project_id, eligibility_id)
+			$('#loadingModal').modal('show');
+			var check_execute = "false";
+			var xhttp1 = new XMLHttpRequest();
+			xhttp1.onreadystatechange = function () {
+				if (this.readyState == this.DONE && this.status == 200) {
+					var data_array = xhttp1.responseText.split("&");
+					if (data_array[0] == 0 && data_array[1] == "null") {
+
+						var xhttp2 = new XMLHttpRequest();
+						xhttp2.onreadystatechange = function () {
+							if (this.readyState == this.DONE && this.status == 200) {
+								check_execute = "true"
+							}
+						}
+						xhttp2.open("GET", Get_ip_execute() + "2/" + project_id + "/" + eligibility_id + "/" + data_array[2]);
+						xhttp2.send();
+					}
+
+					else if (data_array[0] == 0 && data_array[1] != "null") {
+						last_execute_date = data_array[1];
+						check_execute = "true"
+					}
+
+					else if (data_array[0] == 1 && data_array[1] != "null") {
+						last_execute_date = data_array[1];
+						check_execute = "false"
+					}
+				}
+			}
+			xhttp1.open("GET", "./protocol_detail_measurement.jsp?action=execute&project_id=" + project_id + "&eligibility_id=" + eligibility_id);
+			xhttp1.send();
+
+			execute_check = setInterval(function () {
+				var xhttp1 = new XMLHttpRequest();
+				xhttp1.onreadystatechange = function () {
+					if (this.readyState == this.DONE && this.status == 200) {
+						var data_array = xhttp1.responseText.split("&");
+
+						if (data_array[0] == 0 && data_array[1] == null) {
+							check_execute = "true"
+						}
+
+						else if (data_array[0] == 0 && data_array[1] != null){
+							last_execute_date = data_array[1];
+							check_execute = "true"
+						}
+
+						else if (data_array[0] == 1 && data_array[1] != null) {
+							last_execute_date = data_array[1];
+							check_execute = "false"
+						}
+					}
+				}
+				xhttp1.open("GET", "./protocol_detail_measurement.jsp?action=execute&project_id=" + project_id + "&eligibility_id=" + eligibility_id);
+				xhttp1.send();
+
+				if (check_execute == "false") {
+					clearInterval(execute_check);
+					draw();
+				}
+			}, 2000);
+
+
+		});
+
+		function draw() {
+			var xhttp = new XMLHttpRequest();
+
+			xhttp.onreadystatechange = function () {
+				if (this.readyState == this.DONE && this.status == 200) {
+
+					var result_array = xhttp.responseText.split("&");
+					var img_src = result_array[0];
+					var rand = Math.random();
+					document.getElementById("nav_img").setAttribute("src", img_src + "?" + rand);
+
+					var user_name = result_array[1];
+					document.getElementById("user_name").appendChild(document.createTextNode(user_name));
+					document.getElementById("last_execute_date_span").appendChild(document.createTextNode(last_execute_date));
+
+					var disease_data = JSON.parse(result_array[2]);
+					disease_data = disease_data[0];
+					var disease = disease_data[0].name;
+					var patient = disease_data[0].person_count;
+
+					for (var i = 1; i < 10; i++) {
+						disease = disease + ", " + disease_data[i].name;
+						patient = patient + ", " + disease_data[i].person_count;
+					}
+					var tmp_chart_data_disease = disease.split(", ").map(Number);
+					var tmp_chart_data_patient = patient.split(", ").map(Number);
+
+					for (var i = 0; i < tmp_chart_data_disease.length; i++) {
+						chart_data_disease[i] = 0;
+						chart_data_patient[i] = 0;
+						chart_data_disease[i] = chart_data_disease[i] + tmp_chart_data_disease[i];
+						chart_data_patient[i] = chart_data_patient[i] + tmp_chart_data_patient[i];
+					}
+					new Chart(document.getElementById("chartjs-dashboard-bar"), {
+						type: 'bar',
+						data: {
+							labels: [disease_data[0].name, disease_data[1].name, disease_data[2].name, disease_data[3].name, disease_data[4].name, disease_data[5].name, disease_data[6].name, disease_data[7].name, disease_data[8].name, disease_data[9].name],
+							datasets: [
+								{
+									label: "# of Patient",
+									backgroundColor: "#a180da",
+									borderColor: "#a180da",
+									hoverBackgroundColor: "#a180da",
+									hoverBorderColor: "#a180da",
+									yAxisID: 'y-axis-patient',
+									data: chart_data_patient
+								}]
+						},
+						options: {
+							maintainAspectRatio: false,
+							legend: {
+								display: false
+							},
+							title: {
+								display: true
+							},
+							scales: {
+								yAxes: [
+									{
+										type: 'linear',
+										position: 'left',
+										id: 'y-axis-patient',
+										gridLines: {
+											display: false
+										},
+										stacked: false,
+										ticks: {
+											beginAtZero: true,
+											callback: function (value) { if (value % 1 === 0) { return value; } }
+										},
+										scaleLabel: {
+											display: true,
+											labelString: 'Number of Patients(명)'
+										}
+									}],
+								xAxes: [{
+									barPercentage: .75,
+									categoryPercentage: .5,
+									stacked: false,
+									gridLines: {
+										color: "transparent"
+									}
+								}]
+							},
+							showValue: {
+								fontSize: 15,
+								fontStyle: 'Helvetica'
+							}
+						},
+						plugins: [{
+							beforeInit: function (chart) {
+								chart.data.labels.forEach(function (e, i, a) {
+									if (/\s/.test(e)) {
+										a[i] = e.split(/\s/);
+									}
+								});
+							}
+						}]
+					});
+
+					var disease_data = JSON.parse(result_array[2]);
+					disease_data = disease_data[0];
+					for (var i = 0; i < disease_data.length; i++) {
+						var createTR = document.createElement("tr");
+						document.getElementById("disease_table").appendChild(createTR);
+
+						var disease_id_TD = document.createElement("td");
+						var disease_id = document.createTextNode(i + 1);
+						disease_id_TD.appendChild(disease_id);
+						createTR.appendChild(disease_id_TD);
+
+						var disease_name_TD = document.createElement("td");
+						var disease_name = document.createTextNode(disease_data[i].name);
+						disease_name_TD.appendChild(disease_name);
+						createTR.appendChild(disease_name_TD);
+
+						var disease_ref_TD = document.createElement("td");
+						var disease_ref = document.createTextNode(disease_data[i].low + " ~ " + disease_data[i].high);
+						disease_ref_TD.appendChild(disease_ref);
+						createTR.appendChild(disease_ref_TD);
+
+						var avg_TD = document.createElement("td");
+						var avg = document.createTextNode(disease_data[i].avg + " ± " + disease_data[i].sd + " (" + disease_data[i].min + " ~ " + disease_data[i].max + ")");
+						avg_TD.appendChild(avg);
+						createTR.appendChild(avg_TD);
+
+						var patient_number_TD = document.createElement("td");
+						var patient_number = document.createTextNode(disease_data[i].person_count);
+						patient_number_TD.appendChild(patient_number);
+						createTR.appendChild(patient_number_TD);
+
+					}
+					$('#datatables-disease').DataTable({
+						pageLength: 7,
+						destroy: true,
+						lengthChange: false,
+						"order": [[4, "desc"]]
+
+					});
+					$('#loadingModal').modal('hide');
+
+				}
+			}
+			xhttp.open("GET", "./protocol_detail_measurement.jsp?action=load&project_id=" + project_id + "&eligibility_id=" + eligibility_id);
+			xhttp.send();
+
+		}
+		function refresh_condition() {
+			check_execute = "true";
+			$('#loadingModal').modal('show');
+			$("#datatables-disease").dataTable().fnDestroy();
+			while (document.getElementById("disease_table").hasChildNodes()) document.getElementById("disease_table").removeChild(document.getElementById("disease_table").firstChild);
+			var xhttp1 = new XMLHttpRequest();
+			xhttp1.onreadystatechange = function () {
+				if (this.readyState == this.DONE && this.status == 200) {
+					var data_array = xhttp1.responseText.split("&");
+
+					var xhttp2 = new XMLHttpRequest();
+					xhttp2.onreadystatechange = function () {
+						if (this.readyState == this.DONE && this.status == 200) {
+
+						}
+					}
+					xhttp2.open("GET", Get_ip_execute() + "2/" + project_id + "/" + eligibility_id + "/" + xhttp1.responseText.trim());
+					xhttp2.send();
+
+				}
+			}
+			xhttp1.open("GET", "./protocol_detail_measurement.jsp?action=refresh&project_id=" + project_id + "&eligibility_id=" + eligibility_id);
+			xhttp1.send();
+
+			execute_check = setInterval(function () {
+				var xhttp1 = new XMLHttpRequest();
+				xhttp1.onreadystatechange = function () {
+					if (this.readyState == this.DONE && this.status == 200) {
+						var data_array = xhttp1.responseText.split("&");
+
+						if (data_array[0] == 0 && data_array[1] == null) {
+							check_execute = "true"
+						}
+
+						else if (data_array[0] == 0 && data_array[1] != null) {
+							last_execute_date = data_array[1];
+							check_execute = "true"
+						}
+
+						else if (data_array[0] == 1 && data_array[1] != null) {
+							last_execute_date = data_array[1];
+							check_execute = "false"
+						}
+					}
+				}
+				xhttp1.open("GET", "./protocol_detail_measurement.jsp?action=execute&project_id=" + project_id + "&eligibility_id=" + eligibility_id);
+				xhttp1.send();
+
+				if (check_execute == "false") {
+					clearInterval(execute_check);
+					draw();
+				}
+			}, 2000);
+
+		}
+
+	</script>
+
+</head>
+
+<body>
+	<div class="wrapper">
+		<div class="d-flex">
+			<nav class="sidebar" id="sidebar_navi">
+			</nav>
+
+			<div class="main bg-white">
+				<nav class="navbar navbar-expand navbar-light bg-white">
+					<a class="sidebar-toggle d-flex mr-2">
+						<i class="hamburger align-self-center"></i>
+					</a>
+
+					<form class="form-inline d-none d-sm-inline-block" id="upper_navi">
+					</form>
+
+					<div class="navbar-collapse collapse">
+						<ul class="navbar-nav ml-auto">
+							<li class="nav-item dropdown">
+								<a class="nav-link dropdown-toggle" href="#" id="userDropdown" data-toggle="dropdown">
+									<span class="d-inline-block d-md-none">
+										<i class="align-middle" data-feather="settings"></i>
+									</span>
+									<span class="d-none d-sm-inline-block">
+										<img id="nav_img" class="avatar img-fluid rounded-circle mr-1" /> <span
+											class="font-weight-bold text-dark" id="user_name"></span>
+									</span>
+								</a>
+								<div class="dropdown-menu dropdown-menu-right" aria-labelledby="userDropdown">
+									<a class="dropdown-item" href="account.html"><i class="align-middle mr-1"
+											data-feather="user"></i> Profile</a>
+									<div class="dropdown-divider"></div>
+									<a class="dropdown-item" href="logout.jsp">Sign out</a>
+								</div>
+							</li>
+						</ul>
+					</div>
+				</nav>
+
+				<main class="content">
+					<div class="container-fluid p-0">
+
+						<h2 class="h2 mb-3" style="color:rgb(52, 60, 67); font-weight: bold" id="project_title"></h2>
+						<h5 class="h3 mb-3" style="color:rgb(52, 60, 67); font-weight: bold" id="eligibility_title">
+						</h5>
+
+
+						<div class="row">
+							<div class="col-12">
+								<span class="float-right" style="font-weight: bold; font-size: 20px; margin-right:5px; margin-top:10px; color:rgb(12, 194, 170)">* 최근 2년간 검사받은 검사명 기준</span>
+							</div>
+							<div class="col-12">
+								<div class="row mt-1 mb-1 float-right">
+									<span class="text-align" id="last_execute_date_span"
+										style="margin-right:5px; font-size:10px; vertical-align:bottom;"></span>
+									<a href="#"
+										style="margin-right:15px; font-size:15px; font-weight: bold; vertical-align: bottom"
+										onclick="refresh_condition();"><i data-feather="rotate-cw"
+											style="width:15px; height:15px; margin-right:3px"></i></a>
+								</div>
+								<div class="card flex-fill w-100">
+									<div class="card-body d-flex w-100">
+										<div class="align-self-center chart chart-lg" style="height:500px">
+											<canvas id="chartjs-dashboard-bar"></canvas>
+										</div>
+									</div>
+								</div>
+							</div>
+
+							<div class="col-12">
+								<div class="card">
+									<div class="card-body d-flex">
+										<div class="align-self-center w-100">
+											<table id="datatables-disease" class="table table-striped"
+												style="width:100%">
+												<thead>
+													<tr>
+														<th>Rank</th>
+														<th>Lab</th>
+														<th>Reference Range</th>
+														<th>Mean±SD(Min ~ Max)</th>
+														<th>Number of Patients</th>
+													</tr>
+												</thead>
+												<tbody id="disease_table"></tbody>
+											</table>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</main>
+
+				<footer class="footer" id="footer"></footer>
+				<div class="modal fade" id="loadingModal" tabindex="-1" role="dialog" aria-hidden="true">
+					<div class="modal-dialog modal-dialog-centered modal-sm" role="document">
+						<div class="modal-content">
+							<div class="modal-body m-3" style="text-align:center">
+								<h2 style="font-weight:bold">Loading...</h2>
+								<i class="fa fa-spinner fa-pulse fa-3x fa-fw margin-bottom"
+									style="color:rgb(95, 194, 126)"></i>
+							</div>
+						</div>
+					</div>
+				</div>
+
+			</div>
+		</div>
+	</div>
+
+	<script src="../js/app.js"></script>
+	<script src="../js/tables.js"></script>
+	<script src="../js/charts.js"></script>
+	<script src="../js/feather.js"></script>
+	<script src="upper_navi.js?version=12"></script>
+	<script src="chart_plugin.js"></script>
+
+</body>
+
+</html>

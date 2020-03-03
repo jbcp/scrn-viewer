@@ -1,0 +1,1292 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<script src="../js/jquery-latest.js"></script>
+
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<meta name="description" content="Responsive Bootstrap 4 Admin Template">
+	<meta name="author" content="Bootlab">
+
+
+	<title>SCRN</title>
+
+	<link href="../css/app.css" rel="stylesheet">
+
+	<style>
+	.wj-cell:not(.wj-header):not(.wj-group):not(.wj-alt):not(.wj-state-selected):not(.wj-state-multi-selected) {
+		background:#fff;
+	}
+	.wj-state-selected {           
+		border: 1px solid #5fc27e !important;
+		background: #5fc27e !important;
+		color: white !important;
+	} 	
+	.btn-outline-info:hover{
+		background-color: rgba(91,125,255,0.2) !important;
+		color:rgb(91,125,255) !important;
+	}
+	.btn-outline-danger:hover{
+		background-color: rgba(244,68,85,0.2) !important;
+		color:rgb(244,68,85) !important;
+	}
+
+	</style>
+
+	<script src="../js/bootstrap.min.js"></script>
+	<script src="../js/tables.js"></script>
+
+	<script>
+		var newj = jQuery.noConflict();	
+	</script>
+
+	<script type="text/javascript">
+		var visit_criteria = new Object();
+		var age_item = 1010;
+		var mid_item_identifier_in = 0;
+		var mid_item_identifier_ex = 0;
+		var itemlist_mid_in = [];
+		var itemlist_mid_ex = [];
+		var itemlist_tmp_in = [];
+		var itemlist_tmp_ex = [];
+		var project_id, eligibility_id;
+		var opened = false;
+		var mid_title_in = [];
+		var mid_title_ex = [];
+
+		
+		newj('.modal').on('hidden.bs.modal', function (e) {
+			// console.log('modal close');
+		});
+
+		jQuery(document).ready(function ($) {
+			var rand = Math.random();
+
+			var eligibility_data_input = location.search.substring(1);
+			var eligibility_data_split = eligibility_data_input.split("&");
+			var define_id_input = eligibility_data_split[0].split("=");
+			define_id = define_id_input[1].replace("%20", " ");
+
+			history.replaceState({}, null, location.pathname);
+
+			var xhttp = new XMLHttpRequest();
+			xhttp.onreadystatechange = function () {
+				if (this.readyState == this.DONE && this.status == 200) {
+					var data_array = xhttp.responseText.split("&");
+
+					var criteria_data_pre = data_array[0];
+					var criteria_data_eval = eval(criteria_data_pre);
+					var criteria_data_output = Object.keys(criteria_data_eval);
+
+					var visit_data_pre = data_array[2];
+					var visit_data_eval = eval(visit_data_pre);
+					var visit_data_output = Object.keys(visit_data_eval);
+
+					document.getElementById("visit_no").setAttribute("checked", "");
+					document.getElementById("daterange_visit").value = "";
+					document.getElementById("daterange_visit").setAttribute("disabled", "");
+					if (visit_data_output.length > 0) {
+						document.getElementById("daterange_visit").removeAttribute("disabled");
+						if (visit_data_eval[0].period > 100) {
+							if (visit_data_eval[0].period == 9999) {
+								document.getElementById("visit_no").removeAttribute("checked");
+								document.getElementById("visit_direct").setAttribute("checked", "");
+								document.getElementById("daterange_visit").value = visit_data_eval[0].value;
+							}
+						}
+						else {
+							document.getElementById("visit_no").removeAttribute("checked");
+							jQuery("#visit_"+ visit_data_eval[0].period).prop('checked', true);
+							document.getElementById("daterange_visit").value = visit_data_eval[0].value;
+						}
+
+						var durations = visit_data_eval[0].period;
+						visit_criteria.table = "Visit_occurrence";
+						visit_criteria.field = "id";
+						visit_criteria.condition = "0";
+						visit_criteria.attribute = "";
+						visit_criteria.value = durations;
+						visit_criteria.title = "";
+						visit_criteria.addition_text = "";
+
+						visit_criteria.value_min = "";
+						visit_criteria.value_max = "";
+						visit_criteria.measure_count = "";
+						visit_criteria.measure_method = "";
+						visit_criteria.min_condition = "";
+						visit_criteria.max_condition = "";
+
+						var today = moment().format('DD/MM/YYYY');
+						var ago = moment().subtract(durations, 'month').format('DD/MM/YYYY');
+						document.getElementById("daterange_visit").removeAttribute("disabled");
+
+						if (durations == "1200") {
+							document.getElementById("daterange_visit").value = "";
+							document.getElementById("daterange_visit").setAttribute("disabled", "");
+						}
+						else if (durations == "9999") {
+							document.getElementById("daterange_visit").value = visit_data_eval[0].value;
+						}
+						else {
+							document.getElementById("daterange_visit").value = visit_data_eval[0].value;
+						}
+					}
+					
+
+					//inclusion
+					for (var i = 0; i < criteria_data_output.length; i++) {
+
+						var load_states =[];
+						var criterias = [];
+						var k = 0;
+						var item_mid_in_pre = [];
+						item_mid_in_pre[i] = criteria_data_eval[i];
+						item_mid_in_pre[i].id = mid_item_identifier_in;
+
+						mid_title_in[i] = criteria_data_eval[i].title;
+						mid_item('in', criteria_data_eval[i].title);
+
+						for(var j = 0; j < criteria_data_eval[i].small.length; j++){
+							var table_parse;
+							var data_heir = criteria_data_eval[i].small[j].heir;
+							if (criteria_data_eval[i].small[j].table == "Drug_exposure") table_parse = "drug";
+							else if (criteria_data_eval[i].small[j].table == "Condition_occurrence") table_parse = "condition";
+							else if (criteria_data_eval[i].small[j].table == "Measurement") table_parse = "measurement";
+							else if (criteria_data_eval[i].small[j].table == "Procecure") table_parse = "procedure";
+							else if (criteria_data_eval[i].small[j].table == "Observation") table_parse = "observation";
+							else if (criteria_data_eval[i].small[j].table == "Person" && data_heir == 1) table_parse = "age";
+							else if (criteria_data_eval[i].small[j].table == "Person" && data_heir != 1) table_parse = "gender";
+							else if (criteria_data_eval[i].small[j].table == "User_Define") table_parse = "user_define";
+							else if (criteria_data_eval[i].small[j].table == "SQL") table_parse = "sql";
+					
+							var criteria = new Object();
+							criteria.status = "inclusion";
+							criteria.title = criteria_data_eval[i].small[j].title;
+							criteria.attribute = criteria_data_eval[i].small[j].attribute;
+							criteria.table = table_parse;
+							criteria.addition = criteria_data_eval[i].small[j].addition_query;
+							criteria.addition_text = criteria_data_eval[i].small[j].addition;
+							criteria.date_addition = criteria_data_eval[i].small[j].addition_date;
+							criteria.value_min = criteria_data_eval[i].small[j].value_min;
+							criteria.value_max = criteria_data_eval[i].small[j].value_max;
+							criteria.measure_count = criteria_data_eval[i].small[j].measure_count;
+							criteria.measure_method = criteria_data_eval[i].small[j].measure_method;
+							criteria.min_condition = criteria_data_eval[i].small[j].min_condition;
+							criteria.max_condition = criteria_data_eval[i].small[j].max_condition;
+							criteria.condition = criteria_data_eval[i].small[j].condition;
+							criteria.heir = criteria_data_eval[i].small[j].heir;
+							criteria.state = criteria_data_eval[i].small[j].state;
+							criteria.isdivider = criteria_data_eval[i].small[j].isdivider;
+							criteria.id = criteria_data_eval[i].small[j].id;
+
+							if(criteria.isdivider == 'yes') {
+								k++;
+								criterias = [];
+								load_states =[];
+							}
+							criterias.push(criteria);
+
+							itemlist_mid_in[i].small[k] = criterias;
+							age_item++;
+						}
+
+						var criterias_div = document.createElement("div");
+						criterias_div.setAttribute("id", "mid_collapse_in_" + i);
+
+						document.getElementById("mid_collapse_t_in_"+i).appendChild(criterias_div);
+						itemlist_tmp_in[i] = itemlist_mid_in[i];
+						addcriteria('in', i, "mid_body_in_"+i, i, "no");
+						itemlist_tmp_in[i] = [];
+					}
+
+
+
+					criteria_data_pre = data_array[1];
+					criteria_data_eval = eval(criteria_data_pre);
+					criteria_data_output = Object.keys(criteria_data_eval);
+
+					//exclusion
+					for (var i = 0; i < criteria_data_output.length; i++) {
+
+					var load_states =[];
+					var criterias = [];
+					var k = 0;
+					var item_mid_ex_pre = [];
+					item_mid_ex_pre[i] = criteria_data_eval[i];
+					item_mid_ex_pre[i].id = mid_item_identifier_ex;
+					mid_title_ex[i] = criteria_data_eval[i].title;
+
+					mid_item('ex', criteria_data_eval[i].title);
+
+					for(var j = 0; j < criteria_data_eval[i].small.length; j++){
+						var table_parse;
+						var data_heir = criteria_data_eval[i].small[j].heir;
+						if (criteria_data_eval[i].small[j].table == "Drug_exposure") table_parse = "drug";
+						else if (criteria_data_eval[i].small[j].table == "Condition_occurrence") table_parse = "condition";
+						else if (criteria_data_eval[i].small[j].table == "Measurement") table_parse = "measurement";
+						else if (criteria_data_eval[i].small[j].table == "Procecure") table_parse = "procedure";
+						else if (criteria_data_eval[i].small[j].table == "Observation") table_parse = "observation";
+						else if (criteria_data_eval[i].small[j].table == "Person" && data_heir == 1) table_parse = "age";
+						else if (criteria_data_eval[i].small[j].table == "Person" && data_heir != 1) table_parse = "gender";
+						else if (criteria_data_eval[i].small[j].table == "User_Define") table_parse = "user_define";
+						else if (criteria_data_eval[i].small[j].table == "SQL") table_parse = "sql";
+
+						var criteria = new Object();
+						criteria.status = "exclusion";
+						criteria.title = criteria_data_eval[i].small[j].title;
+						criteria.attribute = criteria_data_eval[i].small[j].attribute;
+						criteria.table = table_parse;
+						criteria.addition = criteria_data_eval[i].small[j].addition_query;
+						criteria.addition_text = criteria_data_eval[i].small[j].addition;
+						criteria.date_addition = criteria_data_eval[i].small[j].addition_date;
+						criteria.value_min = criteria_data_eval[i].small[j].value_min;
+						criteria.value_max = criteria_data_eval[i].small[j].value_max;
+						criteria.measure_count = criteria_data_eval[i].small[j].measure_count;
+						criteria.measure_method = criteria_data_eval[i].small[j].measure_method;
+						criteria.min_condition = criteria_data_eval[i].small[j].min_condition;
+						criteria.max_condition = criteria_data_eval[i].small[j].max_condition;
+						criteria.condition = criteria_data_eval[i].small[j].condition;
+						criteria.heir = criteria_data_eval[i].small[j].heir;
+						criteria.state = criteria_data_eval[i].small[j].state;
+						criteria.isdivider = criteria_data_eval[i].small[j].isdivider;
+						criteria.id = criteria_data_eval[i].small[j].id;
+						if(criteria.isdivider == 'yes') {
+								k++;
+								criterias = [];
+								load_states =[];
+
+							}
+						criterias.push(criteria);
+
+						itemlist_mid_ex[i].small[k] = criterias;
+						age_item++;
+					}
+
+					var criterias_div = document.createElement("div");
+					criterias_div.setAttribute("id", "mid_collapse_ex_" + i);
+
+					document.getElementById("mid_collapse_t_ex_"+i).append(criterias_div);
+					itemlist_tmp_ex[i] = itemlist_mid_ex[i];
+					addcriteria('ex', i, "mid_body_ex_"+i, i, "no");
+					itemlist_tmp_ex[i] = [];
+					}
+								}
+			}
+			xhttp.open("GET", "./ud_detail.jsp?action=load&define_id=" + define_id);
+			xhttp.send();
+		})
+
+		function addcriteria(status, criteria_mid, parent, item_id, is_new = "no") {
+			var parent_array = parent.split("_");
+			var parent_div = document.getElementById(parent);
+
+			switch (status) {
+				case 'in':
+					for (var i = 0; i < itemlist_tmp_in[item_id].small.length; i++){
+						
+						if(i > 0) add_state_select_button(parent+"_0", "state_selected_in_"+criteria_mid+"_"+itemlist_tmp_in[item_id].small[i][0].id, i, "yes", itemlist_tmp_in[item_id].small[i][0].state, itemlist_tmp_in[item_id].small[i][0].isdivider, 'no');
+
+						var mid_collapse_div = document.createElement("div");
+						mid_collapse_div.setAttribute("id", "mid_collapse_"+status + "_"+criteria_mid+"_"+i);
+						document.getElementById(parent).appendChild(mid_collapse_div);
+
+						for(var j = 0; j < itemlist_tmp_in[item_id].small[i].length; j++){
+							if( j != 0) {
+								add_state_select_button("mid_collapse_"+status + "_"+parent_array[3]+"_"+i, "state_selected_in_"+criteria_mid+"_"+itemlist_tmp_in[item_id].small[i][j].id, i, "yes", itemlist_tmp_in[item_id].small[i][j].state, itemlist_tmp_in[item_id].small[i][j].isdivider, is_new);
+							}
+							addbutton(itemlist_tmp_in[item_id].small[i][j], "mid_collapse_in_"+parent_array[3]+"_"+i, item_id, i, 'yes', 'yes');
+						}
+
+						if(itemlist_tmp_in[item_id].small[i].length > 1)
+							state_button_text_setting(itemlist_tmp_in[item_id].small[i][1].state, "state_selected_in_"+criteria_mid+"_"+itemlist_tmp_in[item_id].small[i][1].id, status, i, "yes", "0", itemlist_tmp_in[item_id].small[i][1].isdivider);
+
+					}
+					for (var i = 1; i < itemlist_tmp_in[item_id].small.length; i++){
+						state_button_text_setting(itemlist_tmp_in[item_id].small[i][0].state, "state_selected_in_"+criteria_mid+"_"+itemlist_tmp_in[item_id].small[i][0].id, status, i, "yes", "0", itemlist_tmp_in[item_id].small[i][0].isdivider);
+					}
+					break;
+				case 'ex':
+					for (var i = 0; i < itemlist_tmp_ex[item_id].small.length; i++){
+
+						if(i > 0) add_state_select_button(parent+"_0", "state_selected_ex_"+criteria_mid+"_"+itemlist_tmp_ex[item_id].small[i][0].id, i, "yes", itemlist_tmp_ex[item_id].small[i][0].state, itemlist_tmp_ex[item_id].small[i][0].isdivider, 'no');
+
+						var mid_collapse_div = document.createElement("div");
+						mid_collapse_div.setAttribute("id", "mid_collapse_"+status + "_"+criteria_mid+"_"+i);
+						document.getElementById(parent).appendChild(mid_collapse_div);
+
+						for(var j = 0; j < itemlist_tmp_ex[item_id].small[i].length; j++){
+							if( j != 0) {
+								add_state_select_button("mid_collapse_"+status + "_"+parent_array[3]+"_"+i, "state_selected_ex_"+criteria_mid+"_"+itemlist_tmp_ex[item_id].small[i][j].id, i, "yes", itemlist_tmp_ex[item_id].small[i][j].state, itemlist_tmp_ex[item_id].small[i][j].isdivider, is_new);
+							}
+							addbutton(itemlist_tmp_ex[item_id].small[i][j], "mid_collapse_ex_"+parent_array[3]+"_"+i, item_id, i, 'yes', 'yes');
+						}
+						if(itemlist_tmp_ex[item_id].small[i].length > 1)
+							state_button_text_setting(itemlist_tmp_ex[item_id].small[i][1].state, "state_selected_ex_"+criteria_mid+"_"+itemlist_tmp_ex[item_id].small[i][1].id, status, i, "yes", "0", itemlist_tmp_ex[item_id].small[i][1].isdivider);
+
+					}
+					for (var i = 1; i < itemlist_tmp_ex[item_id].small.length; i++){
+						state_button_text_setting(itemlist_tmp_ex[item_id].small[i][0].state, "state_selected_in_"+criteria_mid+"_"+itemlist_tmp_ex[item_id].small[i][0].id, status, i, "yes", "0", itemlist_tmp_ex[item_id].small[i][0].isdivider);
+					}
+	
+					break;
+			}
+
+		}
+
+		function addstate(parent, margin){
+			var parent_array = parent.split("_");
+			var button_group_div = document.createElement("div");
+			button_group_div.setAttribute("class", "pb-0");
+
+			document.getElementById(parent).appendChild(button_group_div);
+
+			var and_badge = document.createElement("span");
+			and_badge.setAttribute("class", "badge badge-info");
+			if(margin == 1) and_badge.setAttribute("style", "margin-top : 45px");
+			else and_badge.setAttribute("style", "margin-top : 35px");
+			and_badge.appendChild(document.createTextNode("AND"));
+			button_group_div.appendChild(and_badge);
+		}
+
+		function addbutton(criteria, parent, criteria_mid_id, block, mid = 'no', addition = 'no', button_name = "button_", div_name = "button_div_", duration_div = "duration_small_") {
+			var criteria_div = document.createElement("div");
+			criteria_div.setAttribute("class", "input-group w-100 p-0 mh-100 ml-3");
+
+			var criteria_button = document.createElement("button");
+			criteria_div.appendChild(criteria_button);
+
+			switch (criteria.status) {
+				case 'inclusion':
+					var small_id = itemlist_tmp_in[criteria_mid_id].small[block].map(function(e){return e.id;}).indexOf(Number(criteria.id));
+					if(mid=='no' && small_id==0 && block > 0){
+						var identifier_mid = Number(block)*2;
+						$('#mid_body_in_'+criteria_mid_id)[0].childNodes[identifier_mid].childNodes[1].childNodes[0].setAttribute("onclick", "state_button_text_setting(id, 'state_select_in_"+criteria_mid_id+"_"+criteria.id+"_select', 'in', '"+block+"', 'no', '0', 'yes')");
+						$('#mid_body_in_'+criteria_mid_id)[0].childNodes[identifier_mid].childNodes[1].childNodes[1].setAttribute("onclick", "state_button_text_setting(id, 'state_select_in_"+criteria_mid_id+"_"+criteria.id+"_select', 'in', '"+block+"', 'no', '0', 'yes')");
+						$('#mid_body_in_'+criteria_mid_id)[0].childNodes[identifier_mid].childNodes[1].childNodes[2].setAttribute("onclick", "state_button_text_setting(id, 'state_select_in_"+criteria_mid_id+"_"+criteria.id+"_select', 'in', '"+block+"', 'no', '0', 'yes')");
+						$('#mid_body_in_'+criteria_mid_id)[0].childNodes[identifier_mid].childNodes[0].setAttribute("id", "state_select_in_"+criteria_mid_id+"_"+criteria.id+"_select")
+						$('#mid_body_in_'+criteria_mid_id)[0].childNodes[identifier_mid].setAttribute("id", "state_select_in_"+criteria_mid_id+"_"+criteria.id);
+						itemlist_tmp_in[criteria_mid_id].small[block][small_id].id = Number(criteria.id);
+						itemlist_tmp_in[criteria_mid_id].small[block][small_id].isdivider = "yes";
+					}
+					criteria_div.setAttribute("id", div_name + criteria.id);
+					document.getElementById(parent).appendChild(criteria_div);
+
+					if(itemlist_tmp_in[criteria_mid_id].small[block].length <= 1) criteria_button.setAttribute("class", "btn btn-outline-info btn-square");
+					else{
+						switch(criteria.state){
+							case 'AND':
+								criteria_button.setAttribute("class", "btn btn-outline-info btn-square");
+							break;
+							case 'OR':
+								criteria_button.setAttribute("class", "btn btn-outline-success btn-square");
+							break;
+							case 'NOT':
+								criteria_button.setAttribute("class", "btn btn-outline-danger btn-square");
+							break;
+						}
+					}
+					criteria_button.setAttribute("type", "button");
+					criteria_button.setAttribute("id", button_name +"in_"+ criteria.id);
+					if(mid == 'no') criteria_button.setAttribute("onclick", "criteria_button_clicked('in', id, '"+criteria_mid_id+"', '"+block+"')");
+					var title_text = document.createTextNode(criteria.title);
+					criteria_button.setAttribute("style", "border-left-width:10px; width:90%; height: 50px; text-align:left; background-color:white");
+
+					var context_div = document.createElement("div");
+					context_div.setAttribute("style", "margin-left : 10px; vertical-align:middle; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; width: 90%; color:rgb(78,85,92)");
+					var domain_button = document.createElement("button");
+
+					switch (criteria.table) {
+						case 'drug':
+							domain_button.setAttribute("class", "btn btn-danger btn-sm float-left");
+							domain_button.setAttribute("style", "margin-right: 10px; background-color:RGB(244, 68, 85)");
+							domain_button.appendChild(document.createTextNode("약물"));
+							break;
+						case 'condition':
+							domain_button.setAttribute("class", "btn btn-success btn-sm float-left");
+							domain_button.setAttribute("style", "margin-right: 10px; background-color:RGB(95, 194, 126)");
+							domain_button.appendChild(document.createTextNode("진단"));
+							break;
+						case 'measurement':
+							domain_button.setAttribute("class", "btn btn-primary btn-sm float-left");
+							domain_button.setAttribute("style", "margin-right: 10px; background-color:RGB(12, 194, 170)");
+							domain_button.appendChild(document.createTextNode("검사"));
+							break;
+						case 'observation':
+							domain_button.setAttribute("class", "btn btn-primary btn-sm float-left");
+							domain_button.setAttribute("style", "margin-right: 10px; background-color:RGB(12, 194, 170)");
+							domain_button.appendChild(document.createTextNode("검사"));
+							break;
+						case 'procedure':
+							domain_button.setAttribute("class", "btn btn-primary btn-sm float-left");
+							domain_button.setAttribute("style", "margin-right: 10px; background-color:RGB(12, 194, 170)");
+							domain_button.appendChild(document.createTextNode("처치"));
+							break;
+						case 'age':
+							domain_button.setAttribute("class", "btn btn-warning btn-sm float-left");
+							domain_button.setAttribute("style", "margin-right: 10px; background-color:RGB(252, 193, 0)");
+							domain_button.appendChild(document.createTextNode("나이"));
+							break;
+						case 'gender':
+							domain_button.setAttribute("class", "btn btn-warning btn-sm float-left");
+							domain_button.setAttribute("style", "margin-right: 10px; background-color:RGB(252, 193, 0)");
+							domain_button.appendChild(document.createTextNode("성별"));
+							break;
+						case 'user_define':
+							domain_button.setAttribute("class", "btn btn-outline-secondary btn-sm float-left");
+							domain_button.setAttribute("style", "margin-right: 10px; border-color:RGB(161, 128, 218)");
+							domain_button.appendChild(document.createTextNode("U.D."));
+							break;
+						case 'sql':
+							domain_button.setAttribute("class", "btn btn-outline-warning btn-sm float-left");
+							domain_button.setAttribute("style", "margin-right: 10px; border-color:RGB(252, 193, 0)");
+							domain_button.appendChild(document.createTextNode("SQL"));
+							break;
+					}
+					domain_button.setAttribute("type", "button");
+					domain_button.setAttribute("disabled", "");
+
+					var title_text = document.createTextNode(criteria.title);
+					context_div.appendChild(domain_button);
+					context_div.appendChild(title_text);
+					criteria_button.appendChild(context_div);
+
+					if (mid == 'no') {
+						var delete_button = document.createElement("button");
+						criteria_div.appendChild(delete_button);
+						delete_button.setAttribute("class", "btn btn-outline btn-sm float-right");
+						delete_button.setAttribute("id", criteria.id);
+						delete_button.setAttribute("style", "background-color:transparent; height:50px; border-color:transparent; color:rgba(59,89,152,1)");
+						delete_button.setAttribute('onclick', 'delete_item("in", id, "'+criteria_mid_id+'", "'+block+'"); event.stopPropagation();');
+
+						delete_button_icon = document.createElement("i");
+						delete_button_icon.setAttribute("class", "fas fa-trash");
+						delete_button.appendChild(delete_button_icon);
+
+					}
+
+					if(addition == 'yes'){
+						var durtaion_div = document.createElement("div");
+						durtaion_div.setAttribute("style", "margin-left: 30px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; margin-top:1px; color:rgb(106,115,124); font-size:12px");
+						durtaion_div.setAttribute("id", duration_div + criteria.id);
+
+						if (criteria.addition_text == null) data_addition = "";
+						var duration_text = document.createTextNode(criteria.addition_text);
+						durtaion_div.appendChild(duration_text);
+						context_div.appendChild(durtaion_div);
+					}
+
+
+					break;
+
+				case 'exclusion':
+					var small_id = itemlist_tmp_ex[criteria_mid_id].small[block].map(function(e){return e.id;}).indexOf(Number(criteria.id));
+					if(small_id == 0 && mid=='no' && block > 0){
+						var identifier_mid = Number(block)*2;
+						$('#mid_body_ex_'+criteria_mid_id)[0].childNodes[identifier_mid].childNodes[1].childNodes[0].setAttribute("onclick", "state_button_text_setting(id, 'state_select_ex_"+criteria_mid_id+"_"+criteria.id+"_select', 'ex', '"+block+"', 'no', '0', 'yes')");
+						$('#mid_body_ex_'+criteria_mid_id)[0].childNodes[identifier_mid].childNodes[1].childNodes[1].setAttribute("onclick", "state_button_text_setting(id, 'state_select_ex_"+criteria_mid_id+"_"+criteria.id+"_select', 'ex', '"+block+"', 'no', '0', 'yes')");
+						$('#mid_body_ex_'+criteria_mid_id)[0].childNodes[identifier_mid].childNodes[1].childNodes[2].setAttribute("onclick", "state_button_text_setting(id, 'state_select_ex_"+criteria_mid_id+"_"+criteria.id+"_select', 'ex', '"+block+"', 'no', '0', 'yes')");
+						$('#mid_body_ex_'+criteria_mid_id)[0].childNodes[identifier_mid].childNodes[0].setAttribute("id", "state_select_ex_"+criteria_mid_id+"_"+criteria.id+"_select")
+						$('#mid_body_ex_'+criteria_mid_id)[0].childNodes[identifier_mid].setAttribute("id", "state_select_ex_"+criteria_mid_id+"_"+criteria.id);
+						itemlist_tmp_ex[criteria_mid_id].small[block][small_id].id = Number(criteria.id);
+						itemlist_tmp_ex[criteria_mid_id].small[block][small_id].isdivider = "yes";
+
+					}
+
+					criteria_div.setAttribute("id", div_name + criteria.id);
+					document.getElementById(parent).appendChild(criteria_div);
+					if(itemlist_tmp_ex[criteria_mid_id].small[block].length <= 1) criteria_button.setAttribute("class", "btn btn-outline-info btn-square");
+					else{
+						switch(criteria.state){
+							case 'AND':
+								criteria_button.setAttribute("class", "btn btn-outline-info btn-square");
+							break;
+							case 'OR':
+								criteria_button.setAttribute("class", "btn btn-outline-success btn-square");
+							break;
+							case 'NOT':
+								criteria_button.setAttribute("class", "btn btn-outline-danger btn-square");
+							break;
+						}
+					}
+					criteria_button.setAttribute("type", "button");
+					criteria_button.setAttribute("id", button_name +"ex_"+ criteria.id);
+					if(mid == 'no') criteria_button.setAttribute("onclick", "criteria_button_clicked('ex', id, '"+criteria_mid_id+"', '"+block+"')");
+					var title_text = document.createTextNode(criteria.title);
+					criteria_button.setAttribute("style", "border-left-width:10px; width:90%; height: 50px; text-align:left; background-color:transparent");
+
+					var context_div = document.createElement("div");
+					context_div.setAttribute("style", "margin-left : 10px; vertical-align:middle; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; width: 90%; color:rgb(78,85,92)");
+					var domain_button = document.createElement("button");
+					switch (criteria.table) {
+						case 'drug':
+							domain_button.setAttribute("class", "btn btn-danger btn-sm float-left");
+							domain_button.setAttribute("style", "margin-right: 10px; background-color:RGB(244, 68, 85)");
+							domain_button.appendChild(document.createTextNode("약물"));
+							break;
+						case 'condition':
+							domain_button.setAttribute("class", "btn btn-success btn-sm float-left");
+							domain_button.setAttribute("style", "margin-right: 10px; background-color:RGB(95, 194, 126)");
+							domain_button.appendChild(document.createTextNode("진단"));
+							break;
+						case 'measurement':
+							domain_button.setAttribute("class", "btn btn-primary btn-sm float-left");
+							domain_button.setAttribute("style", "margin-right: 10px; background-color:RGB(12, 194, 170)");
+							domain_button.appendChild(document.createTextNode("검사"));
+							break;
+						case 'observation':
+							domain_button.setAttribute("class", "btn btn-primary btn-sm float-left");
+							domain_button.setAttribute("style", "margin-right: 10px; background-color:RGB(12, 194, 170)");
+							domain_button.appendChild(document.createTextNode("검사"));
+							break;
+						case 'procedure':
+							domain_button.setAttribute("class", "btn btn-primary btn-sm float-left");
+							domain_button.setAttribute("style", "margin-right: 10px; background-color:RGB(12, 194, 170)");
+							domain_button.appendChild(document.createTextNode("처치"));
+							break;
+
+						case 'age':
+							domain_button.setAttribute("class", "btn btn-warning btn-sm float-left");
+							domain_button.setAttribute("style", "margin-right: 10px; background-color:RGB(252, 193, 0)");
+							domain_button.appendChild(document.createTextNode("나이"));
+							break;
+						case 'gender':
+							domain_button.setAttribute("class", "btn btn-warning btn-sm float-left");
+							domain_button.setAttribute("style", "margin-right: 10px; background-color:RGB(252, 193, 0)");
+							domain_button.appendChild(document.createTextNode("성별"));
+							break;
+						case 'user_define':
+							domain_button.setAttribute("class", "btn btn-outline-secondary btn-sm float-left");
+							domain_button.setAttribute("style", "margin-right: 10px; border-color:RGB(161, 128, 218)");
+							domain_button.appendChild(document.createTextNode("U.D."));
+							break;
+						case 'sql':
+							domain_button.setAttribute("class", "btn btn-outline-warning btn-sm float-left");
+							domain_button.setAttribute("style", "margin-right: 10px; border-color:RGB(252, 193, 0)");
+							domain_button.appendChild(document.createTextNode("SQL"));
+							break;
+					}
+					domain_button.setAttribute("type", "button");
+					domain_button.setAttribute("disabled", "");
+					var title_text = document.createTextNode(criteria.title);
+					context_div.appendChild(domain_button);
+					context_div.appendChild(title_text);
+
+					criteria_button.appendChild(context_div);
+
+					if (mid == 'no') {
+						var delete_button = document.createElement("button");
+						criteria_div.appendChild(delete_button);
+						delete_button.setAttribute("class", "btn btn-outline-info btn-sm float-right");
+						delete_button.setAttribute("id", criteria.id);
+						delete_button.setAttribute("style", "background-color:transparent; height:50px; border-color:transparent; color:rgba(59,89,152,1)");
+						delete_button.setAttribute('onclick', 'delete_item("ex", id, "'+criteria_mid_id+'", "'+block+'"); event.stopPropagation();');
+
+						delete_button_icon = document.createElement("i");
+						delete_button_icon.setAttribute("class", "fas fa-trash");
+						delete_button.appendChild(delete_button_icon);
+
+					}
+
+					if(addition == 'yes'){
+						var durtaion_div = document.createElement("div");
+						durtaion_div.setAttribute("style", "margin-left: 30px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; margin-top:1px; color:rgb(106,115,124); font-size:12px");
+						durtaion_div.setAttribute("id", "duration_small_" + criteria.id);
+
+						if (criteria.addition_text == null) data_addition = "";
+						var duration_text = document.createTextNode(criteria.addition_text);
+						durtaion_div.appendChild(duration_text);
+						context_div.appendChild(durtaion_div);
+					}
+					break;
+			}
+		}
+
+		function mid_clicked(status, id) {
+			var id_pre = id.split("_");
+			var collapse_id = "mid_collapse_t_"+status + "_" + id_pre[2];
+
+			if (newj('#' + collapse_id).attr('class') == 'collapse show'){
+				newj('#' + collapse_id).attr('class', 'collapse hide');
+				document.getElementById("context_icon_"+status+"_"+id_pre[2]).setAttribute("class", "fas fa-angle-down mr-2");
+			}
+			else if (newj('#' + collapse_id).attr('class') == 'collapse hide') {
+				newj('#' + collapse_id).attr('class', 'collapse show');
+				document.getElementById("context_icon_"+status+"_"+id_pre[2]).setAttribute("class", "fas fa-angle-up mr-2");
+			}
+		}
+
+		function mid_item(status, title="Insert Title", i = 0) {
+
+			var criteria_div = document.createElement("div");
+			criteria_div.setAttribute("class", "input-group ");
+
+			var criteria_button = document.createElement("button");
+			criteria_div.appendChild(criteria_button);
+
+			switch (status) {
+				case 'in':
+					criteria_div.setAttribute("id", "button_div_in_" + mid_item_identifier_in);
+					document.getElementById("inclusion_criteria").appendChild(criteria_div);
+					criteria_button.setAttribute("id", "button_in_" + mid_item_identifier_in);
+					criteria_button.setAttribute("onclick", "mid_clicked('in', id)");
+					criteria_button.setAttribute("class", "btn btn-outline-info mb-0 mt-2");
+					criteria_button.setAttribute("type", "button");
+					mid_title_in[mid_item_identifier_in] = title;
+					var title_text = document.createTextNode(mid_title_in[mid_item_identifier_in]);
+					criteria_button.setAttribute("style", "border-width:2px; width:90%; height: 50px; margin-bottom: 10px; text-align:left;");
+
+					var context_icon = document.createElement("i");
+					context_icon.setAttribute("class", "fas fa-angle-down mr-2");
+					context_icon.setAttribute("id", "context_icon_in_"+mid_item_identifier_in);
+
+					var context_div = document.createElement("div");
+					context_div.setAttribute("class", "form-inline");
+					context_div.setAttribute("id", "context_div_"+status+"_"+mid_item_identifier_in);
+					context_div.setAttribute("style", "margin-left : 10px; display:inline; vertical-align:middle; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; width: 90%; ");
+					criteria_button.appendChild(context_div);
+					
+					context_div.appendChild(context_icon);
+					context_div.appendChild(title_text);
+
+					var criteria_collapse_div = document.createElement("div");
+					criteria_collapse_div.setAttribute("class", "collapse hide");
+					criteria_collapse_div.setAttribute("style", "width: 90%");
+					criteria_collapse_div.setAttribute("id", "mid_collapse_t_"+status + "_" + mid_item_identifier_in);
+
+					var collapse_card_body = document.createElement("div");
+					collapse_card_body.setAttribute("class", "card card-body");
+					collapse_card_body.setAttribute("style", "border-color : rgba(91,125,255,0.3); background-color : rgba(91,125,255,0.02); border-top-color:transparent;")
+					collapse_card_body.setAttribute("id", "mid_body_" + status + "_" + mid_item_identifier_in);
+					criteria_collapse_div.appendChild(collapse_card_body);
+					criteria_div.appendChild(criteria_collapse_div);
+
+					var criterias_div = document.createElement("div");
+					criterias_div.setAttribute("id", "mid_collapse_" +status + "_"+ mid_item_identifier_in+"_0");
+
+					collapse_card_body.appendChild(criterias_div);
+
+					//mid content
+					var mid_obj = new Object();
+					mid_obj.title = "title";
+					mid_obj.id = mid_item_identifier_in;
+					mid_obj.small = [];
+					mid_obj.small[0] = [];
+
+					itemlist_mid_in[mid_item_identifier_in] = mid_obj;
+
+					//mid state content
+					itemlist_tmp_in[mid_item_identifier_in] = [];
+					mid_item_identifier_in = mid_item_identifier_in + 1;
+
+					break;
+
+				case 'ex':
+					criteria_div.setAttribute("id", "button_div_ex_" + mid_item_identifier_ex);
+					document.getElementById("exclusion_criteria").appendChild(criteria_div);
+					criteria_button.setAttribute("id", "button_ex_" + mid_item_identifier_ex);
+					criteria_button.setAttribute("onclick", "mid_clicked('ex', id)");
+					criteria_button.setAttribute("class", "btn btn-outline-danger mb-0 mt-2");
+					criteria_button.setAttribute("type", "button");
+					mid_title_ex[mid_item_identifier_ex] = title;
+					var title_text = document.createTextNode(mid_title_ex[mid_item_identifier_ex]);
+					criteria_button.setAttribute("style", "border-width:2px; width:90%; height: 50px; margin-bottom: 10px; text-align:left;");
+
+					var context_div = document.createElement("div");
+					context_div.setAttribute("class", "form-inline");
+					context_div.setAttribute("id", "context_div_"+status+"_"+mid_item_identifier_ex);
+					context_div.setAttribute("style", "margin-left : 10px; display:inline; vertical-align:middle; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; width: 90%;");
+					criteria_button.appendChild(context_div);
+
+					var context_icon = document.createElement("i");
+					context_icon.setAttribute("class", "fas fa-angle-down mr-2");
+					context_icon.setAttribute("id", "context_icon_ex_"+mid_item_identifier_ex);
+
+					context_div.appendChild(context_icon);			
+					context_div.appendChild(title_text);
+
+					var criteria_collapse_div = document.createElement("div");
+					criteria_collapse_div.setAttribute("class", "collapse hide");
+					criteria_collapse_div.setAttribute("style", "width: 90%");
+					criteria_collapse_div.setAttribute("id", "mid_collapse_t_"+status + "_" + mid_item_identifier_ex);
+
+					var collapse_card_body = document.createElement("div");
+					collapse_card_body.setAttribute("class", "card card-body");
+					collapse_card_body.setAttribute("style", "border-color : rgba(244,63,79,0.3); background-color:rgba(224,63,79,0.02); border-top-color:transparent;")
+					collapse_card_body.setAttribute("id", "mid_body_" + status + "_" + mid_item_identifier_ex);
+					criteria_collapse_div.appendChild(collapse_card_body);
+					criteria_div.appendChild(criteria_collapse_div);
+
+					//mid content
+					var mid_obj = new Object();
+					mid_obj.title = "title";
+					mid_obj.id = mid_item_identifier_ex;
+					mid_obj.small = [];
+					mid_obj.small[0] = [];
+
+					itemlist_mid_ex[mid_item_identifier_ex] = mid_obj;
+
+					//mid state content
+					itemlist_tmp_ex[mid_item_identifier_ex] = [];
+
+					mid_item_identifier_ex = mid_item_identifier_ex + 1;
+
+				break;
+				
+			}
+			
+		}
+
+		function add_state_select_button(parent, div_id, block, mid = "no", state="AND", divider="no", is_new="yes"){
+			var state_obj = new Object();
+			var state_button_div = document.createElement("div");
+			var status_array = parent.split("_");
+			var status;
+			var mid_id;
+			if(status_array.length > 4){
+				status = status_array[2];
+				mid_id = status_array[3];
+			}
+			else {
+				status = status_array[1];
+				mid_id = status_array[2];	
+			}
+			
+			var div_array = div_id.split("_");
+			var small_id = div_array[4];
+			if(divider == "yes" && is_new == "yes") {
+				div_id = div_array[0]+"_"+div_array[1]+"_"+div_array[2]+"_"+div_array[3]+"_"+age_item;
+				small_id = String(age_item);
+			}
+			switch(divider){
+				case 'no':
+					state_button_div.setAttribute("class", "btn-group ml-3");
+					document.getElementById(parent).appendChild(state_button_div);
+				break;
+
+				case 'yes':
+					if(block > 1){
+						if(status == "in") state = itemlist_tmp_in[mid_id].small[Number(block)-1][0].state;
+						else state = itemlist_tmp_ex[mid_id].small[Number(block)-1][0].state;
+					}
+					state_button_div.setAttribute("class", "btn-group mt-2 mb-2 w-100");
+					state_button_div.setAttribute("style", "width:90%");
+					document.getElementById("mid_body_"+status+"_"+mid_id).insertBefore(state_button_div, document.getElementById("divider_button_"+status+"_"+mid_id));
+				break;
+			}
+			state_button_div.setAttribute("id", div_id);
+
+			var state_button = document.createElement("button");
+			state_button.setAttribute("type", "button");
+			state_button.appendChild(document.createTextNode(state));
+
+			if(mid == "yes"){
+				switch(state){
+					case 'AND':
+						state_button.setAttribute("class", "btn btn-info btn-square");
+					break;
+					
+					case 'OR':
+						state_button.setAttribute("class", "btn btn-success btn-square");
+					break;
+
+					case 'NOT':
+						state_button.setAttribute("class", "btn btn-danger btn-square");
+					break;
+				}
+			}
+			else if(mid == "no"){
+				switch(state){
+					case 'AND':
+						state_button.setAttribute("class", "btn btn-info btn-square dropdown-toggle");
+					break;
+					
+					case 'OR':
+						state_button.setAttribute("class", "btn btn-success btn-square dropdown-toggle");
+					break;
+
+					case 'NOT':
+						state_button.setAttribute("class", "btn btn-danger btn-square dropdown-toggle");
+					break;
+				}
+
+				state_button.setAttribute("data-toggle", "dropdown");
+				state_button.setAttribute("aria-haspopup", "true");
+				state_button.setAttribute("aria-expanded", "false");
+			}
+			switch(divider){
+				case 'no':
+					state_button.setAttribute("style", "font-size:12px");
+				break;
+
+				case 'yes':
+					switch(state){
+						case 'AND':
+							state_button.setAttribute("style", "font-size:12px; width:96%; background-color : rgb(148,170,255); border-color: rgb(148,170,255)");
+
+						break;
+
+						case 'OR':
+							state_button.setAttribute("style", "font-size:12px; width:96%; background-color : rgb(151,214,170); border-color: rgb(151,214,170)");
+
+						break;
+
+						case 'NOT':
+							state_button.setAttribute("style", "font-size:12px; width:96%; background-color : rgb(247,133,145); border-color: rgb(247,133,145)");
+
+						break;
+					}
+
+					var block_div = document.createElement("div");
+					document.getElementById("mid_body_"+status+"_"+mid_id).insertBefore(block_div, document.getElementById("divider_button_"+status+"_"+mid_id));
+					block_div.setAttribute("id", "criteria_" +status+"_block_"+ mid_id+"_"+(Number(block)));
+
+					if(mid=="no") change_to_search(status, mid_id, (Number(block)));
+
+					var criteria_small_div = document.createElement("div");
+					block_div.appendChild(criteria_small_div);
+					criteria_small_div.setAttribute("id", "criteria_" +status+"_"+ mid_id+"_"+(Number(block)));
+
+					if(mid == "no" && is_new=="yes") {
+						document.getElementById("divider_"+status+"_"+mid_id).removeAttribute("onclick");
+						document.getElementById("divider_"+status+"_"+mid_id).setAttribute("onclick", "add_state_select_button('criteria_"+status+"_"+mid_id+"', 'state_select_"+status+"_"+mid_id+"_"+age_item+"', '"+(Number(block)+1)+"', 'no' ,'AND', 'yes', 'yes' )" );
+						
+						if(status == 'in') itemlist_tmp_in[mid_id].small[(Number(block))] = [];
+						else if(status == 'ex') itemlist_tmp_ex[mid_id].small[(Number(block))] = [];
+					}
+				break;
+			}
+
+			state_button.setAttribute("id", div_id+"_select")
+			state_button_div.appendChild(state_button);
+
+			if(mid == "no"){
+				var state_button_dropdown = document.createElement("div");
+				state_button_dropdown.setAttribute("class", "dropdown-menu");
+				state_button_div.appendChild(state_button_dropdown);
+
+				var and_state_a = document.createElement("a");
+				and_state_a.setAttribute("class", "dropdown-item");
+				and_state_a.setAttribute("id", "AND");
+
+				switch(status){
+					case 'in':
+						var state_id = itemlist_tmp_in[mid_id].small[block].map(function (e) { return e.id; }).indexOf(Number(small_id));
+						if(divider == "yes" && is_new == "yes") and_state_a.setAttribute("onclick", "state_button_text_setting(id, '"+div_id+"_select', '"+status+"', '"+block+"', 'no', '0', 'yes')");
+						else and_state_a.setAttribute("onclick", "state_button_text_setting(id, '"+div_id+"_select', '"+status+"', '"+block+"', 'no', '0', '"+itemlist_tmp_in[mid_id].small[block][state_id].isdivider+"')");
+					break;
+
+					case 'ex':
+						var state_id = itemlist_tmp_ex[mid_id].small[block].map(function (e) { return e.id; }).indexOf(Number(small_id));
+						if(divider == "yes" && is_new == "yes") and_state_a.setAttribute("onclick", "state_button_text_setting(id, '"+div_id+"_select', '"+status+"', '"+block+"', 'no', '0', 'yes')");
+						else and_state_a.setAttribute("onclick", "state_button_text_setting(id, '"+div_id+"_select', '"+status+"', '"+block+"', 'no', '0', '"+itemlist_tmp_ex[mid_id].small[block][state_id].isdivider+"')");
+					break;
+				}
+				and_state_a.appendChild(document.createTextNode("AND"));
+				state_button_dropdown.appendChild(and_state_a);
+
+				var or_state_a = document.createElement("a");
+				or_state_a.setAttribute("class", "dropdown-item");
+				or_state_a.setAttribute("id", "OR");
+				switch(status){
+					case 'in':
+						var state_id = itemlist_tmp_in[mid_id].small[block].map(function (e) { return e.id; }).indexOf(Number(small_id));
+						if(divider == "yes" && is_new == "yes") or_state_a.setAttribute("onclick", "state_button_text_setting(id, '"+div_id+"_select', '"+status+"', '"+block+"', 'no', '0', 'yes')");
+						else or_state_a.setAttribute("onclick", "state_button_text_setting(id, '"+div_id+"_select', '"+status+"', '"+block+"', 'no', '0', '"+itemlist_tmp_in[mid_id].small[block][state_id].isdivider+"')");
+					break;
+
+					case 'ex':
+						var state_id = itemlist_tmp_ex[mid_id].small[block].map(function (e) { return e.id; }).indexOf(Number(small_id));
+						if(divider == "yes" && is_new == "yes") or_state_a.setAttribute("onclick", "state_button_text_setting(id, '"+div_id+"_select', '"+status+"', '"+block+"', 'no', '0', 'yes')");
+						else or_state_a.setAttribute("onclick", "state_button_text_setting(id, '"+div_id+"_select', '"+status+"', '"+block+"', 'no', '0', '"+itemlist_tmp_ex[mid_id].small[block][state_id].isdivider+"')");
+					break;
+				}				
+				or_state_a.appendChild(document.createTextNode("OR"));
+				state_button_dropdown.appendChild(or_state_a);
+
+				var not_state_a = document.createElement("a");
+				not_state_a.setAttribute("class", "dropdown-item");
+				not_state_a.setAttribute("id", "NOT");
+				switch(status){
+					case 'in':
+						var state_id = itemlist_tmp_in[mid_id].small[block].map(function (e) { return e.id; }).indexOf(Number(small_id));
+						if(divider == "yes" && is_new == "yes") not_state_a.setAttribute("onclick", "state_button_text_setting(id, '"+div_id+"_select', '"+status+"', '"+block+"', 'no', '0', 'yes')");
+						else not_state_a.setAttribute("onclick", "state_button_text_setting(id, '"+div_id+"_select', '"+status+"', '"+block+"', 'no', '0', '"+itemlist_tmp_in[mid_id].small[block][state_id].isdivider+"')");
+					break;
+
+					case 'ex':
+						var state_id = itemlist_tmp_ex[mid_id].small[block].map(function (e) { return e.id; }).indexOf(Number(small_id));
+						if(divider == "yes" && is_new == "yes") not_state_a.setAttribute("onclick", "state_button_text_setting(id, '"+div_id+"_select', '"+status+"', '"+block+"', 'no', '0', 'yes')");
+						else not_state_a.setAttribute("onclick", "state_button_text_setting(id, '"+div_id+"_select', '"+status+"', '"+block+"', 'no', '0', '"+itemlist_tmp_ex[mid_id].small[block][state_id].isdivider+"')");
+					break;
+				}				
+				not_state_a.appendChild(document.createTextNode("NOT"));
+				state_button_dropdown.appendChild(not_state_a);
+
+				if(divider == "yes"){
+					var divider_delete_button = document.createElement("button");
+					divider_delete_button.setAttribute("class", "btn btn-sm btn-outline");
+					divider_delete_button.setAttribute("style", "background-color:transparent; border-color:transparent; width:12px; color:rgba(59,89,152,0.7)");
+					divider_delete_button.setAttribute("id", "divider_button_"+status+"_"+mid_id+"_"+block);
+					divider_delete_button.setAttribute("onclick", "delete_divider(id);");
+
+					var delete_button_icon = document.createElement("i");
+					delete_button_icon.setAttribute("class", "fas fa-trash");
+					divider_delete_button.appendChild(delete_button_icon);
+					state_button_div.appendChild(divider_delete_button);
+				}
+			}
+		}
+
+		function state_button_text_setting(id, parent, status, block, mid="no", setting="0", divider="no"){
+			var tmp_array = parent.split("_");
+			var tmp_id = tmp_array[4];
+			var mid_id = tmp_array[3];
+
+			var itemlist_tmp = [];
+			var mid_tmp = [];
+			switch(status){
+				case 'in':
+					itemlist_tmp = itemlist_tmp_in[mid_id].small[block];
+					mid_tmp = itemlist_tmp_in[mid_id];
+				break;
+
+				case 'ex':
+					itemlist_tmp = itemlist_tmp_ex[mid_id].small[block];
+					mid_tmp = itemlist_tmp_ex[mid_id];
+				break;
+			}
+			var state_id = itemlist_tmp.map(function (e) { return e.id; }).indexOf(Number(tmp_id));
+
+			if(mid=="no"){
+				if(divider == "no"){
+					for(var i = 1 ; i < itemlist_tmp.length; i++) itemlist_tmp[i].state = id;	
+
+					switch(id){
+						case 'AND':
+							for(var m = 1; m < itemlist_tmp.length; m++){
+								var selected_state = document.getElementById("state_select_"+status+"_"+mid_id+"_"+itemlist_tmp[m].id+"_select");
+								while(selected_state.hasChildNodes()) selected_state.removeChild(selected_state.firstChild);
+								selected_state.appendChild(document.createTextNode(id));
+								selected_state.setAttribute("class", "btn btn-info btn-square dropdown-toggle");
+							}
+							
+							for(var m = 0; m < itemlist_tmp.length; m++){
+								var selected_button = document.getElementById("button_small_"+status+"_"+itemlist_tmp[m].id);
+								selected_button.setAttribute("class", "btn btn-outline-info btn-square");
+							}
+						break;
+
+						case 'OR':
+
+							for(var m = 1; m < itemlist_tmp.length; m++){
+								var selected_state = document.getElementById("state_select_"+status+"_"+mid_id+"_"+itemlist_tmp[m].id+"_select");
+								while(selected_state.hasChildNodes()) selected_state.removeChild(selected_state.firstChild);
+								selected_state.appendChild(document.createTextNode(id));
+								selected_state.setAttribute("class", "btn btn-success btn-square dropdown-toggle");
+							}
+
+							for(var m = 0; m < itemlist_tmp.length; m++){
+								var selected_button = document.getElementById("button_small_"+status+"_"+itemlist_tmp[m].id);
+								selected_button.setAttribute("class", "btn btn-outline-success btn-square");
+							}
+						break;
+
+						case 'NOT':
+							for(var m = 1; m < itemlist_tmp.length; m++){
+								var selected_state = document.getElementById("state_select_"+status+"_"+mid_id+"_"+itemlist_tmp[m].id+"_select");
+								while(selected_state.hasChildNodes()) selected_state.removeChild(selected_state.firstChild);
+								selected_state.appendChild(document.createTextNode(id));
+								selected_state.setAttribute("class", "btn btn-danger btn-square dropdown-toggle");
+							}
+
+							for(var m = 0; m < itemlist_tmp.length; m++){
+								var selected_button = document.getElementById("button_small_"+status+"_"+itemlist_tmp[m].id);
+								selected_button.setAttribute("class", "btn btn-outline-danger btn-square");
+							}
+						break;
+					}
+				}
+				else{
+					var divider_check = true;
+					for(var i = 1 ; i < mid_tmp.small.length; i++){
+						if(mid_tmp.small[i].length == 0){
+							alert("아래에 조건을 넣으셔야 설정할 수 있습니다.");
+							divider_check = false;
+						}
+					}
+					if(divider_check == true){
+						for(var i = 1 ; i < mid_tmp.small.length; i++) mid_tmp.small[i][0].state = id;	
+
+						switch(id){
+							case 'AND':
+								for(var m = 1; m < mid_tmp.small.length; m++){
+									var selected_state = document.getElementById("state_select_"+status+"_"+mid_id+"_"+mid_tmp.small[m][0].id+"_select");
+									while(selected_state.hasChildNodes()) selected_state.removeChild(selected_state.firstChild);
+									selected_state.appendChild(document.createTextNode(id));
+									selected_state.setAttribute("class", "btn btn-info btn-square dropdown-toggle");
+									selected_state.setAttribute("style", "font-size:12px; width:96%; background-color : rgb(148,170,255); border-color: rgb(148,170,255)");
+								}
+							break;
+
+							case 'OR':
+
+								for(var m = 1; m < mid_tmp.small.length; m++){
+									var selected_state = document.getElementById("state_select_"+status+"_"+mid_id+"_"+mid_tmp.small[m][0].id+"_select");
+									while(selected_state.hasChildNodes()) selected_state.removeChild(selected_state.firstChild);
+									selected_state.appendChild(document.createTextNode(id));
+									selected_state.setAttribute("class", "btn btn-success btn-square dropdown-toggle");
+									selected_state.setAttribute("style", "font-size:12px; width:96%; background-color : rgb(151,214,170); border-color: rgb(151,214,170)");
+
+								}
+
+							break;
+
+							case 'NOT':
+								for(var m = 1; m < mid_tmp.small.length; m++){
+									var selected_state = document.getElementById("state_select_"+status+"_"+mid_id+"_"+mid_tmp.small[m][0].id+"_select");
+									while(selected_state.hasChildNodes()) selected_state.removeChild(selected_state.firstChild);
+									selected_state.appendChild(document.createTextNode(id));
+									selected_state.setAttribute("class", "btn btn-danger btn-square dropdown-toggle");
+									selected_state.setAttribute("style", "font-size:12px; width:96%; background-color : rgb(247,133,145); border-color: rgb(247,133,145)");
+
+								}
+
+							break;
+						}
+					}
+				}
+			}
+			else{
+				if(divider == "no"){
+					switch(id){
+						case 'AND':
+							for(var m = 1; m < itemlist_tmp.length; m++){
+								var selected_state = document.getElementById("state_selected_"+status+"_"+mid_id+"_"+itemlist_tmp[m].id+"_select");
+								while(selected_state.hasChildNodes()) selected_state.removeChild(selected_state.firstChild);
+								selected_state.appendChild(document.createTextNode(id));
+								selected_state.setAttribute("class", "btn btn-info btn-square");
+							}
+
+							for(var m = 0; m < itemlist_tmp.length; m++){
+								var selected_button;
+								if(setting == "0") selected_button = document.getElementById("button_"+status+"_"+itemlist_tmp[m].id);
+								else if(setting == "1") selected_button = document.getElementById("button_small_"+status+"_"+itemlist_tmp[m].id);
+								selected_button.setAttribute("class", "btn btn-outline-info btn-square");
+							}
+
+						break;
+
+						case 'OR':
+							for(var m = 1; m < itemlist_tmp.length; m++){
+
+								var selected_state = document.getElementById("state_selected_"+status+"_"+mid_id+"_"+itemlist_tmp[m].id+"_select");
+								while(selected_state.hasChildNodes()) selected_state.removeChild(selected_state.firstChild);
+								selected_state.appendChild(document.createTextNode(id));
+								selected_state.setAttribute("class", "btn btn-success btn-square");
+							}
+
+							for(var m = 0; m < itemlist_tmp.length; m++){
+								var selected_button;
+								if(setting == "0") selected_button = document.getElementById("button_"+status+"_"+itemlist_tmp[m].id);
+								else if(setting == "1") selected_button = document.getElementById("button_small_"+status+"_"+itemlist_tmp[m].id);
+								selected_button.setAttribute("class", "btn btn-outline-success btn-square");
+							}
+
+						break;
+
+						case 'NOT':
+							for(var m = 1; m < itemlist_tmp.length; m++){
+								var selected_state = document.getElementById("state_selected_"+status+"_"+mid_id+"_"+itemlist_tmp[m].id+"_select");
+								while(selected_state.hasChildNodes()) selected_state.removeChild(selected_state.firstChild);
+								selected_state.appendChild(document.createTextNode(id));
+								selected_state.setAttribute("class", "btn btn-danger btn-square");
+							}
+
+							for(var m = 0; m < itemlist_tmp.length; m++){
+								var selected_button;
+								if(setting == "0") selected_button = document.getElementById("button_"+status+"_"+itemlist_tmp[m].id);
+								else if(setting == "1") selected_button = document.getElementById("button_small_"+status+"_"+itemlist_tmp[m].id);
+								selected_button.setAttribute("class", "btn btn-outline-danger btn-square");
+							}
+
+						break;
+					}
+				}
+				else{
+					for(var i = 1 ; i < mid_tmp.small.length; i++) mid_tmp.small[i][0].state = id;	
+					console.log("divider");
+					switch(id){
+						case 'AND':
+							for(var m = 1; m < mid_tmp.small.length; m++){
+								var selected_state = document.getElementById("state_selected_"+status+"_"+mid_id+"_"+mid_tmp.small[m][0].id+"_select");
+								while(selected_state.hasChildNodes()) selected_state.removeChild(selected_state.firstChild);
+								selected_state.appendChild(document.createTextNode(id));
+								selected_state.setAttribute("class", "btn btn-info btn-square");
+								selected_state.setAttribute("style", "font-size:12px; width:96%; background-color : rgb(148,170,255); border-color: rgb(148,170,255)");
+							}
+						break;
+
+						case 'OR':
+
+							for(var m = 1; m < mid_tmp.small.length; m++){
+								var selected_state = document.getElementById("state_selected_"+status+"_"+mid_id+"_"+mid_tmp.small[m][0].id+"_select");
+								while(selected_state.hasChildNodes()) selected_state.removeChild(selected_state.firstChild);
+								selected_state.appendChild(document.createTextNode(id));
+								selected_state.setAttribute("class", "btn btn-success btn-square" );
+								selected_state.setAttribute("style", "font-size:12px; width:96%; background-color : rgb(151,214,170); border-color: rgb(151,214,170)");
+							}
+
+						break;
+
+						case 'NOT':
+							for(var m = 1; m < mid_tmp.small.length; m++){
+								var selected_state = document.getElementById("state_selected_"+status+"_"+mid_id+"_"+mid_tmp.small[m][0].id+"_select");
+								while(selected_state.hasChildNodes()) selected_state.removeChild(selected_state.firstChild);
+								selected_state.appendChild(document.createTextNode(id));
+								selected_state.setAttribute("class", "btn btn-danger btn-square");
+								selected_state.setAttribute("style", "font-size:12px; width:96%; background-color : rgb(247,133,145); border-color: rgb(247,133,145)");
+							}
+
+						break;
+					}
+				}
+			}
+		}
+
+	</script>
+
+</head>
+
+<body>
+	<div class="wrapper">
+		<div class="d-flex">
+
+			<div class="main bg-white">
+				<main class="content bg-white">
+					<div class="container-fluid p-0">
+
+						<h1 class="h2 mb-3" id="eligibility_head" style="color:rgb(52, 60, 67); font-weight: bold">
+						</h1>
+							<div class="col-12">
+								<div class="card" style="border-color: transparent">
+									<table class="table table-borderless">
+										<tbody>
+											<tr>
+												<td style="width:7%;">Period</td>
+
+												<td>
+
+													<div class="form-check form-check-inline" style="margin-left: 25px">
+														<label class="custom-control-inline custom-radio" style="margin-right: 30px">
+															<input name="duration" id="visit_no" type="radio" class="custom-control-input" value="1200" disabled onclick="visit_button_click(value)">
+															<span class="custom-control-label">All</span>
+														</label>
+														<label class="custom-control-inline custom-radio" style="margin-right: 30px">
+															<input name="duration" id="visit_3" type="radio" class="custom-control-input" value="3" disabled onclick="visit_button_click(value)">
+															<span class="custom-control-label">3 months</span>
+														</label>
+														<label class="custom-control-inline custom-radio" style="margin-right: 30px">
+															<input name="duration" id="visit_6" type="radio" class="custom-control-input" value="6" disabled onclick="visit_button_click(value)">
+															<span class="custom-control-label">6 months</span>
+														</label>
+														<label class="custom-control-inline custom-radio" style="margin-right: 30px">
+															<input name="duration" id="visit_9" type="radio" class="custom-control-input" value="9" disabled onclick="visit_button_click(value)">
+															<span class="custom-control-label">9 months</span>
+														</label>
+														<label class="custom-control-inline custom-radio" style="margin-right: 30px">
+															<input name="duration" id="visit_12" type="radio" class="custom-control-input" value="12" disabled onclick="visit_button_click(value)">
+															<span class="custom-control-label">1 year</span>
+														</label>
+														<label class="custom-control-inline custom-radio" style="margin-right: 30px">
+															<input name="duration" id="visit_24" type="radio" class="custom-control-input" value="24" disabled onclick="visit_button_click(value)">
+															<span class="custom-control-label">2 years</span>
+														</label>
+														<label class="custom-control-inline custom-radio" style="margin-right: 30px">
+															<input name="duration" id="visit_36" type="radio" class="custom-control-input" value="36" disabled onclick="visit_button_click(value)">
+															<span class="custom-control-label">3 years</span>
+														</label>
+														<label class="custom-control-inline custom-radio" style="margin-right: 30px">
+															<input name="duration" id="visit_direct" type="radio" class="custom-control-input" value="9999" disabled onclick="visit_button_click(value)">
+															<span class="custom-control-label">Custom</span>
+														</label>
+
+														<div class="custom-control-inline custom-radio" style="margin-right: 30px">
+															<input class="form-control" id="daterange_visit" type="text" value="" name="daterange_visit" />
+															</label>
+															<script>
+																document.addEventListener("DOMContentLoaded", function (event) {
+																	// Daterangepicker
+																	jQuery('input[name="daterange_visit"]').daterangepicker({
+																		opens: 'left',
+																		locale: {
+																			cancelLabel: 'Clear'
+																		}
+																	});
+																});
+															</script>
+														</div>
+
+
+												</td>
+
+											</tr>
+
+										</tbody>
+									</table>
+									<table class="table table-borderless" style="table-layout: fixed">
+										<tbody>
+											<tr>
+												<td style="width: 7%; vertical-align: bottom">Eligibility Criteria</td>
+												<td style="width: 40%; border-right: thin solid rgb(218, 222, 227);">
+													<label class="text" style="margin-top:2px">Inclusion</label>
+												</td>
+												<td style="width:1%"></td>
+												<td style="width: 40%">
+													<label class="text" style="margin-top:2px">Exclusion</label>
+												</td>
+											</tr>
+
+											<tr>
+												<td style="width: 7%"> </td>
+												<td style="width: 40%; vertical-align: top; border-right: thin solid rgb(218, 222, 227);">
+													<div class="card" style="min-height:400px; border-color: transparent; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;"
+													 id="inclusion_criteria">
+													</div>
+
+												</td>
+												<td style="width: 7%"></td>
+												<td style="width: 40%; vertical-align: top">
+													<div class="card" style="min-height:400px; border-color: transparent" id="exclusion_criteria">
+													</div>
+												</td>
+											</tr>
+
+										</tbody>
+									</table>
+								</div>
+							</div>
+						</div>
+					</div>
+				</main>
+			</div>
+			
+		</div>
+	</div>
+
+
+	<script src="../js/app.js"></script>
+	<script src="../js/tables.js"></script>
+	<script src="../js/forms.js"></script>
+	<script src="../js/feather.js"></script>
+	<script src="upper_navi.js"></script>
+	<script src="eligibility_function.js?version=22"></script>
+
+</body>
+
+<link href="../css/bootstrap.min.css">
+<link href="../lib/styles/wijmo.min.css " rel="stylesheet" />
+<script src="../js/jquery-ui.min.js"></script>
+
+</html>

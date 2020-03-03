@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<script src="../js/jquery-latest.js"></script>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<meta name="description" content="Responsive Bootstrap 4 Admin Template">
+	<meta name="author" content="Bootlab">
+
+	<title>SCRN</title>
+
+	<link href="../css/app.css" rel="stylesheet">
+
+	<script type="text/javascript">
+		var first_mem_road = false;
+		var photo_url = "no";
+
+		$(document).ready(function () {
+			$('#sidebar_navi').load('menu.html');
+			$('#footer').load('footer.html');
+			upper_navi_1("About");
+
+			var xhttp = new XMLHttpRequest();
+			xhttp.onreadystatechange = function () {
+				if (this.readyState == this.DONE && this.status == 200) {
+					var result_array = xhttp.responseText.split("&");
+					var img_src = result_array[2];
+					var rand = Math.random();
+					document.getElementById("nav_img").setAttribute("src", img_src + "?" + rand);
+					var user_name = result_array[3];
+					document.getElementById("user_name2").appendChild(document.createTextNode(user_name));
+				}
+			}
+			xhttp.open("GET", "./account.jsp?action=load");
+			xhttp.send();
+		});
+
+	</script>
+</head>
+
+<body>
+	<div class="wrapper">
+		<div class="d-flex">
+			<nav class="sidebar" id="sidebar_navi">
+			</nav>
+
+			<div class="main bg-white">
+				<nav class="navbar navbar-expand navbar-light bg-white">
+					<a class="sidebar-toggle d-flex mr-2">
+						<i class="hamburger align-self-center"></i>
+					</a>
+
+					<form class="form-inline d-none d-sm-inline-block" id="upper_navi"></form>
+
+					<div class="navbar-collapse collapse">
+						<ul class="navbar-nav ml-auto">
+							<li class="nav-item dropdown">
+								<a class="nav-link dropdown-toggle" href="#" id="userDropdown" data-toggle="dropdown">
+									<span class="d-inline-block d-md-none">
+										<i class="align-middle" data-feather="settings"></i>
+									</span>
+									<span class="d-none d-sm-inline-block">
+										<img id="nav_img" class="avatar img-fluid rounded-circle mr-1" /> <span
+											class="font-weight-bold text-dark" id="user_name2"></span>
+									</span>
+								</a>
+								<div class="dropdown-menu dropdown-menu-right" aria-labelledby="userDropdown">
+									<a class="dropdown-item" href="account.html"><i class="align-middle mr-1"
+											data-feather="user"></i> Profile</a>
+									<div class="dropdown-divider"></div>
+									<a class="dropdown-item" href="logout.jsp">Sign out</a>
+								</div>
+							</li>
+						</ul>
+					</div>
+				</nav>
+
+				<main class="content bg-white">
+					<div class="container-fluid">
+						<div class="row">
+							<div style="width:300px">
+								<div class="card flex-fill w-100" style="border-color:transparent">
+									<div class="card-body" style="text-align: center">
+										<img class="rounded-circle rounded" src="../resource/IM_mgkim1.jpg" width="180"
+											height="180" >
+											<br>
+										<span class="text mb-3" id="study_title"
+											style="font-weight: bold; font-size: 22px; vertical-align: bottom">KIM MIN
+											GUL</span><br>
+										<span class="text-muted">Project Manager</span><br>
+									</div>
+								</div>
+							</div>
+							<div style="width:300px">
+								<div class="card flex-fill w-100" style="border-color:transparent">
+									<div class="card-body" style="text-align: center">
+										<img class="rounded-circle rounded" src="../resource/IM_swjeong.jpg" width="180"
+											height="180" ><br>
+										<span class="text mb-3" id="study_title"
+											style="font-weight: bold; font-size: 22px; vertical-align: bottom">JEONG SANG UN</span><br>
+										<span class="text-muted">Developer</span><br>
+										<span class="badge badge-primary">HTML</span>
+										<span class="badge badge-primary">NodeJS</span>
+										<span class="badge badge-primary">JavaScript</span>
+									</div>
+								</div>
+							</div>
+							<div style="width:300px">
+								<div class="card flex-fill w-100" style="border-color:transparent">
+									<div class="card-body" style="text-align: center">
+										<img class="rounded-circle rounded" src="../resource/IM_mjkim.jpg" width="180"
+											height="180" ><br>
+										<span class="text mb-3" id="study_title"
+											style="font-weight: bold; font-size: 22px; vertical-align: bottom">KIM MIN JI</span><br>
+										<span class="text-muted">Developer</span><br>
+										<span class="badge badge-primary">HTML</span>
+										<span class="badge badge-primary">UI/UX</span>
+										<span class="badge badge-primary">JavaScript</span>
+									</div>
+								</div>
+							</div>
+							<div style="width:300px">
+								<div class="card flex-fill w-100" style="border-color:transparent">
+									<div class="card-body" style="text-align: center">
+										<img class="rounded-circle rounded" src="../resource/IM_sisim.jpg" width="180"
+											height="180" ><br>
+										<span class="text mb-3" id="study_title"
+											style="font-weight: bold; font-size: 22px; vertical-align: bottom">SIM SANG IL</span><br>
+										<span class="text-muted">Developer</span><br>
+										<span class="badge badge-primary">Oracle</span>
+										<span class="badge badge-primary">SQL Server</span>
+										<span class="badge badge-primary"></span>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+				</main>
+
+				<footer class="footer" id="footer"></footer>
+			</div>
+		</div>
+	</div>
+
+	<script src="../js/app.js"></script>
+	<script src="../js/tables.js"></script>
+	<script src="../js/forms.js"></script>
+	<script src="../js/feather.js"></script>
+	<script src="upper_navi.js"></script>
+
+</body>
+
+</html>

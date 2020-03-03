@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<meta name="description" content="Responsive Bootstrap 4 Admin Template">
+	<meta name="author" content="Bootlab">
+
+	<title>SCRN</title>
+
+	<link href="../css/app.css" rel="stylesheet">
+
+	<script src="../js/jquery-latest.js"></script>
+	<script src="../js/bootstrap.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.js"></script>
+	<script src="./print_log.js"></script>
+
+	<script>
+		var newj = $.noConflict();	
+	</script>
+
+	<script type="text/javascript">
+		function numberWithCommas(x) {
+		    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+		}
+
+		var chart_data_this_year = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+		var chart_data_last_year = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+		var notice_id;
+		var opened = false;
+		var navbar_opened = false;
+		jQuery(document).ready(function () {
+			newj('#noticeModal').on('show.bs.modal', function (e) {
+				target = $(e.relatedTarget);
+				var data_content = target.data('content');
+				var data_title = target.data('title');
+				var data_id = target.data('id');
+				notice_id = data_id;
+				var modal = $(this);
+				modal.find('.modal-title').text(data_title);
+				modal.find('.modal-body').html(data_content);
+			});
+
+
+		});
+		jQuery(document).ready(function ($) {
+			var rand = Math.random();
+
+			jQuery('#sidebar_navi').load('menu.html');
+			jQuery('#footer').load('footer.html');
+			jQuery('#navbar').load('navbar_item.html');
+			upper_navi_1("Dashboard");
+
+			var xhttp = new XMLHttpRequest();
+			xhttp.onreadystatechange = function () {
+				if (this.readyState == this.DONE && this.status == 200) {
+
+					var result_array = xhttp.responseText.split("&");
+					var img_src = result_array[5];
+
+					document.getElementById("nav_img").setAttribute("src", img_src + "?" + rand);
+
+					var user_name = result_array[6];
+					document.getElementById("user_name").appendChild(document.createTextNode(user_name));
+					var graph_data_pre = result_array[0];
+					var graph_data = eval(graph_data_pre);
+
+					var draft_Project_num_data = document.createTextNode(graph_data[0].total_project);
+					document.getElementById("total_project").appendChild(draft_Project_num_data);
+
+					var running_Project_num_data = document.createTextNode(numberWithCommas(graph_data[1].total_patients));
+					document.getElementById("total_patients").appendChild(running_Project_num_data);
+
+					var finished_Project_num_data = document.createTextNode(graph_data[2].total_doctors);
+					document.getElementById("total_doctors").appendChild(finished_Project_num_data);
+
+					var this_year_data = result_array[1].split(", ").map(Number);
+					var last_year_data = result_array[2].split(", ").map(Number);
+
+					for (var i = 0; i < 12; i++) {
+						chart_data_this_year[i] = chart_data_this_year[i] + this_year_data[i];
+						chart_data_last_year[i] = chart_data_last_year[i] + last_year_data[i];
+					}
+
+					new Chart(document.getElementById("chartjs-dashboard-line"), {
+						type: 'line',
+						data: {
+							labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+							datasets: [{
+								label: "Projects (This year) ",
+								fill: true,
+								backgroundColor: "transparent",
+								borderColor: "#0cc2aa",
+								data: chart_data_this_year
+							}, {
+								label: "Projects (Last year)",
+								fill: true,
+								backgroundColor: "transparent",
+								borderColor: "#5fc27e",
+								borderDash: [4, 4],
+								data: chart_data_last_year
+							}]
+						},
+						options: {
+							maintainAspectRatio: false,
+							legend: {
+								display: true
+							},
+							tooltips: {
+								intersect: false
+							},
+							hover: {
+								intersect: true
+							},
+							plugins: {
+								filler: {
+									propagate: false
+								}
+							},
+							scales: {
+								xAxes: [{
+									reverse: true,
+									gridLines: {
+										color: "rgba(0,0,0,0.05)"
+									}
+								}],
+								yAxes: [{
+									ticks: {
+										beginAtZero: true
+									},
+									display: true,
+									borderDash: [5, 5],
+									gridLines: {
+										color: "rgba(0,0,0,0)",
+										fontColor: "#fff"
+									},
+									scaleLabel: {
+										display: true,
+										labelString: 'Number'
+									}
+								}]
+							}
+						}
+					});
+
+					var notice_data_pre = result_array[3];
+					var notice_data = eval(notice_data_pre);
+					var notice_output = Object.keys(notice_data);
+
+					for (var i = notice_output.length - 1; i >= 0; i--) {
+						var createTR = document.createElement("tr");
+						document.getElementById("notice_table").appendChild(createTR);
+
+						var notice_title_TD = document.createElement("td");
+						notice_title_TD.setAttribute("data-toggle", "modal");
+						notice_title_TD.setAttribute("data-target", "#noticeModal")
+						var notice_title_data = document.createTextNode(notice_data[i].notice_title);
+						notice_title_TD.appendChild(notice_title_data);
+						createTR.appendChild(notice_title_TD);
+
+						var notice_date_TD = document.createElement("td");
+						notice_date_TD.setAttribute("data-toggle", "modal");
+						notice_date_TD.setAttribute("data-target", "#noticeModal")
+						var notice_date_data = document.createTextNode(notice_data[i].write_date);
+						notice_date_TD.appendChild(notice_date_data);
+						createTR.appendChild(notice_date_TD);
+
+						var context = notice_data[i].notice_content.replace(/(\n|\r\n)/g, "<br />");
+						context = JSON.stringify(context);
+
+						context = context.replace(/^"(.*)"$/, '$1');
+						var title = notice_data[i].notice_title;
+						title = JSON.stringify(title);
+						title = title.replace(/^"(.*)"$/, '$1');
+
+						notice_title_TD.setAttribute('data-id', JSON.stringify(notice_data[i].notice_id));
+						notice_title_TD.setAttribute('data-content', context);
+						notice_title_TD.setAttribute('data-title', title);
+						notice_date_TD.setAttribute('data-id', JSON.stringify(notice_data[i].notice_id));
+						notice_date_TD.setAttribute('data-content', context);
+						notice_date_TD.setAttribute('data-title', title);
+
+					}
+
+					jQuery('#datatables-notice').DataTable({
+						pageLength: 4,
+						lengthChange: false,
+						bFilter: false,
+						autoWidth: false,
+						"order": [[ 1, "desc" ]]
+
+					});
+
+					var Project_data_pre = result_array[4];
+					var Project_data = eval(Project_data_pre);
+					var Project_output = Object.keys(Project_data);
+
+					for (var i = Project_output.length - 1; i >= 0; i--) {
+						var createTR = document.createElement("tr");
+						document.getElementById("project_table").appendChild(createTR);
+
+						var Project_title_TD = document.createElement("td");
+						var Project_title_data = document.createTextNode(Project_data[i].project_title);
+						Project_title_TD.appendChild(Project_title_data);
+						createTR.appendChild(Project_title_TD);
+
+						var Project_start_date_TD = document.createElement("td");
+						var Project_start_date_data = document.createTextNode(Project_data[i].project_start);
+						Project_start_date_TD.appendChild(Project_start_date_data);
+						createTR.appendChild(Project_start_date_TD);
+
+						var Project_status_TD = document.createElement("td");
+						var Project_status;
+						switch (Project_data[i].project_status) {
+							case 'Draft':
+								Project_status = document.createElement("span");
+								Project_status.setAttribute("class", "badge badge-warning");
+								break;
+
+							case 'Running':
+								Project_status = document.createElement("span");
+								Project_status.setAttribute("class", "badge badge-success");
+								break;
+
+							case 'Finished':
+								Project_status = document.createElement("span");
+								Project_status.setAttribute("class", "badge");
+								Project_status.setAttribute("style", "background-color:rgb(127, 127, 127);");
+								break;
+						}
+						Project_status.appendChild(document.createTextNode(Project_data[i].project_status));
+						Project_status_TD.appendChild(Project_status);
+						createTR.appendChild(Project_status_TD);
+
+						var Project_creator_TD = document.createElement("td");
+						var Project_creator_data = document.createTextNode(Project_data[i].project_creator);
+						Project_creator_TD.appendChild(Project_creator_data);
+						createTR.appendChild(Project_creator_TD);
+
+					}
+					jQuery('#datatables-project').DataTable({
+						pageLength: 4,
+						lengthChange: false,
+						bFilter: false,
+						autoWidth: false,
+						"order": [[ 1, "desc" ]]
+					});
+
+				}
+			}
+			xhttp.open("GET", "dashboard.jsp?action=load");
+			xhttp.send();
+
+			var role;
+			var xhttp1 = new XMLHttpRequest();
+			xhttp1.onreadystatechange=function(){
+				if(this.readyState == this.DONE && this.status == 200){
+					role = xhttp1.responseText.trim();
+
+					if(role == "Basic"){
+						document.getElementById("createNotice_button").remove();
+						document.getElementById("delete_button").remove();
+					}	
+				}
+			}
+			xhttp1.open("GET", "./role_check.jsp?");
+			xhttp1.send();
+
+		});
+
+		function navi_common_site() {
+			var navi = document.getElementById("navigator");
+
+			//sidebar header
+			var sidebar_header = document.createElement("li");
+			sidebar_header.setAttribute("class", "sidebar-header");
+			sidebar_header.appendChild(document.createTextNode("Navigator"));
+			navi.appendChild(sidebar_header);
+
+			//dashboard
+			var dash = document.createElement("li");
+			dash.setAttribute("class", "sidebar-item active");
+			var a_href = document.createElement("a");
+			a_href.setAttribute("href", "#");
+			a_href.setAttribute("class", "sidebar-link");
+
+
+		}
+
+		function create_notice_click() {
+			var not_title = document.getElementById("new_notice_title").value;
+			not_title = escape(encodeURIComponent(not_title));
+			var not_content = document.getElementById("new_notice_content").value;
+			not_content = escape(encodeURIComponent(not_content));
+
+			var xhttp = new XMLHttpRequest();
+			xhttp.onreadystatechange = function () {
+				if (this.readyState == this.DONE && this.status == 200) {
+					print_log("write_notice", not_title);
+					location.reload();
+				}
+			}
+			xhttp.open("GET", "dashboard.jsp?action=noticesave&title=" + not_title + "&content=" + not_content);
+			xhttp.send();
+
+		}
+
+		function delete_notice() {
+			var xhttp = new XMLHttpRequest();
+			xhttp.onreadystatechange = function () {
+				if (this.readyState == this.DONE && this.status == 200) {
+					print_log("delete_notice", notice_id);
+					location.reload();
+				}
+			}
+			xhttp.open("GET", "dashboard.jsp?action=noticedelete&id=" + notice_id);
+			xhttp.send();
+		}
+
+		function nav_account_clicked(){
+			if(opened == false){
+				document.getElementById("userDropdown").setAttribute("aria-expanded", "true");
+				document.getElementById("userDropdowndiv").setAttribute("class", "dropdown-menu dropdown-menu-right show");
+				opened = true;
+			}
+			else{
+				document.getElementById("userDropdown").setAttribute("aria-expanded", "false");
+				document.getElementById("userDropdowndiv").setAttribute("class", "dropdown-menu dropdown-menu-right");
+				opened = false;
+			}
+		}
+	</script>
+</head>
+
+<body>
+	<div class="wrapper">
+		<div class="d-flex">
+			<nav class="sidebar" id="sidebar_navi">
+			</nav>
+
+			<div class="main bg-white">
+				<nav class="navbar navbar-expand navbar-light bg-white">
+					<a class="sidebar-toggle d-flex mr-2">
+						<i class="hamburger align-self-center"></i>
+					</a>
+					<form class="form-inline d-none d-sm-inline-block" id="upper_navi">
+						</form>
+	
+					<div class="navbar-collapse collapse">
+						<ul class="navbar-nav ml-auto" id="navbar">
+						</ul>
+					</div>
+				</nav>
+
+				<main class="content">
+					<div class="container-fluid p-0">
+
+						<div class="row">
+							<div class="col-12 col-md-6 col-xl d-flex">
+								<div class="card flex-fill">
+									<div class="card-body py-4 text-center">
+										<h2 class="text-primary" id="total_project"></h2>
+										<strong class="mb-0" style="font-size:18px">Total Projects</strong>
+									</div>
+								</div>
+							</div>
+							<div class="col-12 col-md-6 col-xl d-flex">
+								<div class="card flex-fill">
+									<div class="card-body py-4 text-center">
+										<h2 class="text-success" id="total_patients"></h2>
+										<strong class="mb-0" style="font-size:18px">Total Patients</strong>
+									</div>
+								</div>
+							</div>
+							<div class="col-12 col-md-6 col-xl d-flex">
+								<div class="card flex-fill">
+									<div class="card-body py-4 text-center">
+										<h2 class="text-info" id="total_doctors"></h2>
+										<strong class="mb-0" style="font-size:18px">Total Doctors</strong>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-12 col-md-6 col-xl-8 d-flex">
+								<div class="card flex-fill w-100">
+									<div class="card-header">
+										<h5 class="card-title mb-0">Monthly Status</h5>
+									</div>
+									<div class="card-body">
+										<div class="chart" style="vertical-align:middle">
+											<canvas id="chartjs-dashboard-line"></canvas>
+										</div>
+									</div>
+								</div>
+
+							</div>
+							<div class="col-12 col-md-6 col-xl-4 d-flex">
+								<div class="card flex-fill">
+									<div class="card-header">
+										<h5 class="card-title mb-0">Notice
+											<a data-toggle="modal" data-target="#noticeCreateModal" id="createNotice_button"><i class="float-right" data-feather="edit-2" style="color: rgb(12, 194, 170)"></i></a></h5>
+									</div>
+									<table id="datatables-notice" class="table table-striped my-0">
+										<thead>
+											<tr>
+												<th style="width: 60%;">Title</th>
+												<th class="d-none d-xl-table-cell">Date</th>
+											</tr>
+										</thead>
+										<tbody id="notice_table">
+										</tbody>
+									</table>
+								</div>
+							</div>
+						</div>
+
+						<div class="row">
+							<div class="col-12 col-lg-8 col-xxl-9 d-flex">
+								<div class="card flex-fill">
+									<div class="card-header">
+										<h5 class="card-title mb-0">Latest Projects</h5>
+									</div>
+									<table id="datatables-project" class="table table-striped my-0">
+										<thead>
+											<tr>
+												<th style="width: 40%;">Project Title</th>
+												<th class="d-none d-xl-table-cell">Created</th>
+												<th class="d-none d-xl-table-cell">Status</th>
+												<th>Authors</th>
+											</tr>
+										</thead>
+										<tbody id="project_table">
+										</tbody>
+									</table>
+								</div>
+							</div>
+
+							<div class="col-12 col-lg-4 col-xxl-3 d-flex">
+								<div class="card flex-fill">
+									<div class="card-header">
+										<h5 class="card-title mb-0">Calendar</h5>
+									</div>
+									<div class="card-body d-flex">
+										<div class="align-self-center w-100">
+											<div class="chart">
+												<div id="datetimepicker-dashboard"></div>
+											</div>
+										</div>
+									</div>
+								</div>
+
+								<script>
+									document.addEventListener("DOMContentLoaded", function (event) {
+										jQuery('#datetimepicker-dashboard').datetimepicker({
+											inline: true,
+											sideBySide: false,
+											format: 'L'
+										});
+									});
+								</script>
+							</div>
+
+						</div>
+					</div>
+				</main>
+
+				<footer class="footer" id="footer"></footer>
+				<div class="modal fade" id="noticeModal" tabindex="-1" role="dialog" aria-hidden="true">
+					<div class="modal-dialog modal-md" role="document">
+						<div class="modal-content">
+							<div class="modal-header">
+								<h5 class="modal-title" id="item_modal_title"></h5>
+								<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+									<span aria-hidden="true">&times;</span>
+								</button>
+							</div>
+							<div class="modal-body m-3">
+								<span id="modal-content"></span>
+							</div>
+							<div class="modal-footer">
+								<button type="button" id="delete_button" onclick="delete_notice();" class="btn btn-secondary" data-dismiss="modal">DELETE</button>
+								<button type="button" class="btn btn-primary" data-dismiss="modal">OK</button>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="modal fade" id="noticeCreateModal" tabindex="-1" role="dialog" aria-hidden="true">
+					<div class="modal-dialog modal-dialog-centered modal-md" role="document">
+						<div class="modal-content">
+							<div class="modal-header">
+								<h5 class="modal-title">Create Notice</h5>
+								<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+									<span aria-hidden="true">&times;</span>
+								</button>
+							</div>
+							<div class="modal-body m-3">
+								<table class="table table-borderless">
+									<tbody>
+										<tr>
+											<td style="width: 20%;">Title</td>
+											<td>
+												<input type="text" class="form-control" placeholder="Title" id="new_notice_title">
+											</td>
+										</tr>
+										<tr>
+											<td class="align-top">Context</td>
+											<td>
+												<textarea class="form-control" rows="14" palceholder="Context" id="new_notice_content"></textarea>
+											</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+							<div class="modal-footer">
+								<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+								<button type="button" class="btn btn-primary" onclick="create_notice_click()" data-dismiss="modal">Save</button>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../js/app.js"></script>
+	<script src="../js/feather.js"></script>
+	<script src="../js/charts.js"></script>
+	<script src="../js/forms.js"></script>
+	<script src="../js/tables.js"></script>
+	<script src="upper_navi.js"></script>
+
+</body>
+
+</html>

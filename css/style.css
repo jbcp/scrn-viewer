@@ -1,0 +1,67 @@
+.wj-flexgrid {  
+    max-height: 250px; 
+    margin:10px;
+  }
+  
+  /* 사용자 정의 Wijmo Style */
+  /* Material Style */
+  
+  .wj-content {
+      border-radius: 4px;
+      background-color: #ffffff;
+      color: #333333;
+  }
+  .wj-header {
+      background-color: #3e50b4;
+      color: #ffffff;
+  }
+  .wj-state-selected {
+      background-color: #ff3f80;
+      color: #ffffff;
+  }
+  .wj-state-multi-selected {
+      background-color: #f2a9c2;
+      color: #ffffff;
+  }                    
+  .wj-tooltip {
+      background-color: #ffffe5;
+      color: #333333;
+  }
+  .wj-cell:not(.wj-header):not(.wj-group):not(.wj-alt):not(.wj-state-selected):not(.wj-state-multi-selected) {
+      background-color: #ffffff;
+      color: #333333;
+  }
+  .wj-alt:not(.wj-header):not(.wj-group):not(.wj-state-selected):not(.wj-state-multi-selected) {
+      background-color: #f9f9f9;
+      color: #333333;
+  }
+
+
+.pivot_grid{
+    height: 500px;
+    max-height: 600px;
+    width: 800px;
+    max-width: 500px;
+    margin :0;
+}
+.pivot_panel{
+    height: 500px;
+    max-height: 600px;
+    width: 800px;
+    max-width: 500px;
+}
+.flex_grid{
+    height: 400px;
+    max-height: 600px;
+    
+    min-width:500px;
+    max-width:400px;
+}
+.pivot_chart{
+    width: 400px;
+    max-width: 400px;
+}
+.pivot_chart_diagnoses{
+    width: 500px;
+    height: 500px;
+}

@@ -1,0 +1,1534 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<meta name="description" content="Responsive Bootstrap 4 Admin Template">
+	<meta name="author" content="Bootlab">
+
+	<title>SCRN</title>
+
+	<link href="../css/app.css" rel="stylesheet">
+	<script src="../js/jquery-latest.js"></script>
+
+	<script type="text/javascript">
+		var c_table;
+		var d_table;
+		var m_table;
+		var selected_patient;
+
+		function name_encyption(name_text){
+			var last_name = name_text.substring(0,1);
+			return last_name + "○○";
+		}
+		$(document).ready(function () {
+			var chart_data_male = [0, 0, 0, 0, 0, 0, 0, 0];
+			var chart_data_female = [0, 0, 0, 0, 0, 0, 0, 0];
+			var chart_data_gender = [0, 0];
+
+			var project_id = localStorage.getItem("project_id");
+			var eligibility_id = localStorage.getItem("eligibility_id");
+
+			$('#sidebar_navi').load('result_menu.html');
+			$('#footer').load('footer.html');
+			upper_navi_1("Patient");
+			upper_navi_4(project_id, eligibility_id);
+			$('#loadingModal').modal('show');
+
+			var xhttp = new XMLHttpRequest();
+
+			xhttp.onreadystatechange = function () {
+				if (this.readyState == this.DONE && this.status == 200) {
+					var result_array = xhttp.responseText.split("&");
+
+					var img_src = result_array[2];
+					var rand = Math.random();
+					document.getElementById("nav_img").setAttribute("src", img_src + "?" + rand);
+
+					var user_name = result_array[3];
+					document.getElementById("user_name").appendChild(document.createTextNode(user_name));
+
+					var result_chart = eval(result_array[1]);
+					var tmp_m = result_chart[0].male_num;
+					var tmp_chart_data_male = tmp_m.split(", ").map(Number);
+					var tmp_f = result_chart[0].female_num;
+					tmp_chart_data_female = tmp_f.split(", ").map(Number);
+
+					for(var i = 0; i <tmp_chart_data_male.length; i++){
+						chart_data_male[i] = 0;
+						chart_data_female[i] = 0;
+						chart_data_male[i] = chart_data_male[i]+tmp_chart_data_male[i];
+						chart_data_female[i] = chart_data_female[i]+tmp_chart_data_female[i];
+					}
+
+					chart_data_gender[0] = 0;
+					for(var i = 0; i<tmp_chart_data_male.length; i++){
+						chart_data_gender[0] = chart_data_gender[0]+tmp_chart_data_male[i];
+					}
+
+					chart_data_gender[1] = 0;
+					for(var i = 0; i<tmp_chart_data_female.length; i++){
+						chart_data_gender[1] = chart_data_gender[1]+tmp_chart_data_female[i];
+					}
+					
+					var gender_total = chart_data_gender[0]+chart_data_gender[1];
+					var male_percent = Math.round(chart_data_gender[0]/gender_total*100);
+					var female_percent = Math.round(chart_data_gender[1]/gender_total*100);
+
+					document.getElementById("male_num").appendChild(document.createTextNode(chart_data_gender[0]+"명("+male_percent+"%)"));
+					document.getElementById("female_num").appendChild(document.createTextNode(chart_data_gender[1]+"명("+female_percent+"%)"));
+
+					var ctx = document.getElementById("chartjs-dashboard-bar");
+					new Chart(ctx, {
+						type: 'bar',
+						data: {
+							labels: ["0-9", "10'", "20'", "30'", "40'", "50", "60", "70+"],
+							datasets: [{
+								label: "Male",
+								backgroundColor: "#0cc2aa",
+								borderColor: "#0cc2aa",
+								hoverBackgroundColor: "#0cc2aa",
+								hoverBorderColor: "#0cc2aa",
+								data: chart_data_male
+							}, {
+								label: "Female",
+								backgroundColor: "#FCC100",
+								borderColor: "#FCC100",
+								hoverBackgroundColor: "#FCC100",
+								hoverBorderColor: "#FCC100",
+								data: chart_data_female
+							}]
+						},
+						options: {
+							maintainAspectRatio: false,
+							legend: {
+								display: false
+							},
+							scales: {
+								yAxes: [{
+									gridLines: {
+										display: false
+									},
+									stacked: false,
+									ticks: {
+									},
+									scaleLabel: {
+										display: true,
+										labelString: 'Number(명)'
+									}
+								}],
+								xAxes: [{
+									barPercentage: .75,
+									categoryPercentage: .5,
+									stacked: false,
+									gridLines: {
+										color: "transparent"
+									},
+									scaleLabel: {
+										display: true,
+										labelString: 'Age(세)'
+									}
+								}]
+							}
+						}
+					});
+				
+					new Chart(document.getElementById("chartjs-dashboard-pie"), {
+						type: 'pie',
+						data: {
+							labels: ["MALE", "FEMALE"],
+							datasets: [{
+								data: chart_data_gender,
+								backgroundColor: ["#0cc2aa", "#fcc100"],
+								borderColor: "transparent"
+							}]
+						},
+						options: {
+							responsive: !window.MSInputMethodContext,
+							maintainAspectRatio: false,
+							legend: {
+								display: false
+							},
+							
+							animation: {
+								duration: 500,
+								easing: "easeOutQuart",
+								onComplete: function () {
+									var ctx = this.chart.ctx;
+									ctx.textAlign = 'center';
+									ctx.textBaseline = 'bottom';
+							
+									this.data.datasets.forEach(function (dataset) {
+							
+									for (var i = 0; i < dataset.data.length; i++) {
+										var model = dataset._meta[Object.keys(dataset._meta)[0]].data[i]._model,
+											total = dataset._meta[Object.keys(dataset._meta)[0]].total,
+											mid_radius = model.innerRadius + (model.outerRadius - model.innerRadius)/2,
+											start_angle = model.startAngle,
+											end_angle = model.endAngle,
+											mid_angle = start_angle + (end_angle - start_angle)/2;
+							
+										var x = mid_radius * Math.cos(mid_angle);
+										var y = mid_radius * Math.sin(mid_angle);
+							
+										ctx.fillStyle = 'black';
+										if (i == 3){ // Darker text color for lighter background
+										ctx.fillStyle = '#444';
+										}
+										var percent = "("+String(Math.round(dataset.data[i]/total*100)) + "%)";
+										if(dataset.data[i] != 0)
+											ctx.fillText(dataset.data[i]+"명"+percent, model.x + x, model.y + y);
+									}
+									});               
+								}
+							}
+						}
+						
+
+					});
+
+					var result_data_pre = result_array[0];
+					var result_data = eval(result_data_pre);
+					var result_output = Object.keys(result_data);
+
+					var irb_status = result_array[4];
+
+					for (var i = 0; i < result_output.length; i++) {
+						var createTR = document.createElement("tr");
+						document.getElementById("patient_result").appendChild(createTR);
+
+						var patient_id_TD = document.createElement("td");
+						var patient_id_data;
+						if(irb_status != 2) patient_id_data= document.createTextNode("-");
+						else patient_id_data= document.createTextNode(result_data[i].id);
+						patient_id_TD.appendChild(patient_id_data);
+						createTR.appendChild(patient_id_TD);
+
+						var patient_name_TD = document.createElement("td");
+						var patient_name_data;
+						if(irb_status != 2) patient_name_data = document.createTextNode(name_encyption(result_data[i].name));
+						else patient_name_data = document.createTextNode(result_data[i].name);
+						patient_name_TD.appendChild(patient_name_data);
+						createTR.appendChild(patient_name_TD);
+
+						var patient_age_TD = document.createElement("td");
+						var patient_age = document.createTextNode(result_data[i].age);
+						patient_age_TD.appendChild(patient_age);
+						createTR.appendChild(patient_age_TD);
+
+						var patient_gender_Td = document.createElement("td");
+						var patient_gender_data = document.createTextNode(result_data[i].gender);
+						patient_gender_Td.appendChild(patient_gender_data);
+						createTR.appendChild(patient_gender_Td);
+
+						var patient_last_visit_Td = document.createElement("td");
+						var patient_last_visit_data = document.createTextNode(result_data[i].last_visit);
+						patient_last_visit_Td.appendChild(patient_last_visit_data);
+						createTR.appendChild(patient_last_visit_Td);
+
+						var patient_last_visit_type_Td = document.createElement("td");
+						var patient_last_visit_type_data = document.createTextNode(result_data[i].last_visit_type);
+						patient_last_visit_type_Td.appendChild(patient_last_visit_type_data);
+						createTR.appendChild(patient_last_visit_type_Td);
+
+						var patient_action_select_Td = document.createElement("td");
+						var patient_action_select = document.createElement("select");
+						patient_action_select.setAttribute("id", "patient_action_" + result_data[i].id);
+						patient_action_select.setAttribute("class", "form-control select 2");
+						patient_action_select.setAttribute("data-toggle", "select2");
+						patient_action_select.setAttribute("onchange", "status_change(" + result_data[i].id + ", this.options[this.selectedIndex].value)");
+
+						var patient_option_potential = document.createElement("option");
+						patient_option_potential.setAttribute("value", "potential");
+						patient_option_potential.appendChild(document.createTextNode("POTENTIAL"));
+						patient_action_select.appendChild(patient_option_potential);
+
+						var patient_option_candidate = document.createElement("option");
+						patient_option_candidate.setAttribute("value", "candidate");
+						patient_option_candidate.appendChild(document.createTextNode("CANDIDATE"));
+						patient_action_select.appendChild(patient_option_candidate);
+
+						var patient_option_not_qulified = document.createElement("option");
+						patient_option_not_qulified.setAttribute("value", "not_qulified");
+						patient_option_not_qulified.appendChild(document.createTextNode("NOT QUALIFIED"));
+						patient_action_select.appendChild(patient_option_not_qulified);
+
+						var patient_option_enroll = document.createElement("option");
+						patient_option_enroll.setAttribute("value", "enrolled");
+						patient_option_enroll.appendChild(document.createTextNode("ENROLLED"));
+						patient_action_select.appendChild(patient_option_enroll);
+
+						var patient_option_deny = document.createElement("option");
+						patient_option_deny.setAttribute("value", "deny");
+						patient_option_deny.appendChild(document.createTextNode("DENY"));
+						patient_action_select.appendChild(patient_option_deny);
+
+						var patient_option_screening_failed = document.createElement("option");
+						patient_option_screening_failed.setAttribute("value", "screening_failed");
+						patient_option_screening_failed.appendChild(document.createTextNode("SCREENING FAILED"));
+						patient_action_select.appendChild(patient_option_screening_failed);
+
+						patient_action_select_Td.appendChild(patient_action_select);
+						createTR.appendChild(patient_action_select_Td);
+
+						if (result_data[i].status != null)
+							patient_action_select.value = result_data[i].status;
+						else
+							patient_action_select.value = "potential";
+
+
+						var patient_detail_TD = document.createElement("td");
+						var patient_drug = document.createElement("button");
+						var patient_condition = document.createElement("button");
+						var patient_measurement = document.createElement("button");
+						var patinet_procedure = document.createElement("button");
+
+						patient_drug.setAttribute("class", "btn btn-sm btn-outline-primary float-right");
+						patient_drug.setAttribute("style", "margin-right:5px");
+						patient_drug.setAttribute("id", "drugButton_" + result_data[i].id);
+						patient_drug.setAttribute("onclick", "drugButton_clicked(" + result_data[i].id + ");");
+						patient_drug.appendChild(document.createTextNode("Drug"));
+
+						patient_condition.setAttribute("class", "btn btn-sm btn-outline-primary float-right");
+						patient_condition.setAttribute("style", "margin-right:5px");
+						patient_condition.setAttribute("id", "conditionButton_" + result_data[i].id);
+						patient_condition.setAttribute("onclick", "conditionButton_clicked(" + result_data[i].id + ");");
+						patient_condition.appendChild(document.createTextNode("Diagnosis"));
+
+						patinet_procedure.setAttribute("class", "btn btn-sm btn-outline-primary float-right");
+						patinet_procedure.setAttribute("style", "margin-right:5px");
+						patinet_procedure.setAttribute("id", "procButton_" + result_data[i].id);
+						patinet_procedure.setAttribute("onclick", "procedureButton_clicked(" + result_data[i].id + ");");
+						patinet_procedure.appendChild(document.createTextNode("Procedure"));
+
+						patient_measurement.setAttribute("class", "btn btn-sm btn-outline-primary float-right");
+						patient_measurement.setAttribute("style", "margin-right:5px");
+						patient_measurement.setAttribute("id", "measureButton_" + result_data[i].id);
+						patient_measurement.setAttribute("onclick", "measureButton_clicked(" + result_data[i].id + ");");
+						patient_measurement.appendChild(document.createTextNode("Lab"));
+
+						patient_detail_TD.appendChild(patient_drug);
+						patient_detail_TD.appendChild(patient_condition);
+						patient_detail_TD.appendChild(patinet_procedure);
+						patient_detail_TD.appendChild(patient_measurement);
+						createTR.appendChild(patient_detail_TD);
+
+					}
+					$('#datatables-basic').DataTable({
+						responsive: true
+					});
+
+					$('#loadingModal').modal('hide');
+
+				}
+			}
+			xhttp.open("GET", "./patient_result.jsp?action=load&project_id=" + project_id + "&eligibility_id=" + eligibility_id);
+			xhttp.send();
+
+
+		});
+
+
+		function drugButton_clicked(id) {
+			selected_patient = id;
+			var pxhttp = new XMLHttpRequest();
+
+			pxhttp.onreadystatechange = function () {
+				if (this.readyState == this.DONE && this.status == 200) {
+
+					var result_parray = pxhttp.responseText.split("&");
+
+					var drug_array_pre = result_parray[0];
+					var drug_array = eval(drug_array_pre);
+					var drug_array_output = Object.keys(drug_array);
+
+					$("#datatables-drug").dataTable().fnDestroy();
+					var table = document.getElementById("drug_table");
+					while(table.hasChildNodes()) table.removeChild(table.firstChild);
+
+					for (var i = 0; i < drug_array_output.length; i++) {
+						var createTR = document.createElement("tr");
+						var drug_table_patient = document.getElementById("drug_table");
+						drug_table_patient.appendChild(createTR);
+
+						var drug_name_TD = document.createElement("td");
+						var drug_name = document.createTextNode(drug_array[i].drug_name);
+						drug_name_TD.appendChild(drug_name);
+						createTR.appendChild(drug_name_TD);
+
+						var drug_exposure_start_TD = document.createElement("td");
+						var drug_exposure_start = document.createTextNode(drug_array[i].drug_exposure_start);
+						drug_exposure_start_TD.appendChild(drug_exposure_start);
+						createTR.appendChild(drug_exposure_start_TD);
+
+						var drug_exposure_end_TD = document.createElement("td");
+						var drug_exposure_end = document.createTextNode(drug_array[i].drug_exposure_end);
+						drug_exposure_end_TD.appendChild(drug_exposure_end);
+						createTR.appendChild(drug_exposure_end_TD);
+
+						var drug_quantity_TD = document.createElement("td");
+						var drug_quantity = document.createTextNode(drug_array[i].quantity);
+						drug_quantity_TD.appendChild(drug_quantity);
+						createTR.appendChild(drug_quantity_TD);
+
+						var drug_days_supply_TD = document.createElement("td");
+						var drug_days_supply = document.createTextNode(drug_array[i].days_supply);
+						drug_days_supply_TD.appendChild(drug_days_supply);
+						createTR.appendChild(drug_days_supply_TD);
+
+						var drug_dose_TD = document.createElement("td");
+						var drug_dose = document.createTextNode(drug_array[i].dose_unit);
+						drug_dose_TD.appendChild(drug_dose);
+						createTR.appendChild(drug_dose_TD);
+
+						var drug_route_TD = document.createElement("td");
+						var drug_route = document.createTextNode(drug_array[i].route_concept);
+						drug_route_TD.appendChild(drug_route);
+						createTR.appendChild(drug_route_TD);
+
+					}
+
+					d_table=$('#datatables-drug').DataTable({
+						destroy: true,
+						"order": [[1, "desc"]]
+					});
+
+					var drug_array_pre = result_parray[1];
+					var drug_array = eval(drug_array_pre);
+					var drug_array_output = Object.keys(drug_array);
+
+
+					$("#datatables-drug-distinct").dataTable().fnDestroy();
+					var table1 = document.getElementById("drug_table_distinct");
+					while(table1.hasChildNodes()) table1.removeChild(table1.firstChild);
+
+					for (var i = 0; i < drug_array_output.length; i++) {
+						var createTR = document.createElement("tr");
+						var drug_table_d_patient = document.getElementById("drug_table_distinct");
+						drug_table_d_patient.appendChild(createTR);
+
+						var drug_name_TD = document.createElement("td");
+						var drug_name = document.createTextNode(drug_array[i].drug_name);
+						drug_name_TD.appendChild(drug_name);
+						createTR.appendChild(drug_name_TD);
+
+						var drug_exposure_start_TD = document.createElement("td");
+						var drug_exposure_start = document.createTextNode(drug_array[i].drug_exposure_start);
+						drug_exposure_start_TD.appendChild(drug_exposure_start);
+						createTR.appendChild(drug_exposure_start_TD);
+
+						var drug_exposure_end_TD = document.createElement("td");
+						var drug_exposure_end = document.createTextNode(drug_array[i].drug_exposure_end);
+						drug_exposure_end_TD.appendChild(drug_exposure_end);
+						createTR.appendChild(drug_exposure_end_TD);
+
+						var drug_route_TD = document.createElement("td");
+						var drug_route = document.createTextNode(drug_array[i].route_concept);
+						drug_route_TD.appendChild(drug_route);
+						createTR.appendChild(drug_route_TD);
+
+						var drug_d_detail_TD = document.createElement("td");
+						var drug_d_detail = document.createElement("button");
+						drug_d_detail.setAttribute("class",'btn btn-primary');
+						drug_d_detail.setAttribute("style", "background-color:transparent; border-color:transparent; color: rgb(39, 201, 180)");
+						drug_d_detail.setAttribute("onclick", "drug_detail("+drug_array[i].drug_id+");");
+
+						var drug_detail_icon = document.createElement("i");
+						drug_detail_icon.setAttribute("class", "fas fa-plus-circle");
+
+						drug_d_detail.appendChild(drug_detail_icon);
+						drug_d_detail_TD.appendChild(drug_d_detail);
+						createTR.appendChild(drug_d_detail_TD);
+
+					}
+
+					d_table=$('#datatables-drug-distinct').DataTable({
+						destroy: true,
+						"order": [[1, "desc"]]
+					});
+
+					$('#patientDrugInfo').modal('show');
+
+				}
+			}
+			pxhttp.open("GET", "./patient_result.jsp?action=loaddurginfo&patient_id=" + id);
+			pxhttp.send();
+
+		}
+
+		function conditionButton_clicked(id) {
+			selected_patient = id;
+
+			var pxhttp = new XMLHttpRequest();
+			pxhttp.onreadystatechange = function () {
+				if (this.readyState == this.DONE && this.status == 200) {
+
+					var result_parray = pxhttp.responseText.split("&");
+					var condition_array_pre = result_parray[0];		
+					var condition_array = eval(condition_array_pre);
+					var condition_array_output = Object.keys(condition_array);
+
+					$("#datatables-condition").dataTable().fnDestroy();
+					var table = document.getElementById("condition_table");
+					while(table.hasChildNodes()) table.removeChild(table.firstChild);
+
+					for (var i = 0; i < condition_array_output.length; i++) {
+						var createTR = document.createElement("tr");
+						document.getElementById("condition_table").appendChild(createTR);
+
+						var condition_name_TD = document.createElement("td");
+						var condition_name = document.createTextNode(condition_array[i].condition_name);
+						condition_name_TD.appendChild(condition_name);
+						createTR.appendChild(condition_name_TD);
+
+						var condition_exposure_start_TD = document.createElement("td");
+						var condition_exposure_start = document.createTextNode(condition_array[i].condition_start_date);
+						condition_exposure_start_TD.appendChild(condition_exposure_start);
+						createTR.appendChild(condition_exposure_start_TD);
+
+						var condition_concept_TD = document.createElement("td");
+						var condition_concept = document.createTextNode(condition_array[i].concept_name);
+						condition_concept_TD.appendChild(condition_concept);
+						createTR.appendChild(condition_concept_TD);
+					}
+
+					$('#datatables-condition').DataTable({
+						destroy: true,
+						"order": [[1, "desc"]]
+					});
+
+					var condition_d_array_pre = result_parray[1];
+					var condition_d_array = eval(condition_d_array_pre);
+					var condition_d_array_output = Object.keys(condition_d_array);
+
+					$("#datatables-condition-distinct").dataTable().fnDestroy();
+					var table1 = document.getElementById("condition_table_distinct");
+					while(table1.hasChildNodes()) table1.removeChild(table1.firstChild);
+
+					for (var i = 0; i < condition_d_array_output.length; i++) {
+						var createTR = document.createElement("tr");
+
+						document.getElementById("condition_table_distinct").appendChild(createTR);
+
+						var condition_d_name_TD = document.createElement("td");
+						var condition_d_name = document.createTextNode(condition_d_array[i].condition_name);
+						condition_d_name_TD.appendChild(condition_d_name);
+						createTR.appendChild(condition_d_name_TD);
+
+						var condition_d_exposure_start_TD = document.createElement("td");
+						var condition_d_exposure_start = document.createTextNode(condition_d_array[i].condition_start_date);
+						condition_d_exposure_start_TD.appendChild(condition_d_exposure_start);
+						createTR.appendChild(condition_d_exposure_start_TD);
+
+						var condition_d_exposure_end_TD = document.createElement("td");
+						var condition_d_exposure_end = document.createTextNode(condition_d_array[i].condition_end_date);
+						condition_d_exposure_end_TD.appendChild(condition_d_exposure_end);
+						createTR.appendChild(condition_d_exposure_end_TD);
+
+						var condition_d_detail_TD = document.createElement("td");
+						var condition_d_detail = document.createElement("button");
+						condition_d_detail.setAttribute("class",'btn btn-primary');
+						condition_d_detail.setAttribute("style", "background-color:transparent; border-color:transparent; color: rgb(39, 201, 180)");
+						condition_d_detail.setAttribute("onclick", "condition_detail("+condition_d_array[i].condition_id+");");
+
+						var condition_detail_icon = document.createElement("i");
+						condition_detail_icon.setAttribute("class", "fas fa-plus-circle");
+
+						condition_d_detail.appendChild(condition_detail_icon);
+						condition_d_detail_TD.appendChild(condition_d_detail);
+						createTR.appendChild(condition_d_detail_TD);
+
+					}
+
+					$('#datatables-condition-distinct').DataTable({
+						destroy: true,
+						"order": [[0, "desc"], [3, "asc"]]
+					});
+
+					$('#patientConditionInfo').modal('show');
+				}
+			}
+			pxhttp.open("GET", "./patient_result.jsp?action=loadconditioninfo&patient_id=" + id);
+			pxhttp.send();
+
+
+		}
+
+		function measureButton_clicked(id) {
+			selected_patient = id;
+
+			var pxhttp1 = new XMLHttpRequest();
+			pxhttp1.onreadystatechange = function () {
+				if (this.readyState == this.DONE && this.status == 200) {
+
+					var result_parray = pxhttp1.responseText.split("&");
+
+					var measurement_array_pre = result_parray[0];
+					var measurement_array = eval(measurement_array_pre);
+					var measurement_array_output = Object.keys(measurement_array);
+
+
+					$("#datatables-measurement").dataTable().fnDestroy();
+					var table = document.getElementById("measurement_table");
+					while(table.hasChildNodes()) table.removeChild(table.firstChild);
+
+
+					for (var i = 0; i < measurement_array_output.length; i++) {
+						var createTR = document.createElement("tr");
+
+						document.getElementById("measurement_table").appendChild(createTR);
+
+						var measurement_name_TD = document.createElement("td");
+						var measurement_name = document.createTextNode(measurement_array[i].measurement_name);
+						measurement_name_TD.appendChild(measurement_name);
+						createTR.appendChild(measurement_name_TD);
+
+						var measurement_start_TD = document.createElement("td");
+						var measurement_start = document.createTextNode(measurement_array[i].measurement_date);
+						measurement_start_TD.appendChild(measurement_start);
+						createTR.appendChild(measurement_start_TD);
+
+						var measurement_value_TD = document.createElement("td");
+						var measurement_value = document.createTextNode(measurement_array[i].value);
+						measurement_value_TD.appendChild(measurement_value);
+						createTR.appendChild(measurement_value_TD);
+
+						var measurement_range_low_TD = document.createElement("td");
+						var measurement_range_low = document.createTextNode(measurement_array[i].range_low);
+						measurement_range_low_TD.appendChild(measurement_range_low);
+						createTR.appendChild(measurement_range_low_TD);
+
+						var measurement_range_high_TD = document.createElement("td");
+						var measurement_range_high = document.createTextNode(measurement_array[i].range_high);
+						measurement_range_high_TD.appendChild(measurement_range_high);
+						createTR.appendChild(measurement_range_high_TD);
+
+						var measurement_unit_TD = document.createElement("td");
+						var measurement_unit = document.createTextNode(measurement_array[i].unit);
+						measurement_unit_TD.appendChild(measurement_unit);
+						createTR.appendChild(measurement_unit_TD);
+					}
+					$('#datatables-measurement').DataTable({
+						destroy: true,
+						"order": [[1, "desc"]]
+					});
+
+
+					var measurement_d_array_pre = result_parray[1];
+					var measurement_d_array = eval(measurement_d_array_pre);
+					var measurement_d_array_output = Object.keys(measurement_d_array);
+
+					$("#datatables-measurement-distinct").dataTable().fnDestroy();
+					var table1 = document.getElementById("measurement_table_distinct");
+					while(table1.hasChildNodes()) table1.removeChild(table1.firstChild);
+
+					for (var i = 0; i < measurement_d_array_output.length; i++) {
+						var createTR = document.createElement("tr");
+
+						document.getElementById("measurement_table_distinct").appendChild(createTR);
+
+						var measurement_name_TD = document.createElement("td");
+						var measurement_name = document.createTextNode(measurement_d_array[i].measurement_name);
+						measurement_name_TD.appendChild(measurement_name);
+						createTR.appendChild(measurement_name_TD);
+
+						var measurement_unit_TD = document.createElement("td");
+						var measurement_unit = document.createTextNode(measurement_d_array[i].unit);
+						measurement_unit_TD.appendChild(measurement_unit);
+						createTR.appendChild(measurement_unit_TD);
+
+						var measurement_d_detail_TD = document.createElement("td");
+						var measurement_d_detail = document.createElement("button");
+						measurement_d_detail.setAttribute("class",'btn btn-primary');
+						measurement_d_detail.setAttribute("style", "background-color:transparent; border-color:transparent; color: rgb(39, 201, 180)");
+						measurement_d_detail.setAttribute("onclick", "measure_graph_show("+measurement_d_array[i].measurement_id+");");
+
+						var measrue_detail_icon = document.createElement("i");
+						measrue_detail_icon.setAttribute("class", "fas fa-plus-circle");
+
+						measurement_d_detail.appendChild(measrue_detail_icon);
+						measurement_d_detail_TD.appendChild(measurement_d_detail);
+						createTR.appendChild(measurement_d_detail_TD);
+
+					}
+					$('#datatables-measurement-distinct').DataTable({
+						destroy: true,
+						"order": [[0, "desc"]]
+					});
+
+					$('#patientMeasurementInfo').modal('show');
+
+				}
+			}
+			pxhttp1.open("GET", "./patient_result.jsp?action=loadmeasureinfo&patient_id=" + id);
+			pxhttp1.send();
+
+		}
+
+		function procedureButton_clicked(id) {
+			selected_patient = id;
+
+			var pxhttp = new XMLHttpRequest();
+			pxhttp.onreadystatechange = function () {
+				if (this.readyState == this.DONE && this.status == 200) {
+
+					var result_parray = pxhttp.responseText.split("&");
+					var procedure_array_pre = result_parray[0];		
+					var procedure_array = eval(procedure_array_pre);
+					var procedure_array_output = Object.keys(procedure_array);
+
+					$("#datatables-procedure").dataTable().fnDestroy();
+					var table = document.getElementById("procedure_table");
+					while(table.hasChildNodes()) table.removeChild(table.firstChild);
+
+					for (var i = 0; i < procedure_array_output.length; i++) {
+						var createTR = document.createElement("tr");
+						document.getElementById("procedure_table").appendChild(createTR);
+
+						var procedure_name_TD = document.createElement("td");
+						var procedure_name = document.createTextNode(procedure_array[i].procedure_name);
+						procedure_name_TD.appendChild(procedure_name);
+						createTR.appendChild(procedure_name_TD);
+
+						var procedure_exposure_start_TD = document.createElement("td");
+						var procedure_exposure_start = document.createTextNode(procedure_array[i].procedure_start_date);
+						procedure_exposure_start_TD.appendChild(procedure_exposure_start);
+						createTR.appendChild(procedure_exposure_start_TD);
+
+						var procedure_concept_TD = document.createElement("td");
+						var procedure_concept = document.createTextNode(procedure_array[i].concept_name);
+						procedure_concept_TD.appendChild(procedure_concept);
+						createTR.appendChild(procedure_concept_TD);
+					}
+
+					$('#datatables-procedure').DataTable({
+						destroy: true,
+						"order": [[1, "desc"]]
+					});
+
+					var procedure_d_array_pre = result_parray[1];
+					var procedure_d_array = eval(procedure_d_array_pre);
+					var procedure_d_array_output = Object.keys(procedure_d_array);
+
+					$("#datatables-procedure-distinct").dataTable().fnDestroy();
+					var table1 = document.getElementById("procedure_table_distinct");
+					while(table1.hasChildNodes()) table1.removeChild(table1.firstChild);
+
+					for (var i = 0; i < procedure_d_array_output.length; i++) {
+						var createTR = document.createElement("tr");
+
+						document.getElementById("procedure_table_distinct").appendChild(createTR);
+
+						var procedure_d_name_TD = document.createElement("td");
+						var procedure_d_name = document.createTextNode(procedure_d_array[i].procedure_name);
+						procedure_d_name_TD.appendChild(procedure_d_name);
+						createTR.appendChild(procedure_d_name_TD);
+
+						var procedure_d_exposure_start_TD = document.createElement("td");
+						var procedure_d_exposure_start = document.createTextNode(procedure_d_array[i].procedure_start_date);
+						procedure_d_exposure_start_TD.appendChild(procedure_d_exposure_start);
+						createTR.appendChild(procedure_d_exposure_start_TD);
+
+						var procedure_d_exposure_end_TD = document.createElement("td");
+						var procedure_d_exposure_end = document.createTextNode(procedure_d_array[i].procedure_end_date);
+						procedure_d_exposure_end_TD.appendChild(procedure_d_exposure_end);
+						createTR.appendChild(procedure_d_exposure_end_TD);
+
+						var procedure_d_detail_TD = document.createElement("td");
+						var procedure_d_detail = document.createElement("button");
+						procedure_d_detail.setAttribute("class",'btn btn-primary');
+						procedure_d_detail.setAttribute("style", "background-color:transparent; border-color:transparent; color: rgb(39, 201, 180)");
+						procedure_d_detail.setAttribute("onclick", "procedure_detail("+procedure_d_array[i].procedure_id+");");
+
+						var procedure_detail_icon = document.createElement("i");
+						procedure_detail_icon.setAttribute("class", "fas fa-plus-circle");
+
+						procedure_d_detail.appendChild(procedure_detail_icon);
+						procedure_d_detail_TD.appendChild(procedure_d_detail);
+						createTR.appendChild(procedure_d_detail_TD);
+
+					}
+
+					$('#datatables-procedure-distinct').DataTable({
+						destroy: true,
+						"order": [[0, "desc"], [3, "asc"]]
+					});
+
+					$('#patientProcedureInfo').modal('show');
+				}
+			}
+			pxhttp.open("GET", "./patient_result.jsp?action=loadprocedureinfo&patient_id=" + id);
+			pxhttp.send();
+
+
+		}
+
+
+		function status_change(id, value) {
+			var xhttp = new XMLHttpRequest();
+			xhttp.onreadystatechange = function () {
+				document.getElementById("patient_action_" + id).value = value;
+			}
+			xhttp.open("GET", "./patient_result.jsp?action=save&project_id=" + project_id + "&patient_id=" + id + "&status=" + value+ "&eligibility_id="+eligibility_id);
+			xhttp.send();
+		}
+
+		function refresh(){
+		}
+
+		function measure_graph_show(id){
+
+			var xhttp = new XMLHttpRequest();
+			xhttp.onreadystatechange = function(){
+				if(this.readyState == this.DONE && this.status == 200){
+					var result_array = xhttp.responseText;
+
+					var detail_measure_pre = result_array;
+					var detail_measure = eval(detail_measure_pre);
+					var detail_measure_output = Object.keys(detail_measure);
+
+					var detail_title = document.getElementById("measure_detail_title");
+					while(detail_title.hasChildNodes()) detail_title.removeChild(detail_title.firstChild);
+					document.getElementById("measure_detail_title").appendChild(document.createTextNode(detail_measure[0].measurement_name));
+					var y_label = "value("+detail_measure[0].unit+")";
+					var chart_data_lab = [0];
+					var chart_data_label = ['a'];
+
+					chart_data_lab[0] = 0;
+					chart_data_lab[0] = chart_data_lab[0] + detail_measure[0].value;
+
+					chart_data_label[0] = "";
+					chart_data_label[0] = detail_measure[0].measurement_date;
+					
+					for(var i = 1; i < detail_measure_output.length; i++){
+						chart_data_lab[i] = 0;
+						chart_data_lab[i] = chart_data_lab[i] + detail_measure[i].value;
+
+						chart_data_label[i] = "";
+						chart_data_label[i] =  detail_measure[i].measurement_date;
+
+					}
+					$('#chartjs-measure-line').remove();
+					var chart_canvas = document.createElement("canvas");
+					chart_canvas.setAttribute("id", "chartjs-measure-line");
+					document.getElementById("chart_div").appendChild(chart_canvas);
+
+					new Chart(document.getElementById("chartjs-measure-line"), {
+						type: 'line',
+						data: {
+							labels: chart_data_label,
+							datasets: [{
+								label: "value",
+								fill: true,
+								backgroundColor: "transparent",
+								borderColor: "#0cc2aa",
+								data: chart_data_lab
+							}]
+						},
+						options: {
+							maintainAspectRatio: false,
+							legend: {
+								display: false
+							},
+							tooltips: {
+								intersect: false
+							},
+							hover: {
+								intersect: true
+							},
+							plugins: {
+								filler: {
+									propagate: false
+								}
+							},
+							scales: {
+								xAxes: [{
+									reverse: true,
+									gridLines: {
+										color: "rgba(0,0,0,0.05)"
+									},
+									scaleLabel: {
+										display: true,
+										labelString: 'Date'
+									}
+								}],
+								yAxes: [{
+									ticks: {
+										beginAtZero: true
+									},
+									display: true,
+									borderDash: [5, 5],
+									gridLines: {
+										color: "rgba(0,0,0,0)",
+										fontColor: "#fff"
+									},
+									scaleLabel: {
+										display: true,
+										labelString: y_label
+									}
+								}]
+							}
+						}
+					});
+				}
+				$('#patientMeasurementDetail').modal('show');
+
+			}
+			xhttp.open("GET", "./patient_result.jsp?action=loadmeasuredetail&concept_id=" + id+"&patient_id="+selected_patient);
+			xhttp.send();
+		}
+
+		function condition_detail(id){
+			
+			var xhttp = new XMLHttpRequest();
+			xhttp.onreadystatechange=function(){
+				if(this.readyState== this.DONE && this.status ==200){
+					var result_array = xhttp.responseText;
+
+					var detail_condition_pre = result_array;
+					var detail_condition = eval(detail_condition_pre);
+					var detail_condition_output = Object.keys(detail_condition);
+
+					var detail_title = document.getElementById("condition_detail_title");
+					while(detail_title.hasChildNodes()) detail_title.removeChild(detail_title.firstChild);
+					document.getElementById("condition_detail_title").appendChild(document.createTextNode(detail_condition[0].condition_name));
+
+
+					$('#datatables-condition-detail').dataTable().fnDestroy();
+					var table = document.getElementById("condition_table_detail");
+					while(table.hasChildNodes()) table.removeChild(table.firstChild);
+
+					for(var i = 0; i < detail_condition_output.length; i++){
+						var createTR = document.createElement("tr");
+						document.getElementById("condition_table_detail").appendChild(createTR);
+
+						var nameTD = document.createElement("td");
+						var name = document.createTextNode(detail_condition[i].condition_name);
+						nameTD.appendChild(name);
+						createTR.appendChild(nameTD);
+
+						var startTD = document.createElement("td");
+						var start = document.createTextNode(detail_condition[i].condition_start_date);
+						startTD.appendChild(start);
+						createTR.appendChild(startTD);
+
+						var conceptTD = document.createElement("td");
+						var concept = document.createTextNode(detail_condition[i].concept_name);
+						conceptTD.appendChild(concept);
+						createTR.appendChild(conceptTD);
+
+					}
+
+					$('#datatables-condition-detail').DataTable({
+						destroy: true,
+						"order": [[1, "asc"]]
+					});
+
+					$('#patientConditionDetail').modal('show');
+
+				}
+			}
+			xhttp.open("GET", "./patient_result.jsp?action=loadconditiondetail&concept_id=" + id+"&patient_id="+selected_patient);
+			xhttp.send();
+
+			
+		}
+
+		function procedure_detail(id){
+			
+			var xhttp = new XMLHttpRequest();
+			xhttp.onreadystatechange=function(){
+				if(this.readyState== this.DONE && this.status ==200){
+					var result_array = xhttp.responseText;
+
+					var detail_procedure_pre = result_array;
+					var detail_procedure = eval(detail_procedure_pre);
+					var detail_procedure_output = Object.keys(detail_procedure);
+
+					var detail_title = document.getElementById("procedure_detail_title");
+					while(detail_title.hasChildNodes()) detail_title.removeChild(detail_title.firstChild);
+					document.getElementById("procedure_detail_title").appendChild(document.createTextNode(detail_procedure[0].procedure_name));
+
+
+					$('#datatables-procedure-detail').dataTable().fnDestroy();
+					var table = document.getElementById("procedure_table_detail");
+					while(table.hasChildNodes()) table.removeChild(table.firstChild);
+
+					for(var i = 0; i < detail_procedure_output.length; i++){
+						var createTR = document.createElement("tr");
+						document.getElementById("procedure_table_detail").appendChild(createTR);
+
+						var nameTD = document.createElement("td");
+						var name = document.createTextNode(detail_procedure[i].procedure_name);
+						nameTD.appendChild(name);
+						createTR.appendChild(nameTD);
+
+						var startTD = document.createElement("td");
+						var start = document.createTextNode(detail_procedure[i].procedure_start_date);
+						startTD.appendChild(start);
+						createTR.appendChild(startTD);
+
+						var conceptTD = document.createElement("td");
+						var concept = document.createTextNode(detail_procedure[i].concept_name);
+						conceptTD.appendChild(concept);
+						createTR.appendChild(conceptTD);
+
+					}
+
+					$('#datatables-procedure-detail').DataTable({
+						destroy: true,
+						"order": [[1, "asc"]]
+					});
+
+					$('#patientProcedureDetail').modal('show');
+
+				}
+			}
+			xhttp.open("GET", "./patient_result.jsp?action=loadproceduredetail&concept_id=" + id+"&patient_id="+selected_patient);
+			xhttp.send();
+
+			
+		}
+
+
+		function drug_detail(id){
+			var xhttp = new XMLHttpRequest();
+			xhttp.onreadystatechange=function(){
+				if(this.readyState== this.DONE && this.status ==200){
+					var result_array = xhttp.responseText;
+
+					var detail_drug_pre = result_array;
+					var detail_drug = eval(detail_drug_pre);
+					var detail_drug_output = Object.keys(detail_drug);
+
+					var detail_title = document.getElementById("drug_detail_title");
+					while(detail_title.hasChildNodes()) detail_title.removeChild(detail_title.firstChild);
+					document.getElementById("drug_detail_title").appendChild(document.createTextNode(detail_drug[0].drug_name));
+
+					$("#datatables-drug-detail").dataTable().fnDestroy();
+					var table = document.getElementById("drug_table_detail");
+					while(table.hasChildNodes()) table.removeChild(table.firstChild);
+
+					for(var i = 0; i < detail_drug_output.length; i++){
+						var createTR = document.createElement("tr");
+						document.getElementById("drug_table_detail").appendChild(createTR);
+
+						var drug_name_TD = document.createElement("td");
+						var drug_name = document.createTextNode(detail_drug[i].drug_name);
+						drug_name_TD.appendChild(drug_name);
+						createTR.appendChild(drug_name_TD);
+
+						var drug_exposure_start_TD = document.createElement("td");
+						var drug_exposure_start = document.createTextNode(detail_drug[i].drug_exposure_start);
+						drug_exposure_start_TD.appendChild(drug_exposure_start);
+						createTR.appendChild(drug_exposure_start_TD);
+
+						var drug_exposure_end_TD = document.createElement("td");
+						var drug_exposure_end = document.createTextNode(detail_drug[i].drug_exposure_end);
+						drug_exposure_end_TD.appendChild(drug_exposure_end);
+						createTR.appendChild(drug_exposure_end_TD);
+
+						var drug_quantity_TD = document.createElement("td");
+						var drug_quantity = document.createTextNode(detail_drug[i].quantity);
+						drug_quantity_TD.appendChild(drug_quantity);
+						createTR.appendChild(drug_quantity_TD);
+
+						var drug_days_supply_TD = document.createElement("td");
+						var drug_days_supply = document.createTextNode(detail_drug[i].days_supply);
+						drug_days_supply_TD.appendChild(drug_days_supply);
+						createTR.appendChild(drug_days_supply_TD);
+
+						var drug_dose_TD = document.createElement("td");
+						var drug_dose = document.createTextNode(detail_drug[i].dose_unit);
+						drug_dose_TD.appendChild(drug_dose);
+						createTR.appendChild(drug_dose_TD);
+
+						var drug_route_TD = document.createElement("td");
+						var drug_route = document.createTextNode(detail_drug[i].route_concept);
+						drug_route_TD.appendChild(drug_route);
+						createTR.appendChild(drug_route_TD);
+					}
+
+
+					$('#datatables-drug-detail').DataTable({
+						destroy: true,
+						"order": [[1, "asc"]]
+					});
+
+
+					$('#patientDrugDetail').modal('show');
+
+				}
+			}
+			xhttp.open("GET", "./patient_result.jsp?action=loaddrugdetail&concept_id=" + id+"&patient_id="+selected_patient);
+			xhttp.send();
+
+			
+		}
+	</script>
+
+</head>
+
+<body>
+	<div class="wrapper">
+		<div class="d-flex">
+			<nav class="sidebar" id="sidebar_navi">
+			</nav>
+
+			<div class="main bg-white">
+				<nav class="navbar navbar-expand navbar-light bg-white">
+					<a class="sidebar-toggle d-flex mr-2">
+						<i class="hamburger align-self-center"></i>
+					</a>
+
+					<form class="form-inline d-none d-sm-inline-block" id="upper_navi">
+					</form>
+
+					<div class="navbar-collapse collapse">
+						<ul class="navbar-nav ml-auto">
+							<li class="nav-item dropdown">
+								<a class="nav-link dropdown-toggle" href="#" id="userDropdown" data-toggle="dropdown">
+									<span class="d-inline-block d-md-none">
+										<i class="align-middle" data-feather="settings"></i>
+									</span>
+									<span class="d-none d-sm-inline-block">
+										<img id="nav_img" class="avatar img-fluid rounded-circle mr-1" /> <span class="font-weight-bold text-dark" id="user_name"></span>
+									</span>
+								</a>
+								<div class="dropdown-menu dropdown-menu-right" aria-labelledby="userDropdown">
+									<a class="dropdown-item" href="account.html"><i class="align-middle mr-1" data-feather="user"></i> Profile</a>
+									<div class="dropdown-divider"></div>
+									<a class="dropdown-item" href="logout.jsp">Sign out</a>
+								</div>
+							</li>
+						</ul>
+					</div>
+				</nav>
+
+				<main class="content bg-white">
+					<div class="container-fluid p-0">
+
+						<h2 class="h2 mb-3" style="color:rgb(52, 60, 67); font-weight: bold" id="project_title"></h2>
+
+						<div class="row">
+							<div class="col-12">
+								<div class="card">
+									<div class="card-body">
+										<table id="datatables-basic" class="table table-borderless" style="width: 100%">
+											<thead>
+												<tr>
+													<th style="width:10%">Patient ID</th>
+													<th style="width:5%">Name</th>
+													<th style="width:5%">Age</th>
+													<th style="width:10%">Gender</th>
+													<th style="width:15%">Last Visit</th>
+													<th style="width:15%">Last Visit Type</th>
+													<th style="width:20%">Status</th>
+													<th style="width:20%">Detail Information</th>
+												</tr>
+											</thead>
+											<tbody id="patient_result">
+											</tbody>
+										</table>
+									</div>
+								</div>
+							</div>
+		
+							<div class="col-9">
+								<div class="card flex-fill w-100">
+									<div class="card-header">
+										<h5 class="card-title mb-0">AGE</h5>
+									</div>
+									<div class="card-body d-flex w-100">
+										<div class="align-self-center chart chart-lg">
+											<canvas id="chartjs-dashboard-bar"></canvas>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="col-3">
+								<div class="card">
+									<div class="card-header">
+										<h5 class="card-title mb-0">GENDER</h5>
+									</div>
+									<div class="card-body d-flex">
+										<div class="align-self-center w-100">
+											<div class="py-3">
+												<div class="chart chart-sm">
+													<canvas id="chartjs-dashboard-pie"></canvas>
+												</div>
+												
+												<table class="table mb-0">
+													<tbody>
+														<tr>
+															<td><i class="fas fa-square-full text-primary"></i> Male</td>
+															<td class="text-right" id="male_num"></td>
+														</tr>
+														<tr>
+															<td><i class="fas fa-square-full text-warning"></i> Female</td>
+															<td class="text-right" id="female_num"></td>
+														</tr>
+													</tbody>
+												</table>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>	
+						</div>
+					</div>
+				</main>
+
+				<footer class="footer" id="footer"></footer>
+				<div class="modal fade" id="patientDrugInfo" tabindex="-1" role="dialog" aria-hidden="true">
+					<div class="modal-dialog modal-dialog-centered modal-lg" style="max-width:1300px; width:1300px" role="document">
+						<div class="modal-content">
+							<div class="modal-header">
+								<h5 class="modal-title">Drug </h5>
+								<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+									<span aria-hidden="true">&times;</span>
+								</button>
+							</div>
+							<div class="modal-body m-3">
+								<div class="tab">
+									<ul class="nav nav-pills" role="tablist">
+										<li class="nav-item"><a class="nav-link active" href="#tab-1d" data-toggle="tab" role="tab">Drug History</a></li>
+										 <li class="nav-item"><a class="nav-link" href="#tab-2d" data-toggle="tab" role="tab">Drug Trend</a></li>
+									</ul>
+									<div class="tab-content">
+										<div class="tab-pane active" id="tab-1d" role="tabpanel">
+											<table id="datatables-drug" class="table table-borderless"  style="width: 100%">
+												<thead>
+													<tr>
+														<th>Drug Name</th>
+														<th>Start</th>
+														<th>End</th>
+														<th>Quantity</th>
+														<th>Days Supply</th>
+														<th>Dose Unit</th>
+														<th>Route</th>
+													</tr>
+												</thead>
+												<tbody id="drug_table">
+												</tbody>
+											</table>
+										</div>
+										<div class="tab-pane" id="tab-2d" role="tabpanel">
+											<table id="datatables-drug-distinct" class="table table-borderless" style="width: 100%">
+												<thead>
+													<tr>
+														<th>Drug Name</th>
+														<th>Start</th>
+														<th>End</th>
+														<th>Route</th>
+														<th>Detail</th>
+													</tr>
+												</thead>
+												<tbody id="drug_table_distinct">
+												</tbody>
+											</table>
+										</div>	
+									</div>
+								</div>
+							</div>
+							<div class="modal-footer">
+								<button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="refresh();">Close</button>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="modal fade" id="patientConditionInfo" tabindex="-1" role="dialog" aria-hidden="true">
+					<div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+						<div class="modal-content">
+							<div class="modal-header">
+								<h5 class="modal-title">Diagnosis </h5>
+								<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+									<span aria-hidden="true">&times;</span>
+								</button>
+							</div>
+							<div class="modal-body m-3">
+								<div class="tab">
+									<ul class="nav nav-pills" role="tablist">
+										<li class="nav-item"><a class="nav-link active" href="#tab-1c" data-toggle="tab" role="tab">Diagnosis History</a></li>
+										<li class="nav-item"><a class="nav-link" href="#tab-2c" data-toggle="tab" role="tab">Diagnosis Trend</a></li>
+									</ul>
+									<div class="tab-content">
+										<div class="tab-pane active" id="tab-1c" role="tabpanel">
+											<table id="datatables-condition" class="table table-borderless" style="width: 100%">
+												<thead>
+													<tr>
+														<th>Name</th>
+														<th>Start</th>
+														<th>Type</th>
+													</tr>
+												</thead>
+												<tbody id="condition_table">
+												</tbody>
+											</table>
+										</div>
+										<div class="tab-pane" id="tab-2c" role="tabpanel">
+											<table id="datatables-condition-distinct" class="table table-borderless" style="width: 100%">
+												<thead>
+													<tr>
+														<th>Name</th>
+														<th>Start</th>
+														<th>End</th>
+														<th>Detail</th>
+													</tr>
+												</thead>
+												<tbody id="condition_table_distinct">
+												</tbody>
+											</table>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="modal-footer">
+								<button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="refresh();">Close</button>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="modal fade" id="patientProcedureInfo" tabindex="-1" role="dialog" aria-hidden="true">
+					<div class="modal-dialog modal-dialog-centered modal-lg" style="max-width:1300px; width:1300px" role="document">
+						<div class="modal-content">
+							<div class="modal-header">
+								<h5 class="modal-title">Procedure </h5>
+								<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+									<span aria-hidden="true">&times;</span>
+								</button>
+							</div>
+							<div class="modal-body m-3">
+								<div class="tab">
+									<ul class="nav nav-pills" role="tablist">
+										<li class="nav-item"><a class="nav-link active" href="#tab-1p" data-toggle="tab" role="tab">Procedure History</a></li>
+										<li class="nav-item"><a class="nav-link" href="#tab-2p" data-toggle="tab" role="tab">Procedure Trend</a></li>
+									</ul>
+									<div class="tab-content">
+										<div class="tab-pane active" id="tab-1p" role="tabpanel">
+											<table id="datatables-procedure" class="table table-borderless" style="width: 100%">
+												<thead>
+													<tr>
+														<th>Name</th>
+														<th>Date</th>
+														<th>Type</th>
+													</tr>
+												</thead>
+												<tbody id="procedure_table">
+												</tbody>
+											</table>
+										</div>
+										<div class="tab-pane" id="tab-2p" role="tabpanel">
+											<table id="datatables-procedure-distinct" class="table table-borderless" style="width: 100%">
+												<thead>
+													<tr>
+														<th>Name</th>
+														<th>Start</th>
+														<th>End</th>
+														<th>Detail</th>
+													</tr>
+												</thead>
+												<tbody id="procedure_table_distinct">
+												</tbody>
+											</table>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="modal-footer">
+								<button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="refresh();">Close</button>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="modal fade" id="patientMeasurementInfo" tabindex="-1" role="dialog" aria-hidden="true">
+					<div class="modal-dialog modal-dialog-centered modal-lg" style="max-width:1300px; width:1300px" role="document">
+						<div class="modal-content">
+							<div class="modal-header">
+								<h5 class="modal-title">Lab  </h5>
+								<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+									<span aria-hidden="true">&times;</span>
+								</button>
+							</div>
+							<div class="modal-body m-3">
+								<div class="tab">
+									<ul class="nav nav-pills" role="tablist">
+										<li class="nav-item"><a class="nav-link active" href="#tab-1m" data-toggle="tab" role="tab">Lab History</a></li>
+										<li class="nav-item"><a class="nav-link" href="#tab-2m" data-toggle="tab" role="tab">Lab Trend</a></li>
+									</ul>
+									<div class="tab-content">
+										<div class="tab-pane active" id="tab-1m" role="tabpanel">
+											<table id="datatables-measurement" class="table table-borderless" style="width: 100%">
+												<thead>
+													<tr>
+														<th style="width:35%">Name</th>
+														<th style="width:15%">Date</th>
+														<th style="width:10%">Value</th>
+														<th style="width:15%">Range low</th>
+														<th style="width:15%">Range high</th>
+														<th style="width:10%">Unit</th>
+													</tr>
+												</thead>
+												<tbody id="measurement_table">
+												</tbody>
+											</table>
+										</div>
+										<div class="tab-pane" id="tab-2m" role="tabpanel">
+											<table id="datatables-measurement-distinct" class="table table-borderless" style="width: 100%">
+												<thead>
+													<tr>
+														<th>Name</th>
+														<th>Unit</th>
+														<th>Detail</th>
+													</tr>
+												</thead>
+												<tbody id="measurement_table_distinct">
+												</tbody>
+											</table>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="modal-footer">
+								<button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="refresh();">Close</button>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="modal fade" id="patientMeasurementDetail" tabindex="-1" role="dialog" aria-hidden="true">
+					<div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+						<div class="modal-content">
+							<div class="modal-header">
+								<h5 class="modal-title" id="measure_detail_title"></h5>
+								<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+									<span aria-hidden="true">&times;</span>
+								</button>
+							</div>
+							<div class="modal-body m-3">
+								<div class="align-self-center chart chart-lg" id="chart_div">
+									<canvas id="chartjs-measure-line"></canvas>
+								</div>
+							</div>
+							<div class="modal-footer">
+								<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="modal fade" id="patientConditionDetail" tabindex="-1" role="dialog" aria-hidden="true">
+					<div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+						<div class="modal-content">
+							<div class="modal-header">
+								<h5 class="modal-title" id="condition_detail_title"></h5>
+								<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+									<span aria-hidden="true">&times;</span>
+								</button>
+							</div>
+							<div class="modal-body m-3">
+								<table id="datatables-condition-detail" class="table table-borderless" style="width: 100%">
+									<thead>
+										<tr>
+											<th>Name</th>
+											<th>Start</th>
+											<th>Type</th>
+										</tr>
+									</thead>
+									<tbody id="condition_table_detail">
+									</tbody>
+								</table>
+							</div>
+							<div class="modal-footer">
+								<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+							</div>
+						</div>
+					</div>
+				</div>	
+				<div class="modal fade" id="patientProcedureDetail" tabindex="-1" role="dialog" aria-hidden="true">
+					<div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+						<div class="modal-content">
+							<div class="modal-header">
+								<h5 class="modal-title" id="procedure_detail_title"></h5>
+								<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+									<span aria-hidden="true">&times;</span>
+								</button>
+							</div>
+							<div class="modal-body m-3">
+								<table id="datatables-procedure-detail" class="table table-borderless" style="width: 100%">
+									<thead>
+										<tr>
+											<th>Name</th>
+											<th>Start</th>
+											<th>Type</th>
+										</tr>
+									</thead>
+									<tbody id="procedure_table_detail">
+									</tbody>
+								</table>
+							</div>
+							<div class="modal-footer">
+								<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+							</div>
+						</div>
+					</div>
+				</div>	
+
+				<div class="modal fade" id="patientDrugDetail" tabindex="-1" role="dialog" aria-hidden="true">
+					<div class="modal-dialog modal-dialog-centered modal-lg" style="max-width:1300px; width:1300px;" role="document">
+						<div class="modal-content">
+							<div class="modal-header" >
+								<h5 class="modal-title" id="drug_detail_title"></h5>
+								<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+									<span aria-hidden="true">&times;</span>
+								</button>
+							</div>
+							<div class="modal-body m-3 ">
+								<table id="datatables-drug-detail" class="table table-borderless" style="width: 100%">
+									<thead>
+										<tr>
+											<th>Drug Name</th>
+											<th>Start</th>
+											<th>End</th>
+											<th>Quantity</th>
+											<th>Days Supply</th>
+											<th>Dose Unit</th>
+											<th>Route</th>
+										</tr>
+									</thead>
+									<tbody id="drug_table_detail">
+									</tbody>
+								</table>
+							</div>
+							<div class="modal-footer">
+								<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+							</div>
+						</div>
+					</div>
+				</div>	
+				<div class="modal fade" id="loadingModal" tabindex="-1" role="dialog" aria-hidden="true">
+					<div class="modal-dialog modal-dialog-centered modal-sm" role="document">
+						<div class="modal-content">
+							<div class="modal-body m-3" style="text-align:center">
+								<h2 style="font-weight:bold">Loading...</h2>
+								<i class="fa fa-spinner fa-pulse fa-3x fa-fw margin-bottom" style="color:rgb(95, 194, 126)"></i> 
+							</div>
+						</div>
+					</div>
+				</div>
+	
+			</div>
+		</div>
+	</div>
+
+	<script src="../js/app.js"></script>
+	<script src="../js/tables.js"></script>
+	<script src="../js/feather.js"></script>
+	<script src="../js/charts.js"></script>
+
+	<script src="upper_navi.js?version=12"></script>
+
+</body>
+
+</html>

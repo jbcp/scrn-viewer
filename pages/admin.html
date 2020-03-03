@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<script src="../js/jquery-latest.js"></script>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<meta name="description" content="Responsive Bootstrap 4 Admin Template">
+	<meta name="author" content="Bootlab">
+
+	<title>SCRN</title>
+
+	<link href="../css/app.css" rel="stylesheet">
+	<script src="./print_log.js"></script>
+
+	<script type="text/javascript">
+		var first_mem_road = false;
+		var photo_url="no";
+		var clicked_id;
+		$(document).ready(function(){
+			var rand = Math.random();
+
+			$('#sidebar_navi').load('menu.html');
+			$('#footer').load('footer.html');
+			$('#navbar').load('navbar_item.html');
+
+			upper_navi_1("Admin");
+
+
+			var xhttp = new XMLHttpRequest();
+			xhttp.onreadystatechange = function(){
+				if(this.readyState == this.DONE && this.status == 200){
+					var result_array = xhttp.responseText.split("&");
+
+					var img_src = result_array[1];
+					document.getElementById("nav_img").setAttribute("src", img_src+"?"+rand);
+
+					var user_name = result_array[2];
+					document.getElementById("user_name").appendChild(document.createTextNode(user_name));
+
+					var member_data_pre = result_array[0];
+					var member_data = eval(member_data_pre);
+					var member_data_output = Object.keys(member_data);
+
+					for(var i = 0; i < member_data_output.length; i++){
+						var createTR = document.createElement("tr");
+						document.getElementById("member_table").appendChild(createTR);
+
+						var mem_name_TD = document.createElement("td");
+						var mem_name = document.createTextNode(member_data[i].name);
+						var mem_img = document.createElement("img");
+						mem_img.setAttribute("class", "avatar img-fluid rounded-circle mr-2");
+						mem_img.setAttribute("src", member_data[i].mem_img + "?" + rand);
+
+						mem_name_TD.appendChild(mem_img);
+						mem_name_TD.appendChild(mem_name);
+						createTR.appendChild(mem_name_TD);
+
+						var mem_dept_TD = document.createElement("td");
+						var mem_dept = document.createTextNode(member_data[i].dept);
+						mem_dept_TD.appendChild(mem_dept);
+						createTR.appendChild(mem_dept_TD);
+
+
+						var mem_position_TD = document.createElement("td");
+						var mem_position;
+						switch(member_data[i].position){
+							case 'doctor':
+								mem_position = document.createTextNode("의사");
+							break;
+							case 'nurse':
+								mem_position = document.createTextNode("간호사");
+							break;
+							case 'administrative':
+								mem_position = document.createTextNode("행정");
+							break;
+							default:
+								mem_position = document.createTextNode("기타");
+							break;
+						}
+						mem_position_TD.appendChild(mem_position);
+						createTR.appendChild(mem_position_TD);
+
+						var mem_mail_TD = document.createElement("td");
+						var mem_mail = document.createTextNode(member_data[i].mail);
+						mem_mail_TD.appendChild(mem_mail);
+						createTR.appendChild(mem_mail_TD);
+
+						var mem_phone_TD = document.createElement("td");
+						var mem_phone = document.createTextNode("-");
+						if(member_data[i].phone != null) mem_phone = document.createTextNode(member_data[i].phone);
+						mem_phone_TD.appendChild(mem_phone);
+						createTR.appendChild(mem_phone_TD);
+
+						var mem_corphone_TD = document.createElement("td");
+						var mem_corphone = document.createTextNode(member_data[i].corphone);
+						mem_corphone_TD.appendChild(mem_corphone);
+						createTR.appendChild(mem_corphone_TD);
+
+						var mem_role_TD = document.createElement("td");
+						var mem_role = document.createTextNode(member_data[i].role);
+						mem_role_TD.appendChild(mem_role);
+						createTR.appendChild(mem_role_TD);
+
+						var mem_action_TD = document.createElement("td");
+						var mem_action_button = document.createElement("button");
+						mem_action_button.setAttribute("class", "btn btn-sm btn-outline-primary");
+						mem_action_button.setAttribute("style", "margin-right:5px");
+						mem_action_button.setAttribute("id", "modifyButton_"+member_data[i].id);
+						mem_action_button.setAttribute("onclick", "modifyButton_clicked(id);");
+						mem_action_button.appendChild(document.createTextNode("Modify"));
+						mem_action_TD.appendChild(mem_action_button);
+
+						var mem_delete_button = document.createElement("button");
+						mem_delete_button.setAttribute("class", "btn btn-sm btn-primary");
+						mem_delete_button.setAttribute("style", "margin-right:5px");
+						mem_delete_button.setAttribute("id", "deleteButton_"+member_data[i].id);
+						mem_delete_button.setAttribute("onclick", "deleteButton_clicked(id);");
+						mem_delete_button.appendChild(document.createTextNode("Delete"));
+						mem_action_TD.appendChild(mem_delete_button);
+
+						createTR.appendChild(mem_action_TD);
+					}
+					$('#member_all_table').DataTable({
+						pageLength: 10
+					});
+
+					var project_data_pre = result_array[3];
+					var project_data = eval(project_data_pre);
+					var project_data_output = Object.keys(project_data);
+
+					for(var i = 0; i < project_data_output.length; i++){
+						var createTR = document.createElement("tr");
+						document.getElementById("project_table").appendChild(createTR);
+
+						var project_title_TD = document.createElement("td");
+						var project_title = document.createTextNode(project_data[i].title);
+						project_title_TD.appendChild(project_title);
+						createTR.appendChild(project_title_TD);
+
+						var project_irb_TD = document.createElement("td");
+						var project_irb = document.createTextNode(project_data[i].irb);
+						project_irb_TD.appendChild(project_irb);
+						createTR.appendChild(project_irb_TD);
+
+						var project_created_TD = document.createElement("td");
+						var project_created = document.createTextNode(project_data[i].start_date);
+						project_created_TD.appendChild(project_created);
+						createTR.appendChild(project_created_TD);
+
+						var project_creator_TD = document.createElement("td");
+						var project_creator = document.createTextNode(project_data[i].creator);
+						project_creator_TD.appendChild(project_creator);
+						createTR.appendChild(project_creator_TD);
+
+						var project_status_TD = document.createElement("td");
+						var project_status_data = project_data[i].status;
+						var project_status = document.createElement("span");
+						project_status.setAttribute("id", "status_span_"+project_data[i].id);
+						
+						switch(project_status_data){
+							case '1':
+								project_status.setAttribute("class", "badge badge-warning");
+								project_status.appendChild(document.createTextNode("승인 대기"));
+							break;
+
+							case '2':
+								project_status.setAttribute("class", "badge badge-info");
+								project_status.appendChild(document.createTextNode("승인 완료"));
+							break;
+						}
+
+						project_status_TD.appendChild(project_status);
+						createTR.appendChild(project_status_TD);
+
+						var project_detail_TD = document.createElement("td");
+						var project_detail_button = document.createElement("button");
+						project_detail_button.setAttribute("class", "btn btn-outline-primary btn-sm");
+						project_detail_button.setAttribute("id", "project_detail_"+project_data[i].id);
+						project_detail_button.setAttribute("onclick", "project_detail_clicked(id);");
+						project_detail_button.appendChild(document.createTextNode("Detail"));
+						project_detail_TD.appendChild(project_detail_button);
+
+						if(project_status_data == 1){
+							var project_approve_button = document.createElement("button");
+							project_approve_button.setAttribute("class", "btn btn-primary ml-2 btn-sm");
+							project_approve_button.setAttribute("id", "project_approve_"+project_data[i].id);
+							project_approve_button.setAttribute("onclick", "project_approve_clicked(id);");
+							project_approve_button.appendChild(document.createTextNode("Approve"));
+							project_detail_TD.appendChild(project_approve_button);
+						}
+						createTR.appendChild(project_detail_TD);
+
+					}
+					$('#project_all_table').DataTable({
+						pageLength: 10
+					});
+
+
+				}
+			}
+			xhttp.open("GET", "./admin.jsp?action=load");
+			xhttp.send();
+		});
+
+		function project_approve_clicked(id){
+			var input_array = id.split("_");
+			var id = input_array[2];
+
+			var xhttp = new XMLHttpRequest();
+			xhttp.onreadystatechange = function(){
+				if(this.readyState == this.DONE && this.status==200){
+					var status_span = document.getElementById("status_span_"+id);
+					status_span.removeAttribute("class");
+					status_span.setAttribute("class", "badge badge-info");
+					while(status_span.hasChildNodes()) status_span.removeChild(status_span.firstChild);
+					status_span.appendChild(document.createTextNode("승인 완료"))
+					document.getElementById("project_approve_"+id).remove();
+				}
+			}
+			xhttp.open("GET", "./admin.jsp?action=approve&project_id="+id);
+			xhttp.send();
+
+		}
+		
+		function project_detail_clicked(id){
+			var input_array = id.split("_");
+			var id = input_array[2];
+
+			var xhttp = new XMLHttpRequest();
+			xhttp.onreadystatechange = function(){
+				if(this.readyState == this.DONE && this.status==200){
+
+					var project_detail_array_pre = xhttp.responseText;
+					var project_detail_array = eval(project_detail_array_pre);
+
+					while(document.getElementById("project_detail_modal_title").hasChildNodes()) document.getElementById("project_detail_title").removeChild(document.getElementById("project_detail_title").firstChild);
+					while(document.getElementById("project_detail_title").hasChildNodes()) document.getElementById("project_detail_title").removeChild(document.getElementById("project_detail_title").firstChild);
+					while(document.getElementById("project_detail_category").hasChildNodes()) document.getElementById("project_detail_category").removeChild(document.getElementById("project_detail_category").firstChild);
+					while(document.getElementById("project_detail_protocol_id").hasChildNodes()) document.getElementById("project_detail_protocol_id").removeChild(document.getElementById("project_detail_protocol_id").firstChild);
+					while(document.getElementById("project_detail_phase").hasChildNodes()) document.getElementById("project_detail_phase").removeChild(document.getElementById("project_detail_phase").firstChild);
+					while(document.getElementById("project_detail_therapeutic").hasChildNodes()) document.getElementById("project_detail_therapeutic").removeChild(document.getElementById("project_detail_therapeutic").firstChild);
+					while(document.getElementById("project_detail_indication").hasChildNodes()) document.getElementById("project_detail_indication").removeChild(document.getElementById("project_detail_indication").firstChild);
+					while(document.getElementById("project_detail_sponsor").hasChildNodes()) document.getElementById("project_detail_sponsor").removeChild(document.getElementById("project_detail_sponsor").firstChild);
+					while(document.getElementById("project_detail_identifier").hasChildNodes()) document.getElementById("project_detail_identifier").removeChild(document.getElementById("project_detail_identifier").firstChild);
+					while(document.getElementById("project_detail_irb").hasChildNodes()) document.getElementById("project_detail_irb").removeChild(document.getElementById("project_detail_irb").firstChild);
+					while(document.getElementById("project_detail_description").hasChildNodes()) document.getElementById("project_detail_description").removeChild(document.getElementById("project_detail_description").firstChild);
+
+					if(project_detail_array[0].title == "") project_detail_array[0].title = "-";
+					if(project_detail_array[0].category == "") project_detail_array[0].category = "-";
+					if(project_detail_array[0].protocol_id == "") project_detail_array[0].protocol_id = "-";
+					if(project_detail_array[0].phase == "") project_detail_array[0].phase = "-";
+					if(project_detail_array[0].therapeutic_area == "") project_detail_array[0].therapeutic_area = "-";
+					if(project_detail_array[0].indication == "") project_detail_array[0].indication = "-";
+					if(project_detail_array[0].sponsor == "") project_detail_array[0].sponsor = "-";
+					if(project_detail_array[0].identifier == "") project_detail_array[0].identifier = "-";
+					if(project_detail_array[0].irb == "") project_detail_array[0].irb = "-";
+					if(project_detail_array[0].description == "") project_detail_array[0].description = "-";
+
+					var irb_status_span = document.createElement("span");
+
+					if(project_detail_array[0].irb_status == 1){
+						irb_status_span.setAttribute("class", "badge badge-warning ml-2");
+						irb_status_span.appendChild(document.createTextNode("승인 대기"));
+					}
+					else if(project_detail_array[0].irb_status == 2){
+						irb_status_span.setAttribute("class", "badge badge-info ml-2");
+						irb_status_span.appendChild(document.createTextNode("승인 완료"));
+					}
+
+					document.getElementById("project_detail_modal_title").appendChild(document.createTextNode(project_detail_array[0].title));
+					document.getElementById("project_detail_modal_title").appendChild(irb_status_span);
+					document.getElementById("project_detail_title").appendChild(document.createTextNode(project_detail_array[0].title));
+					document.getElementById("project_detail_category").appendChild(document.createTextNode(project_detail_array[0].category));
+					document.getElementById("project_detail_protocol_id").appendChild(document.createTextNode(project_detail_array[0].protocol_id));
+					document.getElementById("project_detail_phase").appendChild(document.createTextNode( project_detail_array[0].phase));
+					document.getElementById("project_detail_therapeutic").appendChild(document.createTextNode(project_detail_array[0].therapeutic_area));
+					document.getElementById("project_detail_indication").appendChild(document.createTextNode(project_detail_array[0].indication));
+					document.getElementById("project_detail_sponsor").appendChild(document.createTextNode(project_detail_array[0].sponsor));
+					document.getElementById("project_detail_identifier").appendChild(document.createTextNode(project_detail_array[0].identifier));
+					document.getElementById("project_detail_irb").appendChild(document.createTextNode(project_detail_array[0].irb));
+					document.getElementById("project_detail_description").appendChild(document.createTextNode(project_detail_array[0].description));
+
+					$('#project_detail').modal('show');
+				}
+			}
+			xhttp.open("GET", "./admin.jsp?action=projectdetail&project_id="+id);
+			xhttp.send();
+		}
+
+		function modifyButton_clicked(id){
+			
+			var input_array = id.split("_");
+			var id = input_array[1];
+			clicked_id=id;
+			var xhttp = new XMLHttpRequest();
+			xhttp.onreadystatechange=function(){
+				if(this.readyState==this.DONE && this.status==200){
+					result_array = xhttp.responseText;
+					mem_info = eval(result_array);
+					
+					document.getElementById("new_mem_name").value = mem_info[0].name;
+					document.getElementById("new_mem_position").value = mem_info[0].position;
+					document.getElementById("new_mem_mail").value = mem_info[0].mail;
+					document.getElementById("new_mem_phone").value = mem_info[0].phone;
+					document.getElementById("new_mem_corphone").value = mem_info[0].corphone;
+					document.getElementById("new_mem_role").value = mem_info[0].role;
+					document.getElementById("new_mem_dept").value = mem_info[0].dept;
+
+
+				}
+			}
+			xhttp.open("GET", "./admin.jsp?action=modify&id="+id);
+			xhttp.send();
+
+			$('#modifyModal').modal();
+		}
+
+		function modifySave_clicked(){
+			var new_name = document.getElementById("new_mem_name").value;
+			var new_position = document.getElementById("new_mem_position").value;
+			var new_mail = document.getElementById("new_mem_mail").value;
+			var new_phone = document.getElementById("new_mem_phone").value;
+			var new_corphone = document.getElementById("new_mem_corphone").value;
+			var new_role = document.getElementById("new_mem_role").value;
+			var new_dept = document.getElementById("new_mem_dept").value;
+
+			new_name = escape(encodeURIComponent(new_name));
+			new_position = escape(encodeURIComponent(new_position));
+
+			var xhr = new XMLHttpRequest();
+			xhr.onreadystatechange=function(){
+				if(this.readyState==this.DONE && this.status == 200){
+					location.reload();
+				}
+			}
+			xhr.open("GET", "./admin.jsp?action=save&id="+clicked_id+"&name="+new_name+"&position="+new_position+"&mail="+new_mail+"&phone="+new_phone+"&corphone="+new_corphone+"&role="+new_role+"&dept="+new_dept);
+			xhr.send();
+		}
+
+		function Save_clicked(){
+			var new_mem_name = document.getElementById("mem_new_name").value;
+			new_mem_name = escape(encodeURIComponent(new_mem_name));
+			var new_mem_position = document.getElementById("mem_new_position").value;
+			new_mem_position = escape(encodeURIComponent(new_mem_position));
+			var new_mem_mail = document.getElementById("mem_new_mail").value;
+			var new_mem_phone = document.getElementById("mem_new_phone").value;
+			var new_mem_corphone = document.getElementById("mem_new_corphone").value;
+			var new_mem_role = document.getElementById("mem_new_role").value;
+			var new_mem_dept = document.getElementById("mem_new_dept").value;
+
+
+			var xhttp = new XMLHttpRequest();
+			xhttp.onreadystatechange = function(){
+				if(this.readyState == this.DONE && this.status == 200){
+					print_log("add_member", new_mem_mail);
+					location.reload();
+				}
+			}
+			xhttp.open("GET", "./admin.jsp?action=newmemsave&name="+new_mem_name+"&position="+new_mem_position+"&mail="+new_mem_mail+"&phone="+new_mem_phone+"&corphone="+new_mem_corphone+"&role="+new_mem_role+"&dept="+new_mem_dept);
+			xhttp.send();
+		}
+
+		function deleteButton_clicked(id){
+			var input_array = id.split("_");
+			var id = input_array[1];
+
+            var delete_ok = confirm("해당 멤버를 삭제하시겠습니까?");
+            if(delete_ok == true){
+                var xhttp = new XMLHttpRequest();
+                xhttp.onreadystatechange=function(){
+                    if(this.readyState==this.DONE && this.status == 200){
+						print_log("delete_member", id);
+                        location.reload();
+                    }
+                }
+			xhttp.open("GET", "./admin.jsp?action=memberdelete&id="+id);
+                xhttp.send();
+            }
+
+
+
+		}
+	</script>
+</head>
+
+
+<body>
+	<div class="wrapper">
+		<div class="d-flex">
+			<nav class="sidebar" id="sidebar_navi">
+			</nav>
+
+			<div class="main bg-white">
+				<nav class="navbar navbar-expand navbar-light bg-white">
+					<a class="sidebar-toggle d-flex mr-2">
+            <i class="hamburger align-self-center"></i>
+          </a>
+					<form class="form-inline d-none d-sm-inline-block" id="upper_navi">
+					</form>
+
+					<div class="navbar-collapse collapse">
+						<ul class="navbar-nav ml-auto" id="navbar">
+						</ul>
+					</div>
+				</nav>
+
+				<main class="content bg-white">
+					<div class="container-fluid p-0">
+
+						<h1 class="h2 mb-3" id="study_title" style="color:rgb(52, 60, 67); font-weight: bold">
+						</h1>
+
+						<div class="row">
+							<div class="col-12">
+								<div class="tab">
+									<ul class="nav nav-pills" role="tablist">
+										<li class="nav-item" ><a class="nav-link active" href="#tab-1" data-toggle="tab" role="tab">회원관리</a></li>
+										<li class="nav-item"><a class="nav-link" href="#tab-2" data-toggle="tab" role="tab">Project 관리</a></li>
+									</ul>	
+									<div class="tab-content">
+										<div class="tab-pane active" id="tab-1" role="tabpanel">
+											<button type="button" class="btn btn-outline-primary float-right" data-toggle="modal" data-target="#addMember">Add Member</button>
+
+											<table class="table table-borderless" style="width:100%" id="member_all_table">
+												<thead>
+													<th style="width:15%">Name</th>
+													<th>Department</th>
+													<th>Position</th>
+													<th>E-Mail</th>
+													<th>Mobile</th>
+													<th>Phone</th>
+													<th>Role</th>
+													<th></th>
+												</thead>
+												<tbody id="member_table"></tbody>
+											</table>
+										</div>
+										<div class="tab-pane" id="tab-2" role="tabpanel">
+											<table class="table table-borderless" style="width:100%" id="project_all_table">
+												<thead>
+													<th style="width: 450px">Title</th>
+													<th>IRB Number</th>
+													<th>Created</th>
+													<th>Authors</th>
+													<th>Status</th>
+													<th></th>
+												</thead>
+												<tbody id="project_table"></tbody>
+											</table>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="modal fade" id="imgupModal" tabindex="-1" role="dialog" aria-hidden="true">
+						<div class="modal-dialog modal-md" role="document">
+							<div class="modal-content">
+								<div class="modal-header">
+									<h5 class="modal-title" id="item_modal_title"></h5>
+									<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+										<span aria-hidden="true">&times;</span>
+									</button>
+								</div>
+								<div class="modal-body m-3">
+									<form method="POST" enctype="multipart/form-data" id="upload_form">
+										<input type="file" value="파일선택" name="fileName1">
+									</form>
+								</div>
+								<div class="modal-footer">
+									<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+									<button type="button" class="btn btn-primary" data-dismiss="modal" onclick= "img_save_button_cliked_in()">Save</button>
+								</div>
+							</div>
+						</div>
+					</div>
+				</main>
+				<footer class="footer" id="footer"></footer>
+
+				<div class="modal fade" id="modifyModal" tabindex="-1" role="dialog" aria-hidden="true">
+					<div class="modal-dialog modal-sm" role="document">
+						<div class="modal-content">
+							<div class="modal-header">
+								<h5 class="modal-title">Member Modify</h5>
+								<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+									<span aria-hidden="true">&times;</span>
+								</button>
+							</div>
+							<div class="modal-body m-3">
+								<table class="table table-borderless">
+									<tbody>
+										<tr>
+											<td style="width: 20%;">Name</td>
+											<td>
+												<input type="text" class="form-control" id="new_mem_name">
+											</td>
+										</tr>
+										<tr>
+											<td>Department</td>
+											<td>
+												<input type="text" class="form-control" id="new_mem_dept">
+											</td>
+										</tr>
+										<tr>
+											<td>Position</td>
+											<td>
+												<select class="form-control select2" data-toggle="select2" id="new_mem_position">
+													<option value="doctor">의사</option>
+													<option value="nurse">간호사</option>
+													<option value="administrative">행정</option>
+													<option value="etc">기타</option>
+												</select>
+										</td>
+										</tr>
+										<tr>
+											<td>E-Mail</td>
+											<td>
+												<input type="text" class="form-control" id="new_mem_mail">
+											</td>
+										</tr>
+										<tr>
+											<td>Mobile</td>
+											<td>
+												<input type="text" class="form-control" id="new_mem_phone">
+											</td>
+										</tr>
+										<tr>
+											<td>Phone</td>
+											<td>
+												<input type="text" class="form-control" id="new_mem_corphone">
+											</td>
+										</tr>	
+										<tr>
+											<td>Role</td>
+											<td>
+												<select class="form-control select2" data-toggle="select2" id="new_mem_role">
+													<option value="Administrator">Administrator</option>
+													<option value="Advanced">Advanced User</option>
+													<option value="Basic">Basic User</option>
+												</select>
+											</td>
+										</tr>					
+									</tbody>
+								</table>
+							</div>
+							<div class="modal-footer">
+								<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+								<button type="button" class="btn btn-primary" onclick="modifySave_clicked()" data-dismiss="modal">SAVE</button>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="modal fade" id="addMember" tabindex="-1" role="dialog" aria-hidden="true">
+						<div class="modal-dialog modal-sm" role="document">
+							<div class="modal-content">
+								<div class="modal-header">
+									<h5 class="modal-title">Add Member</h5>
+									<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+										<span aria-hidden="true">&times;</span>
+									</button>
+								</div>
+								<div class="modal-body m-3">
+									<table class="table table-borderless">
+										<tbody>
+											<tr>
+												<td style="width: 20%;">Name</td>
+												<td>
+													<input type="text" class="form-control" id="mem_new_name">
+												</td>
+											</tr>
+											<tr>
+												<td>Department</td>
+												<td>
+													<input type="text" class="form-control" id="mem_new_dept">
+												</td>
+	
+											</tr>
+											<tr>
+												<td>Position</td>
+												<td>
+													<select class="form-control select2" data-toggle="select2" id="mem_new_position">
+														<option value="doctor">의사</option>
+														<option value="nurse">간호사</option>
+														<option value="administrative">행정</option>
+														<option value="etc">기타</option>
+													</select>
+												</td>
+											</tr>
+											<tr>
+												<td>E-Mail</td>
+												<td>
+													<input type="text" class="form-control" id="mem_new_mail">
+												</td>
+											</tr>
+											<tr>
+												<td>Mobile</td>
+												<td>
+													<input type="text" class="form-control" id="mem_new_phone">
+												</td>
+											</tr>
+											<tr>
+												<td>Phone</td>
+												<td>
+													<input type="text" class="form-control" id="mem_new_corphone">
+												</td>
+											</tr>		
+											<tr>
+												<td>Role</td>
+												<td>
+													<select class="form-control select2" data-toggle="select2" id="mem_new_role">
+														<option value="Administrator">Administrator</option>
+														<option value="Advanced">Advanced User</option>
+														<option value="Basic">Basic User</option>
+													</select>
+												</td>
+											</tr>				
+										</tbody>
+									</table>
+								</div>
+								<div class="modal-footer">
+									<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+									<button type="button" class="btn btn-primary" onclick="Save_clicked()" data-dismiss="modal">SAVE</button>
+								</div>
+							</div>
+						</div>
+				</div>
+				<div class="modal fade" id="project_detail" tabindex="-1" role="dialog" aria-hidden="true">
+					<div class="modal-dialog modal-lg" role="document">
+						<div class="modal-content">
+							<div class="modal-header">
+								<h5 class="modal_title" id="project_detail_modal_title"></h5>
+								<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+									<span aria-hidden="true">&times;</span>
+								</button>
+							</div>
+							<div class="modal-body m-3">
+								<table class="table table-borderless">
+									<tbody>
+										<tr>
+											<td style="width: 20%; font-weight:bold; ">Title</td>
+											<td>
+												<label id="project_detail_title"></label>
+											</td>
+										</tr>
+										<tr>
+											<td style="font-weight:bold">Category</td>
+											<td>
+												<label id="project_detail_category"></label>
+											</td>
+										</tr>
+										<tr>
+											<td style="font-weight:bold">Protocl ID</td>
+											<td>
+												<label id="project_detail_protocol_id"></label>
+											</td>
+										</tr>
+										<tr>
+											<td style="font-weight:bold">Phase</td>
+											<td>
+												<label id="project_detail_phase"></label>
+											</td>
+										</tr>
+										<tr>
+											<td style="font-weight:bold">Therapeutic Area</td>
+											<td>
+												<label id="project_detail_therapeutic"></label>
+											</td>
+										</tr>
+										<tr>
+											<td style="font-weight:bold">Indication</td>
+											<td>
+												<label id="project_detail_indication"></label>
+											</td>
+										</tr>	
+										<tr>
+											<td style="font-weight:bold">Sponsor</td>
+											<td>
+												<label id="project_detail_sponsor"></label>
+											</td>
+										</tr>	
+										<tr>
+											<td style="font-weight:bold">Identifier</td>
+											<td>
+												<label id="project_detail_identifier"></label>
+											</td>
+										</tr>	
+										<tr>
+											<td style="font-weight:bold">IRB Number</td>
+											<td>
+												<label id="project_detail_irb"></label>
+											</td>
+										</tr>
+										<tr>
+											<td style="font-weight:bold">Description</td>
+											<td>
+												<label id="project_detail_description"></label>
+											</td>
+										</tr>						
+									</tbody>
+								</table>
+							</div>
+							<div class="modal-footer">
+								<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../js/app.js"></script>
+	<script src="../js/tables.js"></script>
+	<script src="../js/feather.js"></script>
+	<script src="upper_navi.js"></script>
+
+</body>
+
+</html>

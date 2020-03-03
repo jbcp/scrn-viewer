@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<script src="../js/jquery-latest.js"></script>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<meta name="description" content="Responsive Bootstrap 4 Admin Template">
+	<meta name="author" content="Bootlab">
+
+	<title>SCRN</title>
+
+	<link href="../css/app.css" rel="stylesheet">
+	<script src="./print_log.js"></script>
+
+	<script type="text/javascript">
+		var delete_id;
+
+		$(document).ready(function(){
+
+			localStorage.clear();
+			$('#sidebar_navi').load('menu.html');
+			$('#footer').load('footer.html');
+			upper_navi_1("User Define Set");
+			var xhttp = new XMLHttpRequest();
+			xhttp.onreadystatechange=function(){
+				if(this.readyState == this.DONE && this.status == 200){
+					var result_array = xhttp.responseText.split("&");
+
+					var img_src = result_array[1];
+					var rand = Math.random();
+					document.getElementById("nav_img").setAttribute("src", img_src+"?"+rand);
+
+					var user_name = result_array[2];
+					document.getElementById("user_name").appendChild(document.createTextNode(user_name));
+
+
+					var define_array = result_array[0];
+					var define_data = eval(define_array);
+					var define_output = Object.keys(define_data);
+
+					for(var i = define_output.length-1; i >= 0; i--){
+						var createTR = document.createElement("tr");
+						document.getElementById("query_list").appendChild(createTR);
+
+						var define_title_Td = document.createElement("td");
+						define_title_Td.setAttribute("style", "cursor:pointer; width:60%")
+						define_title_Td.setAttribute("onclick", "page_move('user_define_detail.html', '"+define_data[i].define_id+"')");
+						var define_title = document.createTextNode(define_data[i].define_title);
+						define_title_Td.appendChild(define_title);
+						createTR.appendChild(define_title_Td);
+
+						var define_start_Td = document.createElement("td");
+						define_start_Td.setAttribute("style", "cursor:pointer")
+						define_start_Td.setAttribute("onclick", "page_move('user_define_detail.html', '"+define_data[i].define_id+"')");
+						var define_start = document.createTextNode(define_data[i].define_start);
+						define_start_Td.appendChild(define_start);
+						createTR.appendChild(define_start_Td);
+
+						var define_creator_Td = document.createElement("td");
+						define_creator_Td.setAttribute("style", "cursor:pointer")
+						define_creator_Td.setAttribute("onclick", "page_move('user_define_detail.html', '"+define_data[i].define_id+"')");
+						var define_creator = document.createTextNode(define_data[i].define_creator);
+						define_creator_Td.appendChild(define_creator);
+						createTR.appendChild(define_creator_Td);
+
+						var define_action_Td = document.createElement("td");
+						var define_delete_button = document.createElement("button");
+						define_delete_button.setAttribute("class", "btn btn-primary btn-sm float-right");
+						define_delete_button.setAttribute("style", "background-color:transparent; border-color:transparent; color: rgb(52, 60, 67)");
+						define_delete_button.setAttribute('onclick', 'define_delete_alert('+define_data[i].define_id+')');
+						define_delete_icon = document.createElement("i");
+						define_delete_icon.setAttribute("class", "fas fa-trash");
+						define_delete_button.appendChild(define_delete_icon);
+						define_action_Td.appendChild(define_delete_button);
+						createTR.appendChild(define_action_Td);
+
+					}
+					$('#datatables-basic').DataTable({
+					responsive: true,
+					"order": [[ 1, "desc" ]]					
+				});
+				}
+			}
+			xhttp.open("GET", "./user_define.jsp?action=load");
+			xhttp.send();
+		})
+
+		function page_move(url, data) {
+			localStorage.setItem("define_id", data);
+			location.href=url;
+		}
+
+		function show_delete_message(){
+
+			var message = '쿼리를 삭제했습니다.';
+			var title = 'success';
+			var type = 'success';
+			toastr[type](message, title, {
+				positionClass: 'toast-top-right',
+				closeButton: true,
+				progressBar: true,
+				newestOnTop: true,
+				rtl: $('body').attr('dir') === 'rtl' || $('html').attr('dir') === 'rtl',
+				timeOut: '7500'
+			});
+		}
+
+		function create_define_click(){
+			var define_title = document.getElementById("new_define_title").value;
+			define_title = escape(encodeURIComponent(define_title));
+
+			var xhttp = new XMLHttpRequest();
+			xhttp.onreadystatechange=function(){
+				if(this.readyState==this.DONE && this.status == 200){
+					print_log("create_ud", define_title);
+					location.reload();
+				}
+			}
+			xhttp.open("GET", "./user_define.jsp?action=save&title="+define_title);
+			xhttp.send();
+		}
+
+		function define_delete_alert(define_id){
+			$('#deleteModal').modal();
+			delete_id = define_id;
+		}
+
+		function study_delete(){
+			var xhttp = new XMLHttpRequest();
+			var define_id = delete_id;
+			xhttp.onreadystatechange = function(){
+				if(this.readyState == this.DONE && this.status == 200){
+					var return_value = xhttp.responseText;
+					if(return_value == 0){
+						location.reload();
+					}
+					else
+						alert("삭제할 수 없습니다. 관리자에게 문의하시기 바랍니다.");
+				}
+			}
+
+			xhttp.open("GET", "./user_define.jsp?action=delete&id="+define_id);
+			xhttp.send();
+		}
+
+	</script>
+</head>
+
+<body>
+	<div class="wrapper">
+		<div class="d-flex">
+			<nav class="sidebar" id="sidebar_navi">
+			</nav>
+
+			<div class="main bg-white" >
+				<nav class="navbar navbar-expand navbar-light bg-white">
+					<a class="sidebar-toggle d-flex mr-2">
+            <i class="hamburger align-self-center"></i>
+          </a>
+
+					<form class="form-inline d-none d-sm-inline-block" id="upper_navi">
+					</form>
+
+					<div class="navbar-collapse collapse">
+						<ul class="navbar-nav ml-auto">
+							<li class="nav-item dropdown">
+								<a class="nav-link dropdown-toggle" href="#" id="userDropdown" data-toggle="dropdown">
+                  <span class="d-inline-block d-md-none">
+                    <i class="align-middle" data-feather="settings"></i>
+                  </span>
+                  <span class="d-none d-sm-inline-block">
+                    <img id="nav_img" class="avatar img-fluid rounded-circle mr-1" /> <span class="font-weight-bold text-dark" id="user_name"></span>
+                  </span>
+                </a>
+								<div class="dropdown-menu dropdown-menu-right" aria-labelledby="userDropdown">
+										<a class="dropdown-item" href="account.html"><i class="align-middle mr-1" data-feather="user"></i> Profile</a>
+										<div class="dropdown-divider"></div>
+										<a class="dropdown-item" href="logout.jsp">Sign out</a>
+								</div>
+							</li>
+						</ul>
+					</div>
+				</nav>
+
+				<main class="content bg-white">
+					<div class="container-fluid p-0">
+						<div class="row">
+							<div class="col-12">
+								<div class="card" style="border-color: transparent">
+									<div class="card-header" style="border-color: transparent">
+										<button type="button" class="btn btn-outline-primary float-right" data-toggle="modal" data-target="#createDefine">Create</button>
+
+										<div class="modal fade" id="createDefine" tabindex="-1" role="dialog" aria-hidden="true">
+											<div class="modal-dialog modal-dialog-centered" role="document">
+												<div class="modal-content">
+													<div class="modal-header">
+														<h5 class="modal-title">Create Define</h5>
+														<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+															<span aria-hidden="true">&times;</span>
+														</button>
+													</div>
+													<div class="modal-body m-3">
+														<table class="table table-borderless">
+															<tbody>
+																<tr>
+																	<td style="width: 20%;">Title</td>
+																	<td>
+																		<input type="text" class="form-control" placeholder="Title" id="new_define_title">
+																	</td>
+																</tr>
+															</tbody>
+														</table>
+													</div>
+													<div class="modal-footer">
+														<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+														<button type="button" class="btn btn-primary" onclick="create_define_click()" data-dismiss="modal">Save</button>
+													</div>
+												</div>
+											</div>
+										</div>
+
+	
+									</div>
+									<div class="card-body" id="query_table">
+										<table id="datatables-basic" class="table " style="width: 100%">
+											<thead>
+												<tr>
+													<th>Title</th>
+													<th>Create Date</th>
+													<th>Creator</th>
+													<th>Action</th>
+												</tr>
+											</thead>
+											<tbody id="query_list">
+											</tbody>
+										</table>
+									</div>
+								</div>
+
+							</div>
+						</div>
+
+					</div>
+				</main>
+
+				<footer class="footer" id="footer"></footer>
+
+				<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-hidden="true">
+					<div class="modal-dialog modal-sm" role="document">
+						<div class="modal-content">
+							<div class="modal-header">
+								<h5 class="modal-title">Delete User Define Set</h5>
+								<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+									<span aria-hidden="true">&times;</span>
+								</button>
+							</div>
+							<div class="modal-body m-3">
+								<p class="mb-0">본 쿼리를 삭제하시겠습니까?</p>
+							</div>
+							<div class="modal-footer">
+								<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+								<button type="button" class="btn btn-primary" onclick="study_delete()" data-dismiss="modal">Delete</button>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../js/app.js"></script>
+	<script src="../js/feather.js"></script>
+	<script src="../js/tables.js"></script>
+	<script src="../js/feather.js"></script>
+	<script src="upper_navi.js"></script>
+
+
+</body>
+
+</html>

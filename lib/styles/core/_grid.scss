@@ -1,0 +1,187 @@
+// wijmo.grid
+.wj-flexgrid {
+    width: 100%;
+    cursor: default;
+    overflow: hidden;
+
+    .wj-row {
+        position: absolute; // avoid flicker in Chrome: TFS 261344
+        top: 0;
+    }
+
+    .wj-colheaders .wj-header.wj-state-multi-selected { // selected column headers
+        border-bottom: 2px solid $wj-sel-bkg;
+    }
+
+    .wj-rowheaders .wj-header.wj-state-multi-selected { // selected row headers
+        border-right: 2px solid $wj-sel-bkg;
+    }
+
+    .wj-frozen-clone .wj-cell { // elements in frozen cloned cells
+        button, a, input, textarea {
+            pointer-events: auto;
+        }
+    }
+
+    .wj-marquee { // selection marquee
+        position: absolute;
+        border: 2px solid $wj-sel-bkg;
+    }
+
+    .wj-marker { // resize row/col marker
+        position: absolute;
+        background: $wj-accent-bkg;
+        opacity: 0.5;
+        pointer-events: none;
+        z-index: 1000;
+    }
+
+    .wj-state-sticky .wj-header {
+        opacity: 0.75;
+    }
+
+    .wj-group:not(.wj-state-selected):not(.wj-state-multi-selected) {
+        background: $wj-cell-grp-bkg;
+        color: $wj-cell-grp-txt;
+    }
+
+    .wj-grid-editor {
+        width: 100%;
+        height: 100%;
+        border: none;
+        margin: 0;
+        padding: 0;
+        background: inherit;
+        color: inherit;
+        overflow: hidden;
+        resize: none;
+    }
+
+    .wj-cell {
+        .wj-btn.wj-btn-glyph { // dataMap drop-downs, filters, details
+            padding: 0 4px;
+            min-width: 1.5em;
+            color: inherit;
+            background: transparent;
+            opacity: .6;
+
+            &:hover, &:focus {
+                opacity: 1;
+                transition-duration: $wj-tdn-focus;
+            }
+
+            &.wj-right {
+                position: absolute;
+                right: 2px;
+                // REVIEW: copy top padding from item padding
+                // http://sass-lang.com/documentation/Sass/Script/Functions.html#nth-instance_method
+                //top: nth($wj-item-pdg, 1);
+            }
+
+            > span {
+                opacity: 1;
+            }
+        }
+    }
+
+    &.wj-rtl {
+        .wj-cell {
+            border-left: $wj-cell-bdr-vrt;
+            border-right: none;
+
+            .wj-btn.wj-btn-glyph.wj-right {
+                left: 2px;
+                right: auto;
+            }
+        }
+
+        .wj-frozen-col {
+            border-left: $wj-cell-frz-bdr-vrt;
+            border-right: none;
+        }
+    }
+}
+
+// moved to top level for backward compatibility
+.wj-cell {
+    position: absolute;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    padding: $wj-cell-pdg;
+    border-right: $wj-cell-bdr-vrt;
+    border-bottom: $wj-cell-bdr-hrz;
+    outline: none;
+
+    &.wj-wrap { // soft breaks
+        white-space: normal;
+        text-overflow: clip;
+    }
+
+    &.wj-multiline { // hard breaks
+        white-space: pre; // or pre-line?
+        text-overflow: clip;
+    }
+
+    &.wj-wrap.wj-multiline { // soft and hard breaks
+        white-space: pre-wrap;
+        text-overflow: clip;
+    }
+
+    &:not(.wj-header):not(.wj-group):not(.wj-state-selected):not(.wj-state-multi-selected) {
+        background: $wj-cell; // default cell background
+        &.wj-frozen { // frozen cell fore and backgrounds
+            @include backgradient($wj-cell-frz, false);
+            color: $wj-cell-frz-txt;
+        }
+    }
+
+    &.wj-header {
+        &.wj-state-multi-selected { // selected headers
+            background: $wj-hdr-hvr;
+            color: $wj-hdr-txt;
+            font-weight: bold;
+        }
+    }
+
+    &.wj-frozen-row { // frozen row bottom edge
+        border-bottom: $wj-cell-frz-bdr-hrz;
+    }
+
+    &.wj-frozen-col { // frozen column right edge
+        border-right: $wj-cell-frz-bdr-vrt;
+    }
+
+    &.wj-state-invalid {
+        border: 1.2px solid $wj-invalid;
+
+        &.wj-header {
+            background: rgba(255, 180, 180, 1); // TFS 306815
+        }
+
+        &:not(.wj-header):after {
+            position: absolute;
+            content: '';
+            width: 0;
+            right: 0;
+            top: -6px;
+            border: 6px solid transparent;
+            border-right-color: $wj-invalid;
+        }
+    }
+
+    &.wj-header.wj-state-dragsrc {
+        opacity: 0.5; // header cell being dragged
+    }
+}
+
+.wj-alt {
+    &:not(.wj-header):not(.wj-group):not(.wj-state-selected):not(.wj-state-multi-selected) {
+        background: $wj-cell-alt; // alternate cell background
+    }
+
+    &.wj-frozen { // frozen cell fore and backgrounds
+        @include backgradient($wj-cell-frz-alt, false);
+    }
+}
+

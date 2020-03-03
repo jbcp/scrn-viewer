@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<script src="../js/jquery-latest.js"></script>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<meta name="description" content="Responsive Bootstrap 4 Admin Template">
+	<meta name="author" content="Bootlab">
+
+	<title>SCRN</title>
+
+	<link href="../css/app.css" rel="stylesheet">
+	<script src="./print_log.js"></script>
+
+	<script type="text/javascript">
+	var first_mem_road = false;
+		$(document).ready(function(){
+			var rand = Math.random();
+			project_id = localStorage.getItem('project_id');
+
+			$('#sidebar_navi').load('menu.html');
+			$('#footer').load('footer.html');
+			$('#navbar').load('navbar_item.html');
+
+			upper_navi_2("Projects", project_id);
+
+			var xhttp = new XMLHttpRequest();
+			xhttp.onreadystatechange=function(){
+				if(this.readyState == this.DONE && this.status==200){
+
+					var result_array = xhttp.responseText.split("&");
+
+					var img_src = result_array[1];
+					var rand = Math.random();
+					document.getElementById("nav_img").setAttribute("src", img_src+"?"+rand);
+
+					var user_name = result_array[2];
+					document.getElementById("user_name").appendChild(document.createTextNode(user_name));
+
+					var info = result_array[0];
+					var info_data = eval(info);
+					document.getElementById("project_title_input").value = info_data[0].title;
+					document.getElementById("protocol_id").value = info_data[0].protocol_id;
+					document.getElementById("project_status").value = info_data[0].project_status;
+					document.getElementById("project_phase").value = info_data[0].project_phase;
+					document.getElementById("project_therapeutic").value = info_data[0].project_therapeutic;
+					document.getElementById("project_indication").value = info_data[0].indication;
+					document.getElementById("project_description").value = info_data[0].description;
+					document.getElementById("sponsor_name").value = info_data[0].sponsor_name;
+					document.getElementById("project_identifier").value = info_data[0].project_identifier;
+					document.getElementById("project_drug").value = info_data[0].project_drug;
+					document.getElementById("irb_number").value = info_data[0].project_irb;
+					
+					var irb_status = info_data[0].project_irb_status;
+
+					if(irb_status == 1){
+						var irb_badge = document.getElementById("irb_status");
+						while(irb_badge.hasChildNodes()) irb_badge.removeChild(irb_badge.firstChild);
+						irb_badge.removeAttribute("class");
+						irb_badge.setAttribute("class", "badge badge-warning ml-2");
+						irb_badge.appendChild(document.createTextNode("승인 대기"));
+
+						var irb_button = document.getElementById("irb_button");
+						while(irb_button.hasChildNodes()) irb_button.removeChild(irb_button.firstChild);
+						irb_button.setAttribute("disabled","");
+						irb_button.appendChild(document.createTextNode("승인 대기"));
+					}
+					else if(irb_status == 2){
+						var irb_badge = document.getElementById("irb_status");
+						while(irb_badge.hasChildNodes()) irb_badge.removeChild(irb_badge.firstChild);
+						irb_badge.removeAttribute("class");
+						irb_badge.setAttribute("class", "badge badge-info ml-2");
+						irb_badge.appendChild(document.createTextNode("승인 완료"));
+
+						var irb_button = document.getElementById("irb_button");
+						while(irb_button.hasChildNodes()) irb_button.removeChild(irb_button.firstChild);
+						irb_button.setAttribute("disabled","");
+						irb_button.appendChild(document.createTextNode("승인 완료"));
+					}
+
+				}
+			}
+			xhttp.open("GET", "./project_modify.jsp?action=load&project_id="+project_id);
+			xhttp.send()
+		})
+
+
+		function save_button_cliked(){
+			var new_title = document.getElementById("project_title_input").value;
+			var new_protocol = document.getElementById("protocol_id").value;
+			var new_status = document.getElementById("project_status").value;
+			var new_phase = document.getElementById("project_phase").value;
+			var new_therapeutic = document.getElementById("project_therapeutic").value;
+			var new_indication = document.getElementById("project_indication").value;
+			var new_description = document.getElementById("project_description").value;
+			var new_sponsor = document.getElementById("sponsor_name").value;
+			var new_identifier = document.getElementById("project_identifier").value;
+			var new_drug = document.getElementById("project_drug").value;
+
+			var xhttp = new XMLHttpRequest();
+			xhttp.onreadystatechange=function(){
+				if(this.readyState == this.DONE && this.status==200){
+					print_log("modify_project", project_id);
+					var execute_ok = confirm("저장이 완료되었습니다. 목록으로 돌아가시겠습니까?");
+					if(execute_ok == true){
+						location.href="project_detail.html";
+					}
+				}
+			}
+			xhttp.open("GET", "./project_modify.jsp?action=save&project_id="+project_id+"&title="+new_title+"&protocol="+new_protocol+"&status="+new_status+"&phase="+new_phase+"&therapeutic="+new_therapeutic+"&indication="+new_indication+"&description="+new_description+"&sponsor="+new_sponsor+"&identifier="+new_identifier+"&drug="+new_drug);
+			xhttp.send()
+		}
+
+		function cancel_button_cliked(){
+			window.location.href = "project_detail.html";
+		}
+
+		function irb_check(){
+			var irb_num_input = document.getElementById("irb_number").value;
+			var new_title = document.getElementById("project_title_input").value;
+
+			var xhttp = new XMLHttpRequest();
+			xhttp.onreadystatechange=function(){
+				if(this.readyState == this.DONE && this.status == 200){
+					var irb_badge = document.getElementById("irb_status");
+					while(irb_badge.hasChildNodes()) irb_badge.removeChild(irb_badge.firstChild);
+					irb_badge.removeAttribute("class");
+					irb_badge.setAttribute("class", "badge badge-warning ml-2");
+					irb_badge.appendChild(document.createTextNode("승인 대기"));
+
+					var button_irb = document.getElementById("irb_button");
+					while(button_irb.hasChildNodes()) button_irb.removeChild(button_irb.firstChild);
+					button_irb.setAttribute("disabled","");
+					button_irb.appendChild(document.createTextNode("승인 대기"));
+				}
+			}
+			xhttp.open("GET", "./project_modify.jsp?action=irb_check&project_id="+project_id+"&irb="+irb_num_input+"&title="+new_title);
+			xhttp.send()
+		}
+	</script>
+</head>
+
+<body>
+	<div class="wrapper">
+		<div class="d-flex">
+			<nav class="sidebar" id="sidebar_navi">
+			</nav>
+
+			<div class="main bg-white">
+				<nav class="navbar navbar-expand navbar-light bg-white">
+					<a class="sidebar-toggle d-flex mr-2">
+            <i class="hamburger align-self-center"></i>
+          </a>
+
+					<form class="form-inline d-none d-sm-inline-block" id="upper_navi">
+					</form>
+
+					<div class="navbar-collapse collapse">
+							<ul class="navbar-nav ml-auto" id="navbar">
+							</ul>
+						</div>
+					</nav>
+
+					<main class="content bg-white">
+					<div class="container-fluid p-0">
+
+						<h1 class="h2 mb-3" id="project_title" style="color:rgb(52, 60, 67); font-weight: bold">
+
+						</h1>
+
+						<div class="row">
+							<div class="col-12">
+								<div class="card">
+									<div class="card-body">
+										<table id="member_table" class="table table-borderless" style ="width: 100%">
+											<tr>
+												<th colspan="5">TITLE</th>
+											</tr>
+											<tr >
+												<th colspan="5">																		
+													<textarea type="text" class="form-control" placeholder="Title" rows = "2" id="project_title_input"></textarea>
+												</th>
+											</tr>
+											<tr>
+												<th style="width: 25%">Protocol ID</th>
+												<th style="width: 25%">IRB Number
+													<span class="badge badge-danger ml-2" id="irb_status">승인 전</span>
+												</th>
+												<th style="width: 10%">Status</th>
+												<th style="width: 20%">Sponsor Name</th>
+												<th style="width: 20%">Identifier</th>
+											</tr>
+											<tr>
+												<th>																		
+													<input type="text" class="form-control" placeholder="Protocol Title" id="protocol_id">
+												</th>
+												<th>
+													<div class="input-group">
+														<input type="text" class="form-control" placeholder="IRB Number" id="irb_number">
+														<span class="input-group-append">
+															<button class="btn btn-info btn-sm mb-0" style="margin-left:auto" id="irb_button" onclick="irb_check()">승인신청</button>
+														</span>
+													</div>																		
+												</th>
+												<th>																		
+													<select class="form-control select2" data-toggle="select2" id="project_status">
+														<option value="Draft">Draft</option>
+														<option value="Running">Running</option>
+														<option value="Finished">Finished</option>
+													</select>
+												</th>
+												<th>																		
+													<input type="text" class="form-control" placeholder="Sponsor Name" id="sponsor_name">
+												</th>				
+												<th>																		
+													<input type="text" class="form-control" placeholder="project Identifier" id="project_identifier">
+												</th>	
+											</tr>
+										</table>
+									</div>
+								</div>	
+							</div>
+
+							<div class="col-12">
+									<div class="card" >
+										<div class="card-body">
+											<table id="member_table" class="table table-borderless" style ="width: 100%">
+													<tr>
+														<th style="width: 13%">Phase</th>
+														<th style="width: 47%">Primary Therapeutic Area</th>
+														<th style="width: 20%">Indication</th>
+														<th style="width: 20%">Drug</th>
+													</tr>
+													<tr>
+														<th>																		
+															<select class="form-control select2" data-toggle="select2" id="project_phase">
+																<option value="earlyPhase">Phase0</option>
+																<option value="Phase1">Phase1</option>
+																<option value="Phase2">Phase2</option>
+																<option value="Phase3">Phase3</option>
+																<option value="Phase4">Phase4</option>
+																<option value="pms">PMS</option>
+																<option value="notapplicable">Not Applicable</option>
+															</select>
+														</th>
+														<th>																		
+															<select class="form-control select2" data-toggle="select2" id="project_therapeutic">
+																<option value="perinatal">Certain conditions originating in the perinatal period</option>
+																<option value="infectious">Certain infectious and parasitic diseases</option>
+																<option value="Congenital">Congenital malformations, deformations and chromosomal abnormalities</option>
+																<option value="blood">Diseases of the blood and blood-forming organs and certain disorders involving the immune mechanism</option>
+																<option value="circulatory">Diseases of the circulatory system</option>
+																<option value="digestive">Diseases of the digestive system</option>
+																<option value="ear">Diseases of the ear and mastoid process</option>
+																<option value="eye">Diseases of the eye and adnexa</option>
+																<option value="genitourinary">Diseases of the genitourinary system</option>
+																<option value="musculoskeletal">Diseases of the musculoskeletal system and connective tissue</option>
+																<option value="nervous">Diseases of the nervous system</option>
+																<option value="respiratory">Diseases of the respiratory system </option>
+																<option value="skin">Diseases of the skin and subcutaneous tissue </option>
+																<option value="nutritional">Endocrine, nutritional and metabolic diseases</option>
+																<option value="morbidity">External causes of morbidity </option>
+																<option value="health">Factors influencing health status and contact with health services  </option>
+																<option value="Injury">Injury, poisoning and certain other consequences of external causes </option>
+																<option value="Diseases">Diseases of the skin and subcutaneous tissue </option>
+																<option value="Mental">Mental, Behavioral and Neurodevelopmental disorders</option>
+																<option value="Neoplasms">Neoplasms</option>
+																<option value="Pregnancy">Pregnancy, childbirth and the puerperium  </option>
+																<option value="laboratory">Symptoms, signs and abnormal clinical and laboratory findings, not elsewhere classified</option>
+															</select>
+														</th>
+														<th>																		
+															<input type="text" class="form-control" placeholder="Indication" id="project_indication">
+														</th>		
+														<th>																		
+															<input type="text" class="form-control" placeholder="Drug" id="project_drug">
+														</th>		
+													</tr>
+
+													<tr>
+														<th colspan="4"> Description </th>
+													</tr>
+													<tr>
+														<th colspan="4">
+															<textarea type="text" class="form-control" rows="4" placeholder="Description" id="project_description"></textarea>
+														</th>
+													</tr>
+											</table>
+										</div>
+								</div>
+								<button class="btn btn-info float-sm-right" style="margin-left: 10px; margin-right: 10px" onclick="save_button_cliked();">Save</button>
+								<button class="btn btn-outline-info float-sm-right" onclick="cancel_button_cliked();">Cancel</button>
+
+							</div>
+						</div>
+					</div>
+				</main>
+
+				<footer class="footer" id="footer"></footer>
+			</div>
+		</div>
+	</div>
+
+	<script src="../js/app.js"></script>
+	<script src="../js/tables.js"></script>
+	<script src="../js/feather.js"></script>
+	<script src="upper_navi.js"></script>
+
+</body>
+
+</html>

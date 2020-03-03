@@ -1,0 +1,34 @@
+.vertical-center {
+    transform: translate(25%, 0%);
+}
+
+html,
+body {
+  height: 100%;
+}
+
+.center-container {
+  height:100%;
+  display: table;
+  width:100%;
+  margin:0;
+}
+
+.center-row {
+  height:50%;
+  width:100%;
+  display: table-row;
+}
+  
+.center-row > div {
+  height:100%;
+  width:50%;
+  display: table-cell;
+  border:0 solid #eee;
+  color:#fff;
+  vertical-align:middle;
+}
+
+.bg-one {
+  background:#efefef url('../resource/login_background1.jpg');
+}

@@ -1,0 +1,26 @@
+// wijmo.grid.grouppanel
+.wj-grouppanel {
+    display: block;
+    background: $wj-cell-grp-bkg;
+    padding: 15px;
+
+    .wj-groupmarker {
+        margin-right: 10px;
+        padding: 6px 16px;
+        border: $wj-cell-bdr;
+        cursor: pointer;
+
+        &:hover {
+            background: $wj-hdr-hvr;
+        }
+
+        .wj-remove {
+            cursor: pointer;
+            font-weight: normal;
+            padding: 12px 0 12px 12px;
+        }
+    }
+}
+
+
+

@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<script src="../js/jquery-latest.js"></script>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<meta name="description" content="Responsive Bootstrap 4 Admin Template">
+	<meta name="author" content="Bootlab">
+
+	<title>SCRN</title>
+
+	<link href="../css/app.css" rel="stylesheet">
+
+	<script type="text/javascript">
+		$(document).ready(function(){
+			var rand = Math.random();
+
+			$('#sidebar_navi').load('menu.html');
+			$('#footer').load('footer.html');
+			$('#navbar').load('navbar_item.html');
+
+			upper_navi_1("Admin");
+
+			var xhttp = new XMLHttpRequest();
+			xhttp.onreadystatechange = function(){
+				if(this.readyState == this.DONE && this.status == 200){
+					var result_array = xhttp.responseText.split("&");
+                    
+                    var img_src = result_array[1];
+					document.getElementById("nav_img").setAttribute("src", img_src+"?"+rand);
+
+					var user_name = result_array[2];
+					document.getElementById("user_name").appendChild(document.createTextNode(user_name));
+
+					var log_data_pre = result_array[0];
+					var log_data = eval(log_data_pre);
+					var log_data_output = Object.keys(log_data);
+
+                    for(var i = 0; i < log_data_output.length; i++){
+                        var createTR = document.createElement("tr");
+                        document.getElementById("log_table").appendChild(createTR);
+
+						var codeTD = document.createElement("td");
+						var code_data = document.createTextNode(log_data[i].code);
+						codeTD.appendChild(code_data);
+						createTR.appendChild(codeTD);
+
+                        var dateTD = document.createElement("td");
+                        var date_data = document.createTextNode(log_data[i].edit_date);
+                        dateTD.appendChild(date_data);
+                        createTR.appendChild(dateTD);
+
+                        var editorTD = document.createElement("td");
+                        var editor_img = document.createElement("img");
+                        editor_img.setAttribute("class", "avatar img-fluid rounded-circle mr-2");
+                        editor_img.setAttribute("src", log_data[i].mem_img);
+
+                        var editor_form = document.createElement("form");
+                        editor_form.setAttribute("class", "form-inline m-0");
+                        editorTD.appendChild(editor_form);
+
+                        var name_div = document.createElement("div");
+                        var editor = document.createElement("span");
+                        editor.setAttribute("class", "mb-0");
+                        editor.setAttribute("style", "font-weight:bolder; font-size:15px");
+                        editor.innerHTML = log_data[i].mem_name;
+                        name_div.appendChild(editor);
+
+                        name_div.appendChild(document.createElement("br"));
+
+                        var editor_position = document.createElement("span");
+                        editor_position.setAttribute("style", "font-size:8px");
+                        editor_position.innerHTML = log_data[i].mem_position;
+                        name_div.appendChild(editor_position);
+
+                        editor_form.appendChild(editor_img);
+                        editor_form.appendChild(name_div);
+                        createTR.appendChild(editorTD);
+
+                        var ipTD = document.createElement("td");
+                        var ip_data = document.createTextNode(log_data[i].ip_address);
+                        ipTD.appendChild(ip_data);
+                        createTR.appendChild(ipTD);
+
+                        var siteTD = document.createElement("td");
+                        var site_data = document.createTextNode(log_data[i].site);
+                        siteTD.appendChild(site_data);
+                        createTR.appendChild(siteTD);
+
+                        var messageTD = document.createElement("td");
+                        var message_data = document.createTextNode(log_data[i].edit_reason);
+                        messageTD.appendChild(message_data);
+                        createTR.appendChild(messageTD);
+                    }
+
+					$('#log_table_all').DataTable({
+						pageLength: 10
+                    });
+
+
+				}
+			}
+			xhttp.open("GET", "./scrn_log.jsp?action=load");
+			xhttp.send();
+		});
+
+	</script>
+</head>
+
+
+<body>
+	<div class="wrapper">
+		<div class="d-flex">
+			<nav class="sidebar" id="sidebar_navi">
+			</nav>
+
+			<div class="main bg-white">
+				<nav class="navbar navbar-expand navbar-light bg-white">
+					<a class="sidebar-toggle d-flex mr-2">
+            <i class="hamburger align-self-center"></i>
+          </a>
+					<form class="form-inline d-none d-sm-inline-block" id="upper_navi">
+					</form>
+
+					<div class="navbar-collapse collapse">
+						<ul class="navbar-nav ml-auto" id="navbar">
+						</ul>
+					</div>
+				</nav>
+
+				<main class="content bg-white">
+					<div class="container-fluid p-0">
+
+						<h1 class="h2 mb-3" id="study_title" style="color:rgb(52, 60, 67); font-weight: bold">
+						</h1>
+
+						<div class="row">
+							<div class="col-12">
+                                <div class="card" style="border-color: transparent">
+                                    <div class="card-body">
+                                        <table class="table" id="log_table_all" style="width:100%">
+                                            <thead>
+                                                <tr>
+													<th style="width:50px">Code</th>
+                                                    <th style="width:75px">Date</th>
+                                                    <th style="width:120px">Username</th>
+                                                    <th style="width:150px">SourceIP</th>
+                                                    <th style="width:100px">Site</th>
+                                                    <th>Message</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="log_table">
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+							</div>
+						</div>
+					</div>
+				</main>
+
+				<footer class="footer" id="footer"></footer>
+			</div>
+		</div>
+	</div>
+
+	<script src="../js/app.js"></script>
+	<script src="../js/tables.js"></script>
+	<script src="../js/feather.js"></script>
+	<script src="upper_navi.js"></script>
+
+</body>
+
+</html>

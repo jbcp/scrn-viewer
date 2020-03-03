@@ -1,0 +1,3844 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<script src="../js/jquery-latest.js"></script>
+	<script src="../lib/dragula/dragula.min.js" type="text/javascript"></script>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<meta name="description" content="Responsive Bootstrap 4 Admin Template">
+	<meta name="author" content="Bootlab">
+
+
+	<title>SCRN</title>
+
+	<link href="../css/app.css" rel="stylesheet">
+
+	<style>
+	.wj-cell:not(.wj-header):not(.wj-group):not(.wj-alt):not(.wj-state-selected):not(.wj-state-multi-selected) {
+		background:#fff;
+	}
+	.wj-state-selected {           
+		border: 1px solid #5fc27e !important;
+		background: #5fc27e !important;
+		color: white !important;
+	} 	
+	</style>
+	<script src="../js/bootstrap.min.js"></script>
+	<script>
+		var newj = jQuery.noConflict();	
+	</script>
+	<script src="./print_log.js"></script>
+
+	<script type="text/javascript">
+		var clicked_item_in, clicked_item_ex;
+		var visit_criteria = new Object();
+		var age_item = 1010;
+		var itemlist_in = [];
+		var itemlist_ex = [];
+		var in_table, ex_table;
+		var define_id;
+		var value_item;
+		var modal_in, modal_in_mini, modal_ex, modal_ex_mini;
+		var selected_category;
+		var opened = false;
+
+		newj('.modal').on('hidden.bs.modal', function (e) {
+			console.log('modal close');
+		});
+		onload = function () {
+			var ConditionChk = new wijmo.nav.TreeView('#ConditionChk', {
+				displayMemberPath: 'title',
+				childItemsPath: 'items',
+				itemsSource: [
+					{"title": 'Certain infectious and parasitic diseases', "isChecked": "false", value: 1, items:[]},
+					{"title": 'Neoplasms', "isChecked": "false", value: 1, items:[]},
+					{"title": 'Diseases of the blood and blood-forming organs and certain disorders involving the immune mechanism', "isChecked": "false", value: 1, items:[]},
+					{"title": 'Endocrine, nutritional and metabolic diseases', "isChecked": "false", value: 1, items:[]},
+					{"title": 'Mental, Behavioral and Neurodevelopmental disorders', "isChecked": "false", value: 1, items:[]},
+					{"title": 'Diseases of the nervous system', "isChecked": "false", value: 1, items:[]},
+					{"title": 'Diseases of the eye and adnexa', "isChecked": "false", value: 1, items:[]},
+					{"title": 'Diseases of the ear and mastoid process', "isChecked": "false", value: 1, items:[]},
+					{"title": 'Diseases of the circulatory system', "isChecked": "false", value: 1, items:[]},
+					{"title": 'Diseases of the respiratory system', "isChecked": "false", value: 1, items:[]},
+					{"title": 'Diseases of the digestive system', "isChecked": "false", value: 1, items:[]},
+					{"title": 'Diseases of the skin and subcutaneous tissue', "isChecked": "false", value: 1, items:[]},
+					{"title": 'Diseases of the musculoskeletal system and connective tissue', "isChecked": "false", value: 1, items:[]},
+					{"title": 'Diseases of the genitourinary system', "isChecked": "false", value: 1, items:[]},
+					{"title": 'Pregnancy, childbirth and the puerperium', "isChecked": "false", value: 1, items:[]},
+					{"title": 'Certain conditions originating in the perinatal period', "isChecked": "false", value: 1, items:[]},
+					{"title": 'Congenital malformations, deformations and chromosomal abnormalities', "isChecked": "false", value: 1, items:[]},
+					{"title": 'Symptoms, signs and abnormal clinical and laboratory findings, not elsewhere classified', "isChecked": "false", value: 1, items:[]},
+					{"title": 'Injury, poisoning and certain other consequences of external causes', "isChecked": "false", value: 1, items:[]},
+					{"title": 'External causes of morbidity', "isChecked": "false", value: 1, items:[]},
+					{"title": 'Factors influencing health status and contact with health services', "isChecked": "false", value: 1, items:[]}
+				],
+				lazyLoadFunction: function(node, callback){
+					var searchtext = node.dataItem.title.replace(/'/gi, "''");
+					searchtext = searchtext.replace("[", "%/[%");
+					searchtext = searchtext.replace("]", "%/]%");
+					searchtext = escape(encodeURIComponent(searchtext));
+					var xhttp = new XMLHttpRequest();
+					xhttp.onreadystatechange = function(){
+						if(this.readyState == this.DONE && this.status == 200){
+							var result_pre = xhttp.responseText.trim();
+							var result = JSON.parse(result_pre);
+							callback(result);
+						}
+					}
+					xhttp.open("GET", "./icd10.jsp?level="+node.level+"&title="+searchtext+"&version=11");
+					xhttp.send();
+				},
+				itemClicked: function (s, e) {
+					clicked_item_in = s.selectedItem;
+				}
+			});
+
+
+			var DrugChk = new wijmo.nav.TreeView('#DrugChk', {
+				displayMemberPath: 'title',
+				childItemsPath: 'items',
+				itemsSource: [
+					{"title": 'ALIMENTARY TRACT AND METABOLISM', "isChecked": "false", value: 1, items:[]},
+					{"title": 'BLOOD AND BLOOD FORMING ORGANS', "isChecked": "false", value: 1, items:[]},
+					{"title": 'CARDIOVASCULAR SYSTEM', "isChecked": "false", value: 1, items:[]},
+					{"title": 'DERMATOLOGICALS', "isChecked": "false", value: 1, items:[]},
+					{"title": 'GENITO URINARY SYSTEM AND SEX HORMONES', "isChecked": "false", value: 1, items:[]},
+					{"title": 'SYSTEMIC HORMONAL PREPARATIONS, EXCL. SEX HORMONES AND INSULINS', "isChecked": "false", value: 1, items:[]},
+					{"title": 'ANTIINFECTIVES FOR SYSTEMIC USE', "isChecked": "false", value: 1, items:[]},
+					{"title": 'ANTINEOPLASTIC AND IMMUNOMODULATING AGENTS', "isChecked": "false", value: 1, items:[]},
+					{"title": 'MUSCULO-SKELETAL SYSTEM', "isChecked": "false", value: 1, items:[]},
+					{"title": 'NERVOUS SYSTEM', "isChecked": "false", value: 1, items:[]},
+					{"title": 'ANTIPARASITIC PRODUCTS, INSECTICIDES AND REPELLENTS', "isChecked": "false", value: 1, items:[]},
+					{"title": 'RESPIRATORY SYSTEM', "isChecked": "false", value: 1, items:[]},
+					{"title": 'SENSORY ORGANS', "isChecked": "false", value: 1, items:[]},
+					{"title": 'VARIOUS', "isChecked": "false", value: 1, items:[]}
+				],
+				lazyLoadFunction: function(node, callback){
+					var xhttp = new XMLHttpRequest();
+					xhttp.onreadystatechange = function(){
+						if(this.readyState == this.DONE && this.status == 200){
+							var result_pre = xhttp.responseText.trim();
+							var result = JSON.parse(result_pre);
+							callback(result);
+						}
+					}
+					xhttp.open("GET", "./atc.jsp?level="+node.level+"&title="+node.dataItem.title+"&version=11");
+					xhttp.send();
+				},
+				itemClicked: function (s, e) {
+					clicked_item_in = s.selectedItem;
+				}
+			});
+
+			var ConditionChk = new wijmo.nav.TreeView('#ConditionChkEx', {
+				displayMemberPath: 'title',
+				childItemsPath: 'items',
+				itemsSource: [
+					{"title": 'Certain infectious and parasitic diseases', "isChecked": "false", value: 1, items:[]},
+					{"title": 'Neoplasms', "isChecked": "false", value: 1, items:[]},
+					{"title": 'Diseases of the blood and blood-forming organs and certain disorders involving the immune mechanism', "isChecked": "false", value: 1, items:[]},
+					{"title": 'Endocrine, nutritional and metabolic diseases', "isChecked": "false", value: 1, items:[]},
+					{"title": 'Mental, Behavioral and Neurodevelopmental disorders', "isChecked": "false", value: 1, items:[]},
+					{"title": 'Diseases of the nervous system', "isChecked": "false", value: 1, items:[]},
+					{"title": 'Diseases of the eye and adnexa', "isChecked": "false", value: 1, items:[]},
+					{"title": 'Diseases of the ear and mastoid process', "isChecked": "false", value: 1, items:[]},
+					{"title": 'Diseases of the circulatory system', "isChecked": "false", value: 1, items:[]},
+					{"title": 'Diseases of the respiratory system', "isChecked": "false", value: 1, items:[]},
+					{"title": 'Diseases of the digestive system', "isChecked": "false", value: 1, items:[]},
+					{"title": 'Diseases of the skin and subcutaneous tissue', "isChecked": "false", value: 1, items:[]},
+					{"title": 'Diseases of the musculoskeletal system and connective tissue', "isChecked": "false", value: 1, items:[]},
+					{"title": 'Diseases of the genitourinary system', "isChecked": "false", value: 1, items:[]},
+					{"title": 'Pregnancy, childbirth and the puerperium', "isChecked": "false", value: 1, items:[]},
+					{"title": 'Certain conditions originating in the perinatal period', "isChecked": "false", value: 1, items:[]},
+					{"title": 'Congenital malformations, deformations and chromosomal abnormalities', "isChecked": "false", value: 1, items:[]},
+					{"title": 'Symptoms, signs and abnormal clinical and laboratory findings, not elsewhere classified', "isChecked": "false", value: 1, items:[]},
+					{"title": 'Injury, poisoning and certain other consequences of external causes', "isChecked": "false", value: 1, items:[]},
+					{"title": 'External causes of morbidity', "isChecked": "false", value: 1, items:[]},
+					{"title": 'Factors influencing health status and contact with health services', "isChecked": "false", value: 1, items:[]}
+				],
+				lazyLoadFunction: function(node, callback){
+					var xhttp = new XMLHttpRequest();
+					xhttp.onreadystatechange = function(){
+						if(this.readyState == this.DONE && this.status == 200){
+							var result_pre = xhttp.responseText.trim();
+							var result = JSON.parse(result_pre);
+							callback(result);
+						}
+					}
+					xhttp.open("GET", "./icd10.jsp?level="+node.level+"&title="+node.dataItem.title+"&version=11");
+					xhttp.send();
+				},
+				itemClicked: function (s, e) {
+					clicked_item_ex = s.selectedItem;
+				}
+			});
+
+			var DrugChk = new wijmo.nav.TreeView('#DrugChkEx', {
+				displayMemberPath: 'title',
+				childItemsPath: 'items',
+				itemsSource: [
+					{"title": 'ALIMENTARY TRACT AND METABOLISM', "isChecked": "false", value: 1, items:[]},
+					{"title": 'BLOOD AND BLOOD FORMING ORGANS', "isChecked": "false", value: 1, items:[]},
+					{"title": 'CARDIOVASCULAR SYSTEM', "isChecked": "false", value: 1, items:[]},
+					{"title": 'DERMATOLOGICALS', "isChecked": "false", value: 1, items:[]},
+					{"title": 'GENITO URINARY SYSTEM AND SEX HORMONES', "isChecked": "false", value: 1, items:[]},
+					{"title": 'SYSTEMIC HORMONAL PREPARATIONS, EXCL. SEX HORMONES AND INSULINS', "isChecked": "false", value: 1, items:[]},
+					{"title": 'ANTIINFECTIVES FOR SYSTEMIC USE', "isChecked": "false", value: 1, items:[]},
+					{"title": 'ANTINEOPLASTIC AND IMMUNOMODULATING AGENTS', "isChecked": "false", value: 1, items:[]},
+					{"title": 'MUSCULO-SKELETAL SYSTEM', "isChecked": "false", value: 1, items:[]},
+					{"title": 'NERVOUS SYSTEM', "isChecked": "false", value: 1, items:[]},
+					{"title": 'ANTIPARASITIC PRODUCTS, INSECTICIDES AND REPELLENTS', "isChecked": "false", value: 1, items:[]},
+					{"title": 'RESPIRATORY SYSTEM', "isChecked": "false", value: 1, items:[]},
+					{"title": 'SENSORY ORGANS', "isChecked": "false", value: 1, items:[]},
+					{"title": 'VARIOUS', "isChecked": "false", value: 1, items:[]}
+				],
+				lazyLoadFunction: function(node, callback){
+					var xhttp = new XMLHttpRequest();
+					xhttp.onreadystatechange = function(){
+						if(this.readyState == this.DONE && this.status == 200){
+							var result_pre = xhttp.responseText.trim();
+							var result = JSON.parse(result_pre);
+							callback(result);
+						}
+					}
+					xhttp.open("GET", "./atc.jsp?level="+node.level+"&title="+node.dataItem.title+"&version=11");
+					xhttp.send();
+				},
+				itemClicked: function (s, e) {
+					clicked_item_ex = s.selectedItem;
+				}
+			});
+
+
+		}
+
+		function hieracyDrugClicked(){
+			itemmodal_in_hier();
+		}
+
+		function hieracyCondClicked(){
+			itemmodal_in_hier();
+		}
+
+		function hieracyDrugClickedEx(){
+			itemmodal_ex_hier();
+		}
+
+		function hieracyCondClickedEx(){
+			itemmodal_ex_hier();
+		}
+
+		jQuery(document).ready(function ($) {
+			var rand = Math.random();
+			dragula([jQuery("#inclusion_criteria")[0], jQuery("#exclusion_criteria")[0]]);
+
+			modal_in = newj('#itemAddInFullModal').clone();
+			modal_in_mini = newj('#itemAddInModal').clone();
+			modal_ex = newj('#itemAddExFullModal').clone();
+			modal_ex_mini = newj('#itemAddExModal').clone();
+
+			var user_define_data_input = location.search.substring(1);
+			var user_define_data_split = user_define_data_input.split("&");
+
+			var user_define_id_input = user_define_data_split[0].split("=");
+			define_id = JSON.parse(user_define_id_input[1]);
+
+			$('#sidebar_navi').load('menu.html');
+			$('#navbar').load('navbar_item.html?verson='+rand);
+
+			upper_navi_2("User define set", define_id);
+
+			var xhttp = new XMLHttpRequest();
+			xhttp.onreadystatechange = function () {
+				if (this.readyState == this.DONE && this.status == 200) {
+					var data_array = xhttp.responseText.split("&");
+
+					var img_src = data_array[2];
+					document.getElementById("nav_img").setAttribute("src", img_src + "?" + rand);
+
+					var user_name = data_array[3];
+					document.getElementById("user_name").appendChild(document.createTextNode(user_name));
+
+					var title_data = data_array[1];
+					var title_eval = eval(title_data);
+					var title = title_eval[0].title;
+
+					document.getElementById("user_define_title").value = title;
+					document.getElementById("user_define_title").textContent = title;
+
+					var criteria_data_pre = data_array[0];
+					var criteria_data_eval = eval(criteria_data_pre);
+					var criteria_data_output = Object.keys(criteria_data_eval);
+
+					var visit_data_pre = data_array[4];
+					var visit_data_eval = eval(visit_data_pre);
+					var visit_data_output = Object.keys(visit_data_eval);
+
+					document.getElementById("visit_no").setAttribute("checked", "");
+					document.getElementById("daterange_visit").value = "";
+					document.getElementById("daterange_visit").setAttribute("disabled", "");
+					if (visit_data_output.length > 0) {
+						document.getElementById("daterange_visit").removeAttribute("disabled");
+						if (visit_data_eval[0].period > 100) {
+							if (visit_data_eval[0].period == 9999) {
+								document.getElementById("visit_no").removeAttribute("checked");
+								document.getElementById("visit_direct").setAttribute("checked", "");
+								document.getElementById("daterange_visit").value = visit_data_eval[0].value;
+							}
+						}
+						else {
+							document.getElementById("visit_no").removeAttribute("checked");
+							document.getElementById("visit_" + visit_data_eval[0].period).setAttribute("checked", "");
+							document.getElementById("daterange_visit").value = visit_data_eval[0].value;
+						}
+
+						var durations = visit_data_eval[0].period;
+						visit_criteria.table = "Visit_occurrence";
+						visit_criteria.field = "id";
+						visit_criteria.condition = "0";
+						visit_criteria.attribute = "";
+						visit_criteria.value = durations;
+						visit_criteria.title = "";
+						visit_criteria.addition_text = "";
+
+						visit_criteria.value_min = "";
+						visit_criteria.value_max = "";
+						visit_criteria.measure_count = "";
+						visit_criteria.measure_method = "";
+						visit_criteria.min_condition = "";
+						visit_criteria.max_condition = "";
+
+						var today = moment().format('DD/MM/YYYY');
+						var ago = moment().subtract(durations, 'month').format('DD/MM/YYYY');
+						document.getElementById("daterange_visit").removeAttribute("disabled");
+
+						if (durations == "1200") {
+							document.getElementById("daterange_visit").value = "";
+							document.getElementById("daterange_visit").setAttribute("disabled", "");
+						}
+						else if (durations == "9999") {
+							document.getElementById("daterange_visit").value = visit_data_eval[0].value;
+						}
+						else {
+							document.getElementById("daterange_visit").value = visit_data_eval[0].value;
+						}
+					}
+
+					for (var i = 0; i < criteria_data_output.length; i++) {
+						var data_status = criteria_data_eval[i].status;
+						var data_title = criteria_data_eval[i].title;
+						var data_attribute = criteria_data_eval[i].attribute;
+						var data_table = criteria_data_eval[i].table;
+						var data_addition = criteria_data_eval[i].addition;
+						var data_addition_query = criteria_data_eval[i].addition_query;
+						var date_value = criteria_data_eval[i].addition_date;
+						var value_add_min = criteria_data_eval[i].value_min;
+						var value_add_max = criteria_data_eval[i].value_max;
+						var measure_count = criteria_data_eval[i].measure_count;
+						var measure_method = criteria_data_eval[i].measure_method;
+						var min_condition = criteria_data_eval[i].min_condition;
+						var max_condition = criteria_data_eval[i].max_condition;
+						var data_heir = criteria_data_eval[i].heir;
+						var data_time_stone = criteria_data_eval[i].condition;
+
+						var table_parse;
+
+						if (data_table == "Drug_exposure") table_parse = "drug";
+						else if (data_table == "Condition_occurrence") table_parse = "condition";
+						else if (data_table == "Measurement") table_parse = "measurement";
+						else if (data_table == "Observation") table_parse = "observation";
+						else if (data_table == "Person" && data_heir == 1) table_parse = "age";
+						else if (data_table == "Person" && data_heir != 1) table_parse = "gender";
+						else if (data_table == "SQL") table_parse="sql";
+
+						var criteria_div = document.createElement("div");
+						criteria_div.setAttribute("class", "input-group");
+
+						var criteria_button = document.createElement("button");
+						criteria_div.appendChild(criteria_button);
+
+						if (data_status == "inclusion") {
+							criteria_div.setAttribute("id", "button_div_in_"+data_attribute);
+
+							document.getElementById("inclusion_criteria").appendChild(criteria_div);
+							criteria_button.setAttribute("class", "btn btn-outline");
+							criteria_button.setAttribute("type", "button");
+							criteria_button.setAttribute("id", "buttonin_" + data_attribute);
+							criteria_button.setAttribute("onclick", "criteria_button_clicked_in(id)");
+							criteria_button.setAttribute("style", "width:95%; vertical-align:middle; height: 50px; margin-bottom: 10px; text-align:left; background-color:transparent; border-color:rgb(218, 222, 227); ");
+
+							var context_div = document.createElement("div");
+							context_div.setAttribute("style", "margin-left : 10px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; width: 90%; color:rgb(78,85,92)")
+							var domain_button = document.createElement("button");
+							switch (table_parse) {
+								case 'drug':
+									domain_button.setAttribute("class", "btn btn-danger btn-sm float-left");
+									domain_button.setAttribute("style", "margin-right: 10px; background-color:RGB(244, 68, 85)");
+									domain_button.appendChild(document.createTextNode("약물"));
+									break;
+								case 'condition':
+									domain_button.setAttribute("class", "btn btn-success btn-sm float-left");
+									domain_button.setAttribute("style", "margin-right: 10px; background-color:RGB(95, 194, 126)");
+									domain_button.appendChild(document.createTextNode("진단"));
+									break;
+								case 'measurement':
+									domain_button.setAttribute("class", "btn btn-primary btn-sm float-left");
+									domain_button.setAttribute("style", "margin-right: 10px; background-color:RGB(12, 194, 170)");
+									domain_button.appendChild(document.createTextNode("검사"));
+									break;
+								case 'observation':
+									domain_button.setAttribute("class", "btn btn-primary btn-sm float-left");
+									domain_button.setAttribute("style", "margin-right: 10px; background-color:RGB(12, 194, 170)");
+									domain_button.appendChild(document.createTextNode("검사"));
+									break;
+
+								case 'age':
+									domain_button.setAttribute("class", "btn btn-warning btn-sm float-left");
+									domain_button.setAttribute("style", "margin-right: 10px; background-color:RGB(252, 193, 0)");
+									domain_button.appendChild(document.createTextNode("나이"));
+									age_item = age_item + 1;
+									break;
+								case 'gender':
+									domain_button.setAttribute("class", "btn btn-warning btn-sm float-left");
+									domain_button.setAttribute("style", "margin-right: 10px; background-color:RGB(252, 193, 0)");
+									domain_button.appendChild(document.createTextNode("성별"));
+									age_item = age_item + 1;
+									break;
+								case 'sql':
+									domain_button.setAttribute("class", "btn btn-outline-warning btn-sm float-left");
+									domain_button.setAttribute("style", "margin-right: 10px; border-color:RGB(252, 193, 0)");
+									domain_button.appendChild(document.createTextNode("SQL"));
+									age_item = age_item + 1;
+									break;
+
+							}
+
+							domain_button.setAttribute("type", "button");
+							domain_button.setAttribute("disabled", "");
+
+							var title_text = document.createTextNode(data_title);
+							context_div.appendChild(domain_button);
+							context_div.appendChild(title_text);
+
+							criteria_button.appendChild(context_div);
+
+							var delete_button = document.createElement("button");
+							criteria_div.appendChild(delete_button);
+							delete_button.setAttribute("class", "btn btn-outline-info btn-sm float-right");
+							delete_button.setAttribute("id", data_attribute);
+							delete_button.setAttribute("style", "height:50px; border-color:transparent;");
+							delete_button.setAttribute('onclick', 'delete_item_in(id); event.stopPropagation();');
+
+							delete_button_icon = document.createElement("i");
+							delete_button_icon.setAttribute("class", "fas fa-trash");
+							delete_button.appendChild(delete_button_icon);
+
+							var durtaion_div = document.createElement("div");
+							durtaion_div.setAttribute("style", "margin-left: 30px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; margin-top:1px; color:rgb(106,115,124); font-size:12px");
+							durtaion_div.setAttribute("id", "duration_" + data_attribute);
+
+							if (data_addition == null) data_addition = "";
+							var duration_text = document.createTextNode(data_addition);
+							durtaion_div.appendChild(duration_text);
+							criteria_button.appendChild(durtaion_div);
+
+							var item_title = data_title;
+							var criteria = new Object();
+							criteria.title = item_title;
+							criteria.status = "inclusion";
+							criteria.table = table_parse;
+							criteria.attribute = data_attribute;
+							criteria.heir = data_heir;
+							var new_addition_query = "";
+							if (data_addition_query != null) {
+								new_addition_query = data_addition_query.replace(/'/gi, "''");
+								new_addition_query = data_addition_query.replace("%25", "%");
+							}
+							criteria.addition = new_addition_query;
+							criteria.addition_text = data_addition;
+							criteria.date_addition = date_value;
+							criteria.value_min = value_add_min;
+							criteria.value_max = value_add_max;
+							criteria.measure_count = measure_count;
+							criteria.measure_method = measure_method;
+							criteria.min_condition = min_condition;
+							criteria.max_condition = max_condition;
+							criteria.condition = data_time_stone;
+							itemlist_in.push(criteria);
+
+						}
+
+						else if (data_status == "exclusion") {
+
+							criteria_div.setAttribute("id", "button_div_ex_"+data_attribute);
+
+							document.getElementById("exclusion_criteria").appendChild(criteria_div);
+							criteria_button.setAttribute("class", "btn btn-outline");
+							criteria_button.setAttribute("type", "button");
+							criteria_button.setAttribute("id", "buttonex_" + data_attribute);
+							criteria_button.setAttribute("onclick", "criteria_button_clicked_ex(id)");
+							criteria_button.setAttribute("style", "width:95%; height: 50px; margin-bottom: 10px; text-align:left; background-color:transparent; border-color:rgb(218, 222, 227)");
+
+							var context_div = document.createElement("div");
+							context_div.setAttribute("style", "margin-left : 10px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; width: 90%; color:rgb(78,85,92)")
+							var domain_button = document.createElement("button");
+							switch (table_parse) {
+								case 'drug':
+									domain_button.setAttribute("class", "btn btn-danger btn-sm float-left");
+									domain_button.setAttribute("style", "margin-right: 10px; background-color:RGB(244, 68, 85)");
+									domain_button.appendChild(document.createTextNode("약물"));
+									break;
+								case 'condition':
+									domain_button.setAttribute("class", "btn btn-success btn-sm float-left");
+									domain_button.setAttribute("style", "margin-right: 10px; background-color:RGB(95, 194, 126)");
+									domain_button.appendChild(document.createTextNode("진단"));
+									break;
+								case 'measurement':
+									domain_button.setAttribute("class", "btn btn-primary btn-sm float-left");
+									domain_button.setAttribute("style", "margin-right: 10px; background-color:RGB(12, 194, 170)");
+									domain_button.appendChild(document.createTextNode("검사"));
+									break;
+								case 'observation':
+									domain_button.setAttribute("class", "btn btn-primary btn-sm float-left");
+									domain_button.setAttribute("style", "margin-right: 10px; background-color:RGB(12, 194, 170)");
+									domain_button.appendChild(document.createTextNode("검사"));
+									break;
+								case 'age':
+									domain_button.setAttribute("class", "btn btn-warning btn-sm float-left");
+									domain_button.setAttribute("style", "margin-right: 10px; background-color:RGB(252, 193, 0)");
+									domain_button.appendChild(document.createTextNode("나이"));
+									age_item = age_item + 1;
+									break;
+								case 'gender':
+									domain_button.setAttribute("class", "btn btn-warning btn-sm float-left");
+									domain_button.setAttribute("style", "margin-right: 10px; background-color:RGB(252, 193, 0)");
+									domain_button.appendChild(document.createTextNode("성별"));
+									age_item = age_item + 1;
+									break;
+								case 'sql':
+									domain_button.setAttribute("class", "btn btn-outline-warning btn-sm float-left");
+									domain_button.setAttribute("style", "margin-right: 10px; border-color:RGB(252, 193, 0)");
+									domain_button.appendChild(document.createTextNode("SQL"));
+									age_item = age_item + 1;
+									break;
+
+							}
+							domain_button.setAttribute("type", "button");
+							domain_button.setAttribute("disabled", "");
+
+							var title_text = document.createTextNode(data_title);
+							context_div.appendChild(domain_button);
+							context_div.appendChild(title_text);
+
+							criteria_button.appendChild(context_div);
+
+							var delete_button = document.createElement("button");
+							criteria_div.appendChild(delete_button);
+							delete_button.setAttribute("class", "btn btn-outline-info btn-sm float-right");
+							delete_button.setAttribute("id", data_attribute);
+							delete_button.setAttribute("style", "height:50px; border-color:transparent;");
+							delete_button.setAttribute('onclick', 'delete_item_ex(id); event.stopPropagation();');
+
+							delete_button_icon = document.createElement("i");
+							delete_button_icon.setAttribute("class", "fas fa-trash");
+							delete_button.appendChild(delete_button_icon);
+
+							var durtaion_div = document.createElement("div");
+							durtaion_div.setAttribute("style", "margin-left: 30px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; margin-top:1px; color:rgb(106,115,124); font-size:12px");
+							durtaion_div.setAttribute("id", "duration_" + data_attribute);
+							if (data_addition == null) data_addition = "";
+							var duration_text = document.createTextNode(data_addition);
+
+							durtaion_div.appendChild(duration_text);
+							criteria_button.appendChild(durtaion_div);
+
+							var item_title = data_title;
+							var criteria = new Object();
+							criteria.title = item_title;
+							criteria.status = "exclusion";
+							criteria.table = table_parse;
+							criteria.attribute = data_attribute;
+							criteria.heir = data_heir;
+							var new_addition_query = "";
+							if (data_addition_query != null) {
+								new_addition_query = data_addition_query.replace(/'/gi, "''");
+								new_addition_query = data_addition_query.replace("%25", "%");
+							}
+							criteria.addition = new_addition_query;
+							criteria.addition_text = data_addition;
+							criteria.date_addition = date_value;
+							criteria.value_min = value_add_min;
+							criteria.value_max = value_add_max;
+							criteria.measure_count = measure_count;
+							criteria.measure_method = measure_method;
+							criteria.min_condition = min_condition;
+							criteria.max_condition = max_condition;
+							criteria.condition = data_time_stone;
+							itemlist_ex.push(criteria);
+
+						}
+					}
+
+				}
+			}
+			xhttp.open("GET", "./user_define_detail.jsp?action=load&define_id=" + define_id );
+			xhttp.send();
+
+			jQuery("#no-check").change(function () {
+
+				if (jQuery("#no-check").is(":checked")) {
+					document.getElementById("duration_in_button_3_b").setAttribute("disabled", "");
+					document.getElementById("duration_in_button_6_b").setAttribute("disabled", "");
+					document.getElementById("duration_in_button_9_b").setAttribute("disabled", "");
+					document.getElementById("duration_in_button_12_b").setAttribute("disabled", "");
+					document.getElementById("duration_in_button_self_b").setAttribute("disabled", "");
+					document.getElementById("duration_in_button_3").setAttribute("disabled", "");
+					document.getElementById("duration_in_button_6").setAttribute("disabled", "");
+					document.getElementById("duration_in_button_9").setAttribute("disabled", "");
+					document.getElementById("duration_in_button_12").setAttribute("disabled", "");
+					document.getElementById("duration_in_button_self").setAttribute("disabled", "");
+
+				}
+				else {
+					document.getElementById("duration_in_button_3_b").removeAttribute("disabled");
+					document.getElementById("duration_in_button_6_b").removeAttribute("disabled");
+					document.getElementById("duration_in_button_9_b").removeAttribute("disabled");
+					document.getElementById("duration_in_button_12_b").removeAttribute("disabled");
+					document.getElementById("duration_in_button_self_b").removeAttribute("disabled");
+					document.getElementById("duration_in_button_3").removeAttribute("disabled");
+					document.getElementById("duration_in_button_6").removeAttribute("disabled");
+					document.getElementById("duration_in_button_9").removeAttribute("disabled");
+					document.getElementById("duration_in_button_12").removeAttribute("disabled");
+					document.getElementById("duration_in_button_self").removeAttribute("disabled");
+
+				}
+
+			});
+			jQuery("#no-check-mini").change(function () {
+
+				if (jQuery("#no-check-mini").is(":checked")) {
+					document.getElementById("duration_in_button_3_mini").setAttribute("disabled", "");
+					document.getElementById("duration_in_button_6_mini").setAttribute("disabled", "");
+					document.getElementById("duration_in_button_9_mini").setAttribute("disabled", "");
+					document.getElementById("duration_in_button_12_mini").setAttribute("disabled", "");
+					document.getElementById("duration_in_button_self_mini").setAttribute("disabled", "");
+					document.getElementById("duration_in_button_3_mini_b").setAttribute("disabled", "");
+					document.getElementById("duration_in_button_6_mini_b").setAttribute("disabled", "");
+					document.getElementById("duration_in_button_9_mini_b").setAttribute("disabled", "");
+					document.getElementById("duration_in_button_12_mini_b").setAttribute("disabled", "");
+					document.getElementById("duration_in_button_self_mini_b").setAttribute("disabled", "");
+
+				}
+				else {
+					document.getElementById("duration_in_button_3_mini").removeAttribute("disabled");
+					document.getElementById("duration_in_button_6_mini").removeAttribute("disabled");
+					document.getElementById("duration_in_button_9_mini").removeAttribute("disabled");
+					document.getElementById("duration_in_button_12_mini").removeAttribute("disabled");
+					document.getElementById("duration_in_button_self_mini").removeAttribute("disabled");
+					document.getElementById("duration_in_button_3_mini_b").removeAttribute("disabled");
+					document.getElementById("duration_in_button_6_mini_b").removeAttribute("disabled");
+					document.getElementById("duration_in_button_9_mini_b").removeAttribute("disabled");
+					document.getElementById("duration_in_button_12_mini_b").removeAttribute("disabled");
+					document.getElementById("duration_in_button_self_mini_b").removeAttribute("disabled");
+
+				}
+
+			});
+
+			jQuery("#no-check-value").change(function () {
+				if (jQuery('#no-check-value').is(":checked")) {
+					document.getElementById("value_min").setAttribute("disabled", "");
+					document.getElementById("value_max").setAttribute("disabled", "");
+					document.getElementById("value_min_condition_in").setAttribute("disabled", "");
+					document.getElementById("value_max_condition_in").setAttribute("disabled", "");
+				}
+				else {
+					document.getElementById("value_min").removeAttribute("disabled");
+					document.getElementById("value_max").removeAttribute("disabled");
+					document.getElementById("value_min_condition_in").removeAttribute("disabled");
+					document.getElementById("value_max_condition_in").removeAttribute("disabled");
+				}
+			});
+
+			jQuery("#no-check-measure").change(function () {
+				if (jQuery('#no-check-measure').is(":checked")) {
+					document.getElementById("measure_count").setAttribute("disabled", "");
+					document.getElementById("measure_calc").setAttribute("disabled", "");
+				}
+				else {
+					document.getElementById("measure_count").removeAttribute("disabled");
+					document.getElementById("measure_calc").removeAttribute("disabled");
+				}
+			});
+
+			jQuery("#no-check-measure-ex").change(function () {
+				if (jQuery('#no-check-measure-ex').is(":checked")) {
+					document.getElementById("measure_count_ex").setAttribute("disabled", "");
+					document.getElementById("measure_calc_ex").setAttribute("disabled", "");
+				}
+				else {
+					document.getElementById("measure_count_ex").removeAttribute("disabled");
+					document.getElementById("measure_calc_ex").removeAttribute("disabled");
+				}
+			});
+
+
+			jQuery("#no-check-ex").change(function () {
+
+				if (jQuery("#no-check-ex").is(":checked")) {
+					document.getElementById("duration_ex_button_3_b").setAttribute("disabled", "");
+					document.getElementById("duration_ex_button_6_b").setAttribute("disabled", "");
+					document.getElementById("duration_ex_button_9_b").setAttribute("disabled", "");
+					document.getElementById("duration_ex_button_12_b").setAttribute("disabled", "");
+					document.getElementById("duration_ex_button_self_b").setAttribute("disabled", "");
+					document.getElementById("duration_ex_button_3").setAttribute("disabled", "");
+					document.getElementById("duration_ex_button_6").setAttribute("disabled", "");
+					document.getElementById("duration_ex_button_9").setAttribute("disabled", "");
+					document.getElementById("duration_ex_button_12").setAttribute("disabled", "");
+					document.getElementById("duration_ex_button_self").setAttribute("disabled", "");
+
+				}
+				else {
+					document.getElementById("duration_ex_button_3_b").removeAttribute("disabled");
+					document.getElementById("duration_ex_button_6_b").removeAttribute("disabled");
+					document.getElementById("duration_ex_button_9_b").removeAttribute("disabled");
+					document.getElementById("duration_ex_button_12_b").removeAttribute("disabled");
+					document.getElementById("duration_ex_button_self_b").removeAttribute("disabled");
+					document.getElementById("duration_ex_button_3").removeAttribute("disabled");
+					document.getElementById("duration_ex_button_6").removeAttribute("disabled");
+					document.getElementById("duration_ex_button_9").removeAttribute("disabled");
+					document.getElementById("duration_ex_button_12").removeAttribute("disabled");
+					document.getElementById("duration_ex_button_self").removeAttribute("disabled");
+
+				}
+
+			});
+
+			jQuery("#no-check-ex-mini").change(function () {
+
+				if (jQuery("#no-check-ex-mini").is(":checked")) {
+					document.getElementById("duration_ex_button_3_mini").setAttribute("disabled", "");
+					document.getElementById("duration_ex_button_6_mini").setAttribute("disabled", "");
+					document.getElementById("duration_ex_button_9_mini").setAttribute("disabled", "");
+					document.getElementById("duration_ex_button_12_mini").setAttribute("disabled", "");
+					document.getElementById("duration_ex_button_self_mini").setAttribute("disabled", "");
+					document.getElementById("duration_ex_button_3_mini_b").setAttribute("disabled", "");
+					document.getElementById("duration_ex_button_6_mini_b").setAttribute("disabled", "");
+					document.getElementById("duration_ex_button_9_mini_b").setAttribute("disabled", "");
+					document.getElementById("duration_ex_button_12_mini_b").setAttribute("disabled", "");
+					document.getElementById("duration_ex_button_self_mini_b").setAttribute("disabled", "");
+
+				}
+				else {
+					document.getElementById("duration_ex_button_3_mini").removeAttribute("disabled");
+					document.getElementById("duration_ex_button_6_mini").removeAttribute("disabled");
+					document.getElementById("duration_ex_button_9_mini").removeAttribute("disabled");
+					document.getElementById("duration_ex_button_12_mini").removeAttribute("disabled");
+					document.getElementById("duration_ex_button_self_mini").removeAttribute("disabled");
+					document.getElementById("duration_ex_button_3_mini_b").removeAttribute("disabled");
+					document.getElementById("duration_ex_button_6_mini_b").removeAttribute("disabled");
+					document.getElementById("duration_ex_button_9_mini_b").removeAttribute("disabled");
+					document.getElementById("duration_ex_button_12_mini_b").removeAttribute("disabled");
+					document.getElementById("duration_ex_button_self_mini_b").removeAttribute("disabled");
+
+				}
+
+			});
+
+
+			jQuery("#no-check-value-ex").change(function () {
+				if (jQuery('#no-check-value-ex').is(":checked")) {
+					document.getElementById("value_min_ex").setAttribute("disabled", "");
+					document.getElementById("value_max_ex").setAttribute("disabled", "");
+					document.getElementById("value_min_condition_ex").setAttribute("disabled", "");
+					document.getElementById("value_max_condition_ex").setAttribute("disabled", "");
+				}
+				else {
+					document.getElementById("value_min_ex").removeAttribute("disabled");
+					document.getElementById("value_max_ex").removeAttribute("disabled");
+					document.getElementById("value_min_condition_ex").removeAttribute("disabled");
+					document.getElementById("value_max_condition_ex").removeAttribute("disabled");
+				}
+			});
+
+			jQuery("#no-check-age").change(function () {
+				if (jQuery('#no-check-age').is(":checked")) {
+					document.getElementById("age_min").setAttribute("disabled", "");
+					document.getElementById("age_max").setAttribute("disabled", "");
+					document.getElementById("age_min_condition").setAttribute("disabled", "");
+					document.getElementById("age_max_condition").setAttribute("disabled", "");
+
+					if(document.getElementById("age_max").value == "")
+						document.getElementById("age_max_condition").value = "";
+					if(document.getElementById("age_min").value == "")
+						document.getElementById("age_min_condition").value = "";
+				}
+				else {
+					document.getElementById("age_min").removeAttribute("disabled");
+					document.getElementById("age_max").removeAttribute("disabled");
+					document.getElementById("age_min_condition").removeAttribute("disabled");
+					document.getElementById("age_max_condition").removeAttribute("disabled");
+
+					if(document.getElementById("age_min").value == "")
+						document.getElementById("age_min_condition").value = "more than or equal";
+					if(document.getElementById("age_max").value == "")
+						document.getElementById("age_max_condition").value = "less than or equal"
+				}
+			});
+
+			jQuery("#no-check-age-ex").change(function () {
+				if (jQuery('#no-check-age-ex').is(":checked")) {
+					document.getElementById("age_min_ex").setAttribute("disabled", "");
+					document.getElementById("age_max_ex").setAttribute("disabled", "");
+					document.getElementById("age_min_condition_ex").setAttribute("disabled", "");
+					document.getElementById("age_max_condition_ex").setAttribute("disabled", "");
+
+					if(document.getElementById("age_max_ex").value == "")
+						document.getElementById("age_max_condition_ex").value = "";
+					if(document.getElementById("age_min_ex").value == "")
+						document.getElementById("age_min_condition_ex").value = "";
+				}
+				else {
+					document.getElementById("age_min_ex").removeAttribute("disabled");
+					document.getElementById("age_max_ex").removeAttribute("disabled");
+					document.getElementById("age_min_condition_ex").removeAttribute("disabled");
+					document.getElementById("age_max_condition_ex").removeAttribute("disabled");
+
+					if(document.getElementById("age_min_ex").value == "")
+						document.getElementById("age_min_condition_ex").value = "more than or equal";
+					if(document.getElementById("age_max_ex").value == "")
+						document.getElementById("age_max_condition_ex").value = "less than or equal"
+				}
+			});
+
+		})
+
+		function enterkey_in() {
+			if (window.event.keyCode == 13) {
+				itemmodal_in();
+			}
+		}
+
+		function enterkey_ex() {
+			if (window.event.keyCode == 13) {
+				itemmodal_ex();
+			}
+		}
+
+		function agemodal_in() {
+			var item_title = "Year";
+			var criteria = new Object();
+			criteria.title = item_title;
+			criteria.status = "inclusion";
+			criteria.table = "age";
+			criteria.attribute = age_item;
+			age_item = age_item + 1;
+			criteria.heir = 0;
+			criteria.addition = "";
+			criteria.addition_text = "";
+			criteria.date_addition = "";
+			criteria.value_min = "";
+			criteria.value_max = "";
+			criteria.measure_count = ""
+			criteria.measure_method = "";
+			criteria.min_condition = "";
+			criteria.max_condition = "";
+			criteria.condition = "0";
+
+			itemlist_in.push(criteria);
+
+			addbutton(criteria);
+		}
+
+		function agemodal_ex() {
+			var item_title = "Year";
+			var criteria = new Object();
+			criteria.title = item_title;
+			criteria.status = "exclusion";
+			criteria.table = "age";
+			criteria.attribute = age_item;
+			age_item = age_item + 1;
+			criteria.heir = 0;
+			criteria.addition = "";
+			criteria.addition_text = "";
+			criteria.date_addition = "";
+			criteria.value_min = "";
+			criteria.value_max = "";
+			criteria.measure_count = ""
+			criteria.measure_method = "";
+			criteria.min_condition = "";
+			criteria.max_condition = "";
+			criteria.condition = "0";
+
+			itemlist_ex.push(criteria);
+
+			addbutton(criteria);
+			document.getElementById("exclusion").value = "";
+		}
+
+		function sqlmodal_in() {
+			var item_title = "SQL";
+			var criteria = new Object();
+			criteria.title = item_title;
+			criteria.status = "inclusion";
+			criteria.table = "sql";
+			criteria.attribute = age_item;
+			age_item = age_item + 1;
+			criteria.heir = 0;
+			criteria.addition = "";
+			criteria.addition_text = "";
+			criteria.date_addition = "";
+			criteria.value_min = "";
+			criteria.value_max = "";
+			criteria.measure_count = ""
+			criteria.measure_method = "";
+			criteria.min_condition = "";
+			criteria.max_condition = "";
+			criteria.condition = "0";
+
+			itemlist_in.push(criteria);
+
+			addbutton(criteria);
+		}
+
+		function sqlmodal_ex() {
+			var item_title = "SQL";
+			var criteria = new Object();
+			criteria.title = item_title;
+			criteria.status = "exclusion";
+			criteria.table = "sql";
+			criteria.attribute = age_item;
+			age_item = age_item + 1;
+			criteria.addition = "";
+			criteria.addition_text = "";
+			criteria.date_addition = "";
+			criteria.value_min = "";
+			criteria.value_max = "";
+			criteria.measure_count = 0;
+			criteria.measure_method = "";
+			criteria.min_condition = "";
+			criteria.max_condition = "";
+			criteria.condition = "0";
+
+			itemlist_ex.push(criteria);
+
+			addbutton(criteria);
+			document.getElementById("exclusion").value = "";
+		}
+
+		function itemmodal_in() {
+			var item_title = document.getElementById("inclusion").value;
+			var criteria = new Object();
+			criteria.title = item_title;
+			criteria.status = "inclusion";
+			criteria.table = in_table;
+			if(item_title == "Body weight measure") criteria.table = "observation";
+			else if(item_title == "Body height measure") criteria.table = "observation";
+
+			criteria.attribute = clicked_item_in.concept_id;
+			if(in_table=="drug")criteria.heir = "5";
+			else criteria.heir = clicked_item_in.heir;
+			criteria.addition = "";
+			if(item_title == "Both") criteria.addition="or gender_concept_id = 8507";
+			criteria.addition_text = "";
+			criteria.date_addition = "";
+			criteria.value_min = "";
+			criteria.value_max = "";
+			criteria.measure_count = ""
+			criteria.measure_method = "";
+			criteria.min_condition = "";
+			criteria.max_condition = "";
+			criteria.condition = "0";
+
+			itemlist_in.push(criteria);
+
+			addbutton(criteria);
+			document.getElementById("inclusion").value = "";
+		}
+
+		function itemmodal_in_hier() {
+			var item_title = clicked_item_in.title;
+			var criteria = new Object();
+			criteria.title = item_title;
+			criteria.status = "inclusion";
+			criteria.table = in_table;
+			if(item_title == "Body weight measure") criteria.table = "observation";
+			else if(item_title == "Body height measure") criteria.table = "observation";
+
+			if(in_table == "drug"){
+				if(parseInt(clicked_item_in.value) <  5) {
+					criteria.attribute = age_item;
+					age_item++;
+				}
+				else criteria.attribute = parseInt(clicked_item_in.concept_id);
+			}
+			else {
+				if(parseInt(clicked_item_in.value) <  4) {
+					criteria.attribute = age_item;
+					age_item++;
+				}
+				else criteria.attribute = parseInt(clicked_item_in.concept_id);
+			}
+			criteria.heir = clicked_item_in.value;
+			criteria.addition = "";
+			if(item_title == "Both") criteria.addition="or gender_concept_id = 8507";
+			criteria.addition_text = "";
+			criteria.date_addition = "";
+			criteria.value_min = "";
+			criteria.value_max = "";
+			criteria.measure_count = ""
+			criteria.measure_method = "";
+			criteria.min_condition = "";
+			criteria.max_condition = "";
+			criteria.condition = "0";
+
+			itemlist_in.push(criteria);
+
+			addbutton(criteria);
+			document.getElementById("inclusion").value = "";
+		}
+
+
+		function itemmodal_ex() {
+			var item_title = document.getElementById("exclusion").value;
+			var criteria = new Object();
+			criteria.title = item_title;
+			criteria.status = "exclusion";
+			criteria.table = ex_table;
+			criteria.attribute = clicked_item_ex.concept_id;
+			if(item_title == "Body weight measure") criteria.table = "observation";
+			else if(item_title == "Body height measure") criteria.table = "observation";
+
+			if(ex_table=="drug")criteria.heir = "5";
+			criteria.heir = clicked_item_ex.heir;
+			criteria.addition = "";
+			if(item_title == "Both") criteria.addition="or gender_concept_id = 8507";
+			criteria.addition_text = "";
+			criteria.date_addition = "";
+			criteria.value_min = "";
+			criteria.value_max = "";
+			criteria.measure_count = "";
+			criteria.measure_method = "";
+			criteria.min_condition = "";
+			criteria.max_condition = "";
+			criteria.condition = "0";
+
+			itemlist_ex.push(criteria);
+
+			addbutton(criteria);
+			document.getElementById("exclusion").value = "";
+		}
+
+		function itemmodal_ex_hier() {
+			var item_title = clicked_item_ex.title;
+			var criteria = new Object();
+			criteria.title = item_title;
+			criteria.status = "exclusion";
+			criteria.table = ex_table;
+			if(ex_table == "drug"){
+				if(parseInt(clicked_item_ex.value) <  5) {
+					criteria.attribute = age_item;
+					age_item++;
+				}
+				else criteria.attribute = parseInt(clicked_item_ex.concept_id);
+			}
+			else {
+				if(parseInt(clicked_item_ex.value) <  4) {
+					criteria.attribute = age_item;
+					age_item++;
+				}
+				else criteria.attribute = parseInt(clicked_item_ex.concept_id);
+			}
+			criteria.heir = clicked_item_ex.value;
+			criteria.addition = "";
+			if(item_title == "Both") criteria.addition="or gender_concept_id = 8507";
+			criteria.addition_text = "";
+			criteria.date_addition = "";
+			criteria.value_min = "";
+			criteria.value_max = "";
+			criteria.measure_count = ""
+			criteria.measure_method = "";
+			criteria.min_condition = "";
+			criteria.max_condition = "";
+			criteria.condition = "0";
+
+			itemlist_ex.push(criteria);
+
+			addbutton(criteria);
+			document.getElementById("exclusion").value = "";
+		}
+
+
+
+		function addbutton(criteria) {
+			var criteria_div = document.createElement("div");
+			criteria_div.setAttribute("class", "input-group");
+
+			var criteria_button = document.createElement("button");
+			criteria_div.appendChild(criteria_button);
+
+			switch (criteria.status) {
+				case 'inclusion':
+					criteria_div.setAttribute("id", "button_div_in_"+criteria.attribute);
+
+					document.getElementById("inclusion_criteria").appendChild(criteria_div);
+					criteria_button.setAttribute("class", "btn btn-outline");
+					criteria_button.setAttribute("type", "button");
+					criteria_button.setAttribute("id", "buttonin_" + criteria.attribute);
+					criteria_button.setAttribute("onclick", "criteria_button_clicked_in(id)");
+					var title_text = document.createTextNode(criteria.title);
+					criteria_button.setAttribute("style", "width:95%; height: 50px; margin-bottom: 10px; text-align:left; background-color:transparent; border-color:rgb(218,222,227);");
+
+					var context_div = document.createElement("div");
+					context_div.setAttribute("style", "margin-left : 10px; vertical-align:middle; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; width: 90%; color:rgb(78,85,92)");
+					var domain_button = document.createElement("button");
+
+					switch (criteria.table) {
+						case 'drug':
+							domain_button.setAttribute("class", "btn btn-danger btn-sm float-left");
+							domain_button.setAttribute("style", "margin-right: 10px; background-color:RGB(244, 68, 85)");
+							domain_button.appendChild(document.createTextNode("약물"));
+							break;
+						case 'condition':
+							domain_button.setAttribute("class", "btn btn-success btn-sm float-left");
+							domain_button.setAttribute("style", "margin-right: 10px; background-color:RGB(95, 194, 126)");
+							domain_button.appendChild(document.createTextNode("진단"));
+							break;
+						case 'measurement':
+							domain_button.setAttribute("class", "btn btn-primary btn-sm float-left");
+							domain_button.setAttribute("style", "margin-right: 10px; background-color:RGB(12, 194, 170)");
+							domain_button.appendChild(document.createTextNode("검사"));
+							break;
+						case 'observation':
+							domain_button.setAttribute("class", "btn btn-primary btn-sm float-left");
+							domain_button.setAttribute("style", "margin-right: 10px; background-color:RGB(12, 194, 170)");
+							domain_button.appendChild(document.createTextNode("검사"));
+							break;
+
+						case 'age':
+							domain_button.setAttribute("class", "btn btn-warning btn-sm float-left");
+							domain_button.setAttribute("style", "margin-right: 10px; background-color:RGB(252, 193, 0)");
+							domain_button.appendChild(document.createTextNode("나이"));
+							break;
+						case 'gender':
+							domain_button.setAttribute("class", "btn btn-warning btn-sm float-left");
+							domain_button.setAttribute("style", "margin-right: 10px; background-color:RGB(252, 193, 0)");
+							domain_button.appendChild(document.createTextNode("성별"));
+							break;
+						case 'sql':
+							domain_button.setAttribute("class", "btn btn-outline-warning btn-sm float-left");
+							domain_button.setAttribute("style", "margin-right: 10px; border-color:RGB(252, 193, 0)");
+							domain_button.appendChild(document.createTextNode("SQL"));
+							break;
+					}
+					domain_button.setAttribute("type", "button");
+					domain_button.setAttribute("disabled", "");
+
+					var title_text = document.createTextNode(criteria.title);
+					context_div.appendChild(domain_button);
+					context_div.appendChild(title_text);
+
+					criteria_button.appendChild(context_div);
+
+					var delete_button = document.createElement("button");
+					criteria_div.appendChild(delete_button);
+					delete_button.setAttribute("class", "btn btn-outline-info btn-sm float-right");
+					delete_button.setAttribute("id", criteria.attribute);
+					delete_button.setAttribute("style", "height:50px; border-color:transparent;");
+					delete_button.setAttribute('onclick', 'delete_item_in(id); event.stopPropagation();');
+
+					delete_button_icon = document.createElement("i");
+					delete_button_icon.setAttribute("class", "fas fa-trash");
+					delete_button.appendChild(delete_button_icon);
+					break;
+					case 'exclusion':
+					criteria_div.setAttribute("id", "button_div_ex_"+criteria.attribute);
+
+					document.getElementById("exclusion_criteria").appendChild(criteria_div);
+					criteria_button.setAttribute("class", "btn btn-outline");
+					criteria_button.setAttribute("type", "button");
+					criteria_button.setAttribute("id", "buttonex_" + criteria.attribute);
+					criteria_button.setAttribute("onclick", "criteria_button_clicked_ex(id)");
+					criteria_button.setAttribute("style", "width:95%;; height: 50px; margin-bottom: 10px; text-align:left; background-color:transparent; border-color:rgb(218, 222, 227)");
+
+					var context_div = document.createElement("div");
+					context_div.setAttribute("style", "margin-left : 10px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; width: 90%; color:rgb(78,85,92)")
+					var domain_button = document.createElement("button");
+					switch (criteria.table) {
+						case 'drug':
+							domain_button.setAttribute("class", "btn btn-danger btn-sm float-left");
+							domain_button.setAttribute("style", "margin-right: 10px; background-color:RGB(244, 68, 85)");
+							domain_button.appendChild(document.createTextNode("약물"));
+							break;
+						case 'condition':
+							domain_button.setAttribute("class", "btn btn-success btn-sm float-left");
+							domain_button.setAttribute("style", "margin-right: 10px; background-color:RGB(95, 194, 126)");
+							domain_button.appendChild(document.createTextNode("진단"));
+							break;
+						case 'measurement':
+							domain_button.setAttribute("class", "btn btn-primary btn-sm float-left");
+							domain_button.setAttribute("style", "margin-right: 10px; background-color:RGB(12, 194, 170)");
+							domain_button.appendChild(document.createTextNode("검사"));
+							break;
+						case 'observation':
+							domain_button.setAttribute("class", "btn btn-primary btn-sm float-left");
+							domain_button.setAttribute("style", "margin-right: 10px; background-color:RGB(12, 194, 170)");
+							domain_button.appendChild(document.createTextNode("검사"));
+							break;
+						case 'age':
+							domain_button.setAttribute("class", "btn btn-warning btn-sm float-left");
+							domain_button.setAttribute("style", "margin-right: 10px; background-color:RGB(252, 193, 0)");
+							domain_button.appendChild(document.createTextNode("나이"));
+							break;
+						case 'gender':
+							domain_button.setAttribute("class", "btn btn-warning btn-sm float-left");
+							domain_button.setAttribute("style", "margin-right: 10px; background-color:RGB(252, 193, 0)");
+							domain_button.appendChild(document.createTextNode("성별"));
+							break;
+						case 'sql':
+							domain_button.setAttribute("class", "btn btn-outline-warning btn-sm float-left");
+							domain_button.setAttribute("style", "margin-right: 10px; border-color:RGB(252, 193, 0)");
+							domain_button.appendChild(document.createTextNode("SQL"));
+							break;
+					}
+					domain_button.setAttribute("type", "button");
+					domain_button.setAttribute("disabled", "");
+					var title_text = document.createTextNode(criteria.title);
+					context_div.appendChild(domain_button);
+					context_div.appendChild(title_text);
+
+					criteria_button.appendChild(context_div);
+
+					var delete_button = document.createElement("button");
+					criteria_div.appendChild(delete_button);
+					delete_button.setAttribute("class", "btn btn-outline-info btn-sm float-right");
+					delete_button.setAttribute("id", criteria.attribute);
+					delete_button.setAttribute("style", "height:50px; border-color:transparent;");
+					delete_button.setAttribute('onclick', 'delete_item_ex(id); event.stopPropagation();');
+
+					delete_button_icon = document.createElement("i");
+					delete_button_icon.setAttribute("class", "fas fa-trash");
+					delete_button.appendChild(delete_button_icon);
+					break;
+			}
+
+
+
+		}
+
+		function delete_item_in(id) {
+			itemlist_in.splice(itemlist_in.map(function (e) { return e.attribute; }).indexOf(Number(id)), 1);
+			jQuery('#button_div_in_' + id).remove();
+		}
+		
+		function delete_item_ex(id) {
+			itemlist_ex.splice(itemlist_ex.map(function (e) { return e.attribute; }).indexOf(Number(id)), 1);
+			jQuery('#button_div_ex_' + id).remove();
+		}
+
+		function select_table_inclusion(id) {
+			document.getElementById('selected_table_inclusion').value = id;
+			in_table = id;
+			switch (id) {
+				case 'age':
+					document.getElementById('selected_table_inclusion').textContent = "나이";
+					break;
+				case 'gender':
+					document.getElementById('selected_table_inclusion').textContent = "성별";
+					newj("#inclusion").attr("placeholder", "성별을 입력하세요. (예: Male, Female, Both)");
+					break;
+				case 'drug':
+					document.getElementById('selected_table_inclusion').textContent = "약물";
+					newj("#inclusion").attr("placeholder", "성분명을 입력하세요. (예: metformin)");
+					selected_category = "drug";
+					break;
+				case 'condition':
+					document.getElementById('selected_table_inclusion').textContent = "진단";
+					newj("#inclusion").attr("placeholder", "진단명을 입력하세요. (예: Diabetes Mellitus)");
+					selected_category = "condition";
+					break;
+				case 'measurement':
+					document.getElementById('selected_table_inclusion').textContent = "검사";
+					newj("#inclusion").attr("placeholder", "검사명을 입력하세요. (예: Glucose)");
+					selected_category = "measurement";
+					break;
+				case 'sql':
+					document.getElementById('selected_table_inclusion').textContent = "SQL";
+					break;
+			}
+
+
+			jQuery('#inclusion').autocomplete('destroy').removeClass('xdsoft_input');
+			jQuery('#inclusion').autocomplete({
+				valueKey: 'title',
+				source: [{
+					url: "./criteria.jsp?table=" + id,
+					type: 'remote',
+					getValue: function (item) {
+						clicked_item_in = item;
+						return item.title
+					},
+					ajax: {
+						dataType: 'json'
+					}
+				}]
+			});
+
+		}
+
+		function select_table_exclusion(id) {
+			document.getElementById('selected_table_exclusion').value = id;
+			ex_table = id;
+			switch (id) {
+				case 'age':
+					document.getElementById('selected_table_exclusion').textContent = "나이";
+					break;
+				case 'gender':
+					document.getElementById('selected_table_exclusion').textContent = "성별";
+					newj("#exclusion").attr("placeholder", "성별을 입력하세요. (예: Male, Female, Both)");
+					break;
+				case 'drug':
+					document.getElementById('selected_table_exclusion').textContent = "약물";
+					newj("#exclusion").attr("placeholder", "성분명을 입력하세요. (예: metformin)");
+					selected_category = "drug";
+					break;
+				case 'condition':
+					document.getElementById('selected_table_exclusion').textContent = "진단";
+					newj("#exclusion").attr("placeholder", "진단명을 입력하세요. (예: Diabetes Mellitus)");
+					selected_category = "condition";
+					break;
+				case 'measurement':
+					document.getElementById('selected_table_exclusion').textContent = "검사";
+					newj("#exclusion").attr("placeholder", "검사명을 입력하세요. (예: Glucose)");
+					selected_category = "measurement";
+					break;
+				case 'sql':
+					document.getElementById('selected_table_exclusion').textContent = "SQL";
+					break;
+			}
+
+			jQuery('#exclusion').autocomplete('destroy').removeClass('xdsoft_input');
+			jQuery('#exclusion').autocomplete({
+				valueKey: 'title',
+				source: [{
+					url: "./criteria.jsp?table=" + id,
+					type: 'remote',
+					getValue: function (item) {
+						clicked_item_ex = item;
+						return item.title
+					},
+					ajax: {
+						dataType: 'json'
+					}
+				}]
+			});
+
+		}
+
+		function reconstruct_item_list(){
+			var new_itemlist_in = [];
+			var new_itemlist_ex = [];
+
+			//inclusion
+			var new_inclusions = jQuery('#inclusion_criteria')[0];
+			for(var i = 1; i <= new_inclusions.childElementCount; i++){
+				var type = new_inclusions.childNodes[i].id.split("_")[2];
+				var id = new_inclusions.childNodes[i].id.split("_")[3];
+
+				if(type == 'in'){
+					var in_item = itemlist_in.map(function (e) { return e.attribute; }).indexOf(Number(id));
+					new_itemlist_in.push(itemlist_in[in_item]);
+				}
+				else{
+					var ex_item = itemlist_ex.map(function (e) { return e.attribute; }).indexOf(Number(id));
+					itemlist_ex[ex_item].status = "inclusion";
+					new_itemlist_in.push(itemlist_ex[ex_item]);
+				}
+			}
+			
+
+			//exclusion
+			var new_exclusions = jQuery('#exclusion_criteria')[0];
+			for(var i = 1; i <= new_exclusions.childElementCount; i++){
+				var type = new_exclusions.childNodes[i].id.split("_")[2];
+				var id = new_exclusions.childNodes[i].id.split("_")[3];
+				if(type == 'in'){
+					var in_item = itemlist_in.map(function (e) { return e.attribute; }).indexOf(Number(id));
+					itemlist_in[in_item].status = "exclusion";
+					new_itemlist_ex.push(itemlist_in[in_item]);
+				}
+				else{
+					var ex_item = itemlist_ex.map(function (e) { return e.attribute; }).indexOf(Number(id));
+					new_itemlist_ex.push(itemlist_ex[ex_item]);
+				}
+			}
+
+			itemlist_in = [];
+			itemlist_ex = [];
+
+			itemlist_in = new_itemlist_in.slice();
+			itemlist_ex = new_itemlist_ex.slice();
+		}
+
+		function save_button_cliked() {
+
+			reconstruct_item_list();
+			var user_define = new Object();
+
+			var user_define_info = new Object();
+			user_define_info.project_id = project_id;
+			user_define_info.user_define_id = user_define_id;
+
+			user_define.info = user_define_info;
+
+			var criteria_set = new Array();
+			var inclusion_set = new Object();
+			var exclusion_set = new Object();
+			var inclusion_criterias = new Array();
+			var exclusion_criterias = new Array();
+
+			var visit_date = document.getElementById("daterange_visit").value;
+
+			if (visit_date != "") {
+				visit_criteria.date_addition_value = document.getElementById("daterange_visit").value;
+				var visit_array = visit_date.split(" - ");
+				var visit_array_start = visit_array[0].split("/");
+				var visit_start = visit_array_start[2]+"-"+visit_array_start[1]+"-"+visit_array_start[0];
+				
+				var visit_array_end = visit_array[1].split("/");
+				var visit_end = visit_array_end[2]+"-"+visit_array_end[1]+"-"+visit_array_end[0];
+
+				visit_criteria.addition = "and visit_start_date >= ''" + visit_start + "'' and visit_start_date <=''" + visit_end + "''";
+				if (visit_criteria.value != 1200) inclusion_criterias.push(visit_criteria);
+
+			}
+
+			//inclusion
+			for (var i = 0; i < itemlist_in.length; i++) {
+				var criterias = new Object();
+				var buf = itemlist_in[i].table;
+				switch (buf) {
+					case 'drug':
+						criterias.table = "Drug_exposure";
+						break;
+
+					case 'condition':
+						criterias.table = "Condition_occurrence";
+						break;
+
+					case 'measurement':
+						criterias.table = "Measurement";
+						break;
+
+					case 'observation':
+						criterias.table = "Observation";
+						break;
+
+
+					case 'age':
+						criterias.table = "Person";
+						break;
+
+					case 'gender':
+						criterias.table = "Person";
+						break;
+
+					case 'sql':
+						criterias.table = "SQL";
+						break;
+				}
+				criterias.field = "id";
+				criterias.condition = itemlist_in[i].condition;
+				criterias.value = itemlist_in[i].attribute;
+				criterias.attribute = itemlist_in[i].heir;
+				criterias.title = itemlist_in[i].title;
+				if(buf=="sql"){
+					criterias.addition = itemlist_in[i].addition.replace(/'/gi, "''");
+					criterias.addition = criterias.addition.replace(/%/gi, "%25");
+					criterias.addition_text = itemlist_in[i].addition_text.replace(/'/gi, "''");
+					criterias.addition_text = criterias.addition_text.replace(/%/gi, "%25");
+				}
+				else{
+					criterias.addition = itemlist_in[i].addition.replace(/'/gi, "''");
+					criterias.addition_text = itemlist_in[i].addition_text;
+				}
+				criterias.date_addition_value = itemlist_in[i].date_addition.replace(/'/gi, "''");
+				criterias.value_min = itemlist_in[i].value_min;
+				criterias.value_max = itemlist_in[i].value_max;
+				criterias.measure_count = itemlist_in[i].measure_count;
+				criterias.measure_method = itemlist_in[i].measure_method;
+				criterias.min_condition = itemlist_in[i].min_condition;
+				criterias.max_condition = itemlist_in[i].max_condition;
+				inclusion_criterias.push(criterias);
+			}
+
+			inclusion_set.criteria_state = "1";
+			inclusion_set.criteria_detail_set = inclusion_criterias;
+
+			//exclusion
+			for (var i = 0; i < itemlist_ex.length; i++) {
+				var criterias = new Object();
+				switch (itemlist_ex[i].table) {
+					case 'drug':
+						criterias.table = "Drug_exposure";
+						break;
+
+					case 'condition':
+						criterias.table = "Condition_occurrence";
+						break;
+
+					case 'measurement':
+						criterias.table = "Measurement";
+						break;
+
+					case 'observation':
+						criterias.table = "Observation";
+						break;
+
+					case 'age':
+						criterias.table = "Person";
+						break;
+
+					case 'gender':
+						criterias.table = "Person";
+						break;
+
+					case 'sql':
+						criterias.table = "SQL";
+						break;
+				}
+				criterias.field = "id";
+				criterias.condition = itemlist_ex[i].condition;
+				criterias.value = itemlist_ex[i].attribute;
+				criterias.title = itemlist_ex[i].title;
+				criterias.attribute = itemlist_ex[i].heir;
+				if(buf=="sql"){
+					criterias.addition = itemlist_ex[i].addition.replace(/'/gi, "''");
+					criterias.addition = criterias.addition.replace(/%/gi, "%25");
+					criterias.addition_text = itemlist_ex[i].addition_text.replace(/'/gi, "''");
+					criterias.addition_text = criterias.addition_text.replace(/%/gi, "%25");
+				}
+				else{
+					criterias.addition = itemlist_ex[i].addition.replace(/'/gi, "''");
+					criterias.addition_text = itemlist_ex[i].addition_text;
+				}
+				criterias.date_addition_value = itemlist_ex[i].date_addition.replace(/'/gi, "''");
+				criterias.value_min = itemlist_ex[i].value_min;
+				criterias.value_max = itemlist_ex[i].value_max;
+				criterias.measure_count = itemlist_ex[i].measure_count;
+				criterias.measure_method = itemlist_ex[i].measure_method;
+				criterias.min_condition = itemlist_ex[i].min_condition;
+				criterias.max_condition = itemlist_ex[i].max_condition;
+				exclusion_criterias.push(criterias);
+			}
+				
+
+			exclusion_set.criteria_state = "0";
+			exclusion_set.criteria_detail_set = exclusion_criterias;
+			criteria_set.push(inclusion_set);
+			criteria_set.push(exclusion_set);
+
+			user_define.set = criteria_set;
+
+			user_define = escape(encodeURIComponent(JSON.stringify(user_define)));
+
+			var new_title = document.getElementById("user_define_title").value;
+			new_title = escape(encodeURIComponent(new_title));
+
+			var xhttp = new XMLHttpRequest();
+			xhttp.onreadystatechange = function () {
+				if (this.readyState == this.DONE && this.status == 200) {
+					document.getElementById("user_define_title");
+					print_log("modify_ud", define_id);
+
+					var execute_ok = confirm("저장이 완료되었습니다. 목록으로 돌아가시겠습니까?");
+					if (execute_ok == true) {
+						location.href = "project_detail.html?project_id=" + JSON.stringify(project_id);
+					}
+
+				}
+			}
+			xhttp.open("POST", "./user_define_detail.jsp", true);
+			xhttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+			xhttp.send("action=save&data="+ query + "&title=" + new_title);
+		}
+
+		function cancel_button_cliked() {
+			location.reload();
+		}
+
+		function hier_button_click() {
+			if(selected_category == "drug")	newj('#hieracyDrugModal').modal('show');
+			else if(selected_category == "condition") newj('#hieracyConditionModal').modal('show');
+		}
+
+		function hier_button_ex_click() {
+			if(selected_category == "drug")	newj('#hieracyDrugModalEx').modal('show');
+			else if(selected_category == "condition") newj('#hieracyConditionModalEx').modal('show');
+		}
+
+		function criteria_button_clicked_in(id) {
+			var clicked_item = id.split("_");
+			value_item = clicked_item[1];
+
+			var b_index = itemlist_in.map(function (e) { return e.attribute; }).indexOf(Number(value_item));
+			var b_table = itemlist_in[b_index].table;
+			var b_attribute = itemlist_in[b_index].attribute;
+			var date_range = itemlist_in[b_index].date_addition;
+			var addition_value_min = itemlist_in[b_index].value_min;
+			var addition_value_max = itemlist_in[b_index].value_max;
+			var addition_measure_count = itemlist_in[b_index].measure_count;
+			var addition_measrue_method = itemlist_in[b_index].measure_method;
+			var addition_min_condition = itemlist_in[b_index].min_condition;
+			var addition_max_condition = itemlist_in[b_index].max_condition;
+			var addition_value_text = itemlist_in[b_index].addition_text;
+			var time_stone = itemlist_in[b_index].condition;
+			
+			full_modal_init_in(b_table);
+
+			if (b_table == "measurement" || b_table=="observation") {
+
+				if (date_range != "") {
+					newj("#no-check").attr("checked", false);
+					document.getElementById("duration_in_button_3_b").removeAttribute("disabled", "");
+					document.getElementById("duration_in_button_6_b").removeAttribute("disabled", "");
+					document.getElementById("duration_in_button_9_b").removeAttribute("disabled", "");
+					document.getElementById("duration_in_button_12_b").removeAttribute("disabled", "");
+					document.getElementById("duration_in_button_self_b").removeAttribute("disabled", "");
+					document.getElementById("duration_in_button_3").removeAttribute("disabled", "");
+					document.getElementById("duration_in_button_6").removeAttribute("disabled", "");
+					document.getElementById("duration_in_button_9").removeAttribute("disabled", "");
+					document.getElementById("duration_in_button_12").removeAttribute("disabled", "");
+					document.getElementById("duration_in_button_self").removeAttribute("disabled", "");
+
+
+					document.getElementById("duration_modal").removeAttribute("disabled");
+					document.getElementById("duration_modal").value = date_range;
+				}
+				if (addition_value_min != "") {
+					newj("#no-check-value").attr("checked", false);
+					document.getElementById("value_min").removeAttribute("disabled");
+					document.getElementById("value_max").removeAttribute("disabled");
+					document.getElementById("value_min_condition_in").removeAttribute("disabled");
+					document.getElementById("value_max_condition_in").removeAttribute("disabled");
+					document.getElementById("value_min").value = addition_value_min;
+					document.getElementById("value_min_condition_in").value = addition_min_condition;
+				}
+				if (addition_value_max != "") {
+					if (jQuery("#no-check-value").is(":checked")) {
+						newj("#no-check-value").attr("checked", false);
+						document.getElementById("value_min").removeAttribute("disabled");
+						document.getElementById("value_max").removeAttribute("disabled");
+						document.getElementById("value_min_condition_in").removeAttribute("disabled");
+						document.getElementById("value_max_condition_in").removeAttribute("disabled");
+					}
+					document.getElementById("value_max").value = addition_value_max;
+					document.getElementById("value_max_condition_in").value = addition_max_condition;
+
+				}
+				if (addition_measure_count != "") {
+					newj("#no-check-measure").attr("checked", false);
+					document.getElementById("measure_count").removeAttribute("disabled");
+					document.getElementById("measure_calc").removeAttribute("disabled");
+					document.getElementById("measure_count").value = addition_measure_count;
+					document.getElementById("measure_calc").value = addition_measrue_method;
+				}
+				
+				var modal_title = document.getElementById("item_modal_title_In_Full");
+				while(modal_title.hasChildNodes()) modal_title.removeChild(modal_title.firstChild);
+				modal_title.appendChild(document.createTextNode(itemlist_in[b_index].title));
+				newj('#itemAddInFullModal').modal('show');
+			}
+			else if (b_table == "age") {
+				if (addition_value_min != "") {
+					newj('#no-check-age').attr("checked", false);
+					document.getElementById("age_min").removeAttribute("disabled");
+					document.getElementById("age_max").removeAttribute("disabled");
+					document.getElementById("age_min_condition").removeAttribute("disabled");
+					document.getElementById("age_max_condition").removeAttribute("disabled");
+					document.getElementById("age_min").value = addition_value_min;
+					document.getElementById("age_min_condition").value = addition_min_condition;
+				}
+				if (addition_value_max != "") {
+					if (jQuery("#no-check-age").is(":checked")) {
+						newj('#no-check-value').attr("checked", false);
+						document.getElementById("age_min").removeAttribute("disabled");
+						document.getElementById("age_max").removeAttribute("disabled");
+						document.getElementById("age_min_condition").removeAttribute("disabled");
+						document.getElementById("age_max_condition").removeAttribute("disabled");
+					}
+					document.getElementById("age_max").value = addition_value_max;
+					document.getElementById("age_max_condition").value = addition_max_condition;
+				}
+
+				newj('#ageModalIn').modal('show');
+			}
+			else if (b_table == "gender") { }
+			else if (b_table == "sql") {
+				document.getElementById("sqlcodein").value = addition_value_text;
+				newj('#sqlModalIn').modal('show');
+			}
+			else {
+				if (date_range != "") {
+					newj("#no-check-mini").attr("checked", false);
+					document.getElementById("duration_in_button_3_mini").removeAttribute("disabled", "");
+					document.getElementById("duration_in_button_6_mini").removeAttribute("disabled", "");
+					document.getElementById("duration_in_button_9_mini").removeAttribute("disabled", "");
+					document.getElementById("duration_in_button_12_mini").removeAttribute("disabled", "");
+					document.getElementById("duration_in_button_self_mini").removeAttribute("disabled", "");
+					document.getElementById("duration_in_button_3_mini_b").removeAttribute("disabled");
+					document.getElementById("duration_in_button_6_mini_b").removeAttribute("disabled");
+					document.getElementById("duration_in_button_9_mini_b").removeAttribute("disabled");
+					document.getElementById("duration_in_button_12_mini_b").removeAttribute("disabled");
+					document.getElementById("duration_in_button_self_mini_b").removeAttribute("disabled");
+					document.getElementById("duration_modal_mini").removeAttribute("disabled");
+					document.getElementById("duration_modal_mini").value = date_range;
+
+				}
+
+				var span_first = document.getElementById("first_in");
+				var span_last = document.getElementById("last_in");
+
+				while(span_first.hasChildNodes()) span_first.removeChild(span_first.firstChild);
+				while(span_last.hasChildNodes()) span_last.removeChild(span_last.firstChild);
+
+				if(b_table == "condition"){
+					span_first.appendChild(document.createTextNode("첫 진단일"));
+					span_last.appendChild(document.createTextNode("마지막 진단일"));
+				}
+
+				else if(b_table =document= "drug"){
+					span_first.appendChild(document.createTextNode("첫 처방일"));
+					span_last.appendChild(document.createTextNode("마지막 처방일"));
+				}
+
+				var modal_title = document.getElementById("item_modal_title_In");
+				while(modal_title.hasChildNodes()) modal_title.removeChild(modal_title.firstChild);
+				modal_title.appendChild(document.createTextNode(itemlist_in[b_index].title));
+
+				switch(time_stone){
+					case "0":
+						newj('#check-all').prop("checked", true);
+					break;
+					case "1":
+						newj('#check-first').prop("checked", true);
+					break;
+					case "2":
+						newj('#check-last').prop("checked", true);
+					break;
+					case 0:
+						newj('#check-all').prop("checked", true);
+					break;
+					case 1:
+						newj('#check-first').prop("checked", true);
+					break;
+					case 2:
+						newj('#check-last').prop("checked", true);
+					break;
+				}
+
+				newj('#itemAddInModal').modal('show');
+			}
+		}
+
+		function criteria_button_clicked_ex(id) {
+			var clicked_item = id.split("_");
+			value_item = clicked_item[1];
+
+			var b_index = itemlist_ex.map(function (e) { return e.attribute; }).indexOf(Number(value_item));
+			var b_table = itemlist_ex[b_index].table;
+			var b_attribute = itemlist_ex[b_index].attribute;
+			var date_range = itemlist_ex[b_index].date_addition;
+			var addition_value_min = itemlist_ex[b_index].value_min;
+			var addition_value_max = itemlist_ex[b_index].value_max;
+			var addition_measure_count = itemlist_ex[b_index].measure_count;
+			var addition_measrue_method = itemlist_ex[b_index].measure_method;
+			var addition_min_condition = itemlist_ex[b_index].min_condition;
+			var addition_max_condition = itemlist_ex[b_index].max_condition;
+			var addition_value_text = itemlist_ex[b_index].addition_text;
+			var time_stone = itemlist_ex[b_index].condition;
+
+			full_modal_init_ex(b_table);
+			
+			if (b_table == "measurement" || b_table == "observation") {
+				if (date_range != "") {
+					newj('#no-check-ex').attr("checked", false);
+					document.getElementById("duration_ex_button_3_b").removeAttribute("disabled", "");
+					document.getElementById("duration_ex_button_6_b").removeAttribute("disabled", "");
+					document.getElementById("duration_ex_button_9_b").removeAttribute("disabled", "");
+					document.getElementById("duration_ex_button_12_b").removeAttribute("disabled", "");
+					document.getElementById("duration_ex_button_self_b").removeAttribute("disabled", "");
+					document.getElementById("duration_ex_button_3").removeAttribute("disabled", "");
+					document.getElementById("duration_ex_button_6").removeAttribute("disabled", "");
+					document.getElementById("duration_ex_button_9").removeAttribute("disabled", "");
+					document.getElementById("duration_ex_button_12").removeAttribute("disabled", "");
+					document.getElementById("duration_ex_button_self").removeAttribute("disabled", "");
+					document.getElementById("duration_modal_ex").removeAttribute("disabled");
+					document.getElementById("duration_modal_ex").value = date_range;
+				}
+				if (addition_value_min != "") {
+					newj('#no-check-value-ex').attr("checked", false);
+					document.getElementById("value_min_ex").removeAttribute("disabled");
+					document.getElementById("value_min_ex").removeAttribute("disabled");
+					document.getElementById("value_max_ex").removeAttribute("disabled");
+					document.getElementById("value_min_condition_ex").removeAttribute("disabled");
+					document.getElementById("value_max_condition_ex").removeAttribute("disabled");
+					document.getElementById("value_min_ex").value = addition_value_min;
+					document.getElementById("value_max_condition_ex").value = addition_min_condition;
+				}
+				if (addition_value_max != "") {
+					if (jQuery("#no-check-value-ex").is(":checked")) {
+						newj('#no-check-value-ex').attr("checked", false);
+						document.getElementById("value_min_ex").removeAttribute("disabled");
+						document.getElementById("value_min_ex").removeAttribute("disabled");
+						document.getElementById("value_max_ex").removeAttribute("disabled");
+						document.getElementById("value_min_condition_ex").removeAttribute("disabled");
+						document.getElementById("value_max_condition_ex").removeAttribute("disabled");
+					}
+					document.getElementById("value_max_ex").value = addition_value_max;
+					document.getElementById("value_max_condition_ex").value = addition_max_condition;
+
+
+				}
+				if (addition_measure_count != "") {
+					newj("#no-check-measure-ex").attr("checked", false);
+					document.getElementById("measure_count_ex").removeAttribute("disabled");
+					document.getElementById("measure_calc_ex").removeAttribute("disabled");
+					document.getElementById("measure_count_ex").value = addition_measure_count;
+					document.getElementById("measure_calc_ex").value = addition_measrue_method;
+				}
+
+				var modal_title = document.getElementById("item_modal_title_Ex_Full");
+				while(modal_title.hasChildNodes()) modal_title.removeChild(modal_title.firstChild);
+				modal_title.appendChild(document.createTextNode(itemlist_ex[b_index].title));
+
+				newj('#itemAddExFullModal').modal('show');
+			}
+			else if (b_table == "age") {
+				if (addition_value_min != "") {
+					newj('#no-check-age-ex').attr("checked", false);
+					document.getElementById("age_min_ex").removeAttribute("disabled");
+					document.getElementById("age_max_ex").removeAttribute("disabled");
+					document.getElementById("age_min_condition_ex").removeAttribute("disabled");
+					document.getElementById("age_max_condition_ex").removeAttribute("disabled");
+					document.getElementById("age_min_ex").value = addition_value_min;
+					document.getElementById("age_min_condition_ex").value = addition_min_condition;
+				}
+				if (addition_value_max != "") {
+					if (jQuery("#no-check-age-ex").is(":checked")) {
+						newj('#no-check-value-ex').attr("checked", false);
+						document.getElementById("age_min_ex").removeAttribute("disabled");
+						document.getElementById("age_max_ex").removeAttribute("disabled");
+						document.getElementById("age_min_condition_ex").removeAttribute("disabled");
+						document.getElementById("age_max_condition_ex").removeAttribute("disabled");
+					}
+					document.getElementById("age_max_ex").value = addition_value_max;
+					document.getElementById("age_max_condition_ex").value = addition_max_condition;
+				}
+
+				newj('#ageModalEx').modal('show');
+			}
+			else if (b_table == "gender") { }
+			else if (b_table == "sql") {
+				document.getElementById("sqlcodeex").value = addition_value_text;
+				newj('#sqlModalEx').modal('show');
+			}
+			else {
+				if (date_range != "") {
+					if (date_range == null) { }
+					else {
+						newj("#no-check-ex-mini").attr("checked", false);
+						document.getElementById("duration_ex_button_3_mini").removeAttribute("disabled", "");
+						document.getElementById("duration_ex_button_6_mini").removeAttribute("disabled", "");
+						document.getElementById("duration_ex_button_9_mini").removeAttribute("disabled", "");
+						document.getElementById("duration_ex_button_12_mini").removeAttribute("disabled", "");
+						document.getElementById("duration_ex_button_self_mini").removeAttribute("disabled", "");
+						document.getElementById("duration_ex_button_3_mini_b").removeAttribute("disabled", "");
+						document.getElementById("duration_ex_button_6_mini_b").removeAttribute("disabled", "");
+						document.getElementById("duration_ex_button_9_mini_b").removeAttribute("disabled", "");
+						document.getElementById("duration_ex_button_12_mini_b").removeAttribute("disabled", "");
+						document.getElementById("duration_ex_button_self_mini_b").removeAttribute("disabled", "");
+						document.getElementById("duration_modal_ex_mini").removeAttribute("disabled");
+						document.getElementById("duration_modal_ex_mini").value = date_range;
+					}
+
+				}
+				switch(time_stone){
+					case 0:
+						newj('#check-ex-all').prop("checked", true);
+					break;
+					case 1:
+						newj('#check-ex-first').prop("checked", true);
+					break;
+					case 2:
+						newj('#check-ex-last').prop("checked", true);
+					break;
+					case "0":
+						newj('#check-ex-all').prop("checked", true);
+					break;
+					case "1":
+						newj('#check-ex-first').prop("checked", true);
+					break;
+					case "2":
+						newj('#check-ex-last').prop("checked", true);
+					break;
+
+				}
+
+				var span_first = document.getElementById("first_ex");
+				var span_last = document.getElementById("last_ex");
+
+				while(span_first.hasChildNodes()) span_first.removeChild(span_first.firstChild);
+				while(span_last.hasChildNodes()) span_last.removeChild(span_last.firstChild);
+
+				if(b_table == "condition"){
+					span_first.appendChild(document.createTextNode("첫 진단일"));
+					span_last.appendChild(document.createTextNode("마지막 진단일"));
+				}
+
+				else if(b_table == "drug"){
+					span_first.appendChild(document.createTextNode("첫 처방일"));
+					span_last.appendChild(document.createTextNode("마지막 처방일"));
+				}
+				var modal_title = document.getElementById("item_modal_title_Ex");
+				while(modal_title.hasChildNodes()) modal_title.removeChild(modal_title.firstChild);
+				modal_title.appendChild(document.createTextNode(itemlist_ex[b_index].title));
+
+				newj('#itemAddExModal').modal('show');
+			}
+		}
+
+		function set_user_define_clicked() {
+			var xhttp = new XMLHttpRequest();
+			xhttp.onreadystatechange = function () {
+				if (this.readyState == this.DONE && this.status == 200) {
+
+					var set_data_pre = xhttp.responseText;
+					var set_data = eval(set_data_pre);
+
+					var createTR = document.createElement("tr");
+					document.getElementById("user_define_set_table").appendChild(createTR);
+
+					var set_title_TD = document.createElement("td");
+					var set_title = document.createTextNode(set_data.title);
+					set_title_TD.appendChild(set_title);
+					createTR.appendChild(set_title_TD);
+
+					var set_action_TD = document.createElement("td");
+					var set_add_button = document.createElement("button");
+					set_add_button.setAttribute("id", "set_" + set_data.set_id);
+					set_add_button.setAttribute("class", "btn btn-primary float-right");
+					set_add_button.setAttribute("style", "background-color:transparent; border-color:transparent; color:rgb(39, 201, 180)");
+					set_add_button.setAttribute("onclick", "set_qeury_clicked(id)");
+
+					set_action_TD.appendChild(set_add_button);
+					createTR.appendChild(set_action_TD);
+				}
+			}
+			xhttp.open("GET", "./user_define_detail.jsp?action=setqueryload");
+			xhttp.send();
+		}
+
+		function duration_button_click(value) {
+			if (jQuery("#duration_modal").is(":disabled")) { }
+			else document.getElementById("duration_modal").setAttribute("disabled", "");
+
+			var durations = value;
+
+			var today = moment().format('DD/MM/YYYY');
+			var ago = moment().subtract(durations, 'month').format('DD/MM/YYYY');
+
+			document.getElementById("duration_modal").value = ago + " - " + today;
+		}
+
+		function duration_button_click_b(value) {
+			if (jQuery("#duration_modal").is(":disabled")) { }
+			else document.getElementById("duration_modal").setAttribute("disabled", "");
+
+			var durations = value;
+
+
+			var today = moment().subtract(durations, 'month').format('DD/MM/YYYY');
+			var ago = moment('1900-01-01').format('DD/MM/YYYY');
+
+			document.getElementById("duration_modal").value = ago + " - " + today;
+		}
+
+		function duration_button_click_mini(value) {
+			if (jQuery("#duration_modal_mini").is(":disabled")) { }
+			else document.getElementById("duration_modal_mini").setAttribute("disabled", "");
+
+			var durations = value;
+
+			var today = moment().format('DD/MM/YYYY');
+			var ago = moment().subtract(durations, 'month').format('DD/MM/YYYY');
+
+			document.getElementById("duration_modal_mini").value = ago + " - " + today;
+		}
+
+		function duration_button_click_mini_b(value) {
+			if (jQuery("#duration_modal_mini").is(":disabled")) { }
+			else document.getElementById("duration_modal_mini").setAttribute("disabled", "");
+
+			var durations = value;
+
+			var today = moment().subtract(durations, 'month').format('DD/MM/YYYY');
+			var ago = moment('1900-01-01').format('DD/MM/YYYY');
+
+			document.getElementById("duration_modal_mini").value = ago + " - " + today;
+		}
+
+
+		function duration_button_click_ex(value) {
+			if (jQuery("#duration_modal_ex").is(":disabled")) { }
+			else document.getElementById("duration_modal_ex").setAttribute("disabled", "");
+
+			var durations = value;
+
+			var today = moment().format('DD/MM/YYYY');
+			var ago = moment().subtract(durations, 'month').format('DD/MM/YYYY');
+
+			document.getElementById("duration_modal_ex").value = ago + " - " + today;
+		}
+
+		function duration_button_click_ex_b(value) {
+			if (jQuery("#duration_modal_ex").is(":disabled")) { }
+			else document.getElementById("duration_modal_ex").setAttribute("disabled", "");
+
+			var durations = value;
+
+			var today = moment().subtract(durations, 'month').format('DD/MM/YYYY');
+			var ago = moment('1900-01-01').format('DD/MM/YYYY');
+
+			document.getElementById("duration_modal_ex").value = ago + " - " + today;
+		}
+
+
+		function duration_button_click_ex_mini(value) {
+			if (jQuery("#duration_modal_ex_mini").is(":disabled")) { }
+			else document.getElementById("duration_modal_ex_mini").setAttribute("disabled", "");
+
+			var durations = value;
+
+			var today = moment().format('DD/MM/YYYY');
+			var ago = moment().subtract(durations, 'month').format('DD/MM/YYYY');
+
+			document.getElementById("duration_modal_ex_mini").value = ago + " - " + today;
+		}
+
+		function duration_button_click_ex_mini_b(value) {
+			if (jQuery("#duration_modal_ex_mini").is(":disabled")) { }
+			else document.getElementById("duration_modal_ex_mini").setAttribute("disabled", "");
+
+			var durations = value;
+
+			var today = moment().subtract(durations, 'month').format('DD/MM/YYYY');
+			var ago = moment('1900-01-01').format('DD/MM/YYYY');
+
+			document.getElementById("duration_modal_ex_mini").value = ago + " - " + today;
+		}
+
+
+		function direct_button_click() {
+			if (jQuery("#duration_modal").is(":disabled")) document.getElementById("duration_modal").removeAttribute("disabled");
+		}
+		function direct_button_click_b() {
+			if (jQuery("#duration_modal").is(":disabled")) document.getElementById("duration_modal").removeAttribute("disabled");
+		}
+
+		function direct_button_click_mini() {
+			if (jQuery("#duration_modal_mini").is(":disabled")) document.getElementById("duration_modal_mini").removeAttribute("disabled");
+		}
+
+		function direct_button_click_mini_b() {
+			if (jQuery("#duration_modal_mini").is(":disabled")) document.getElementById("duration_modal_mini").removeAttribute("disabled");
+		}
+
+		function direct_button_click_ex() {
+			if (jQuery("#duration_modal_Ex").is(":disabled")) document.getElementById("duration_modal_ex").removeAttribute("disabled");
+		}
+		function direct_button_click_ex_b() {
+			if (jQuery("#duration_modal_Ex").is(":disabled")) document.getElementById("duration_modal_ex").removeAttribute("disabled");
+		}
+
+		function direct_button_click_ex_mini() {
+			if (jQuery("#duration_modal_Ex_mini").is(":disabled")) document.getElementById("duration_modal_ex_mini").removeAttribute("disabled");
+		}
+		function direct_button_click_ex_mini_b() {
+			if (jQuery("#duration_modal_Ex_mini").is(":disabled")) document.getElementById("duration_modal_ex_mini").removeAttribute("disabled");
+		}
+
+
+		function addtion_save_button_cliked_in() {
+			var b_index = itemlist_in.map(function (e) { return e.attribute; }).indexOf(Number(value_item));
+			var b_table = itemlist_in[b_index].table;
+			var date_start, date_end, value_start, value_end, value_data;
+			itemlist_in[b_index].addition = "";
+			itemlist_in[b_index].addition_text = "";
+			itemlist_in[b_index].date_addition = "";
+			itemlist_in[b_index].value_min = "";
+			itemlist_in[b_index].value_max = "";
+			itemlist_in[b_index].measure_count = "";
+			itemlist_in[b_index].measure_method = "";
+			itemlist_in[b_index].min_condition = "";
+			itemlist_in[b_index].max_condition = "";
+
+			if (jQuery("#no-check").is(":checked")) { }
+			else {
+				var value_date = document.getElementById("duration_modal").value;
+				var split_date = value_date.split(" - ");
+				var start_date = split_date[0];
+				var end_date = split_date[1];
+				var start_split = start_date.split("/");
+				var end_split = end_date.split("/");
+				var start_data = start_split[2] + "-" + start_split[1] + "-" + start_split[0];
+				var end_data = end_split[2] + "-" + end_split[1] + "-" + end_split[0];
+
+				if (b_table == "measurement") {
+					date_start = "and measurement_date >= '" + start_data + "' ";
+					date_end = "and measurement_date <= '" + end_data + "' ";
+				}
+				else if (b_table == "observation") {
+					date_start = "and observation_date >= '" + start_data + "' ";
+					date_end = "and observation_date <= '" + end_data + "' ";
+				}
+				else if (b_table == "condition") {
+					date_start = "and condition_start_date >= '" + start_data + "' ";
+					date_end = "and condition_start_date <= '" + end_data + "' ";
+				}
+				else if (b_table == "drug") {
+					date_start = "and drug_exposure_start_date >= '" + start_data + "' ";
+					date_end = "and drug_exposure_start_date <= '" + end_data + "' ";
+				}
+				itemlist_in[b_index].date_addition = value_date;
+				itemlist_in[b_index].addition = itemlist_in[b_index].addition + date_start + date_end;
+			}
+
+			if (jQuery("#no-check-value").is(":checked")) { }
+			else {
+				var value_min = document.getElementById("value_min").value;
+				var value_max = document.getElementById("value_max").value;
+
+				if (value_min != "") {
+
+					if (b_table == "measurement" || b_table == "observation") {
+						var condition_m = document.getElementById("value_min_condition_in").value;
+						switch (condition_m) {
+							case "equal":
+								value_start = "and value_as_number = " + value_min + " ";
+								itemlist_in[b_index].addition = itemlist_in[b_index].addition + value_start;
+								value_data = value_min + " = value";
+								itemlist_in[b_index].min_condition = "equal";
+								break;
+
+							case "more than":
+								value_start = "and value_as_number > " + value_min + " ";
+								itemlist_in[b_index].addition = itemlist_in[b_index].addition + value_start;
+								value_data = value_min + "＜ value";
+								itemlist_in[b_index].min_condition = "more than";
+								break;
+
+							case "more than or equal":
+								value_start = "and value_as_number >= " + value_min + " ";
+								itemlist_in[b_index].addition = itemlist_in[b_index].addition + value_start;
+								value_data = value_min + " ≤ value";
+								itemlist_in[b_index].min_condition = "more than or equal";
+								break;
+						}
+
+						itemlist_in[b_index].value_min = value_min;
+					}
+
+				}
+				if (value_max != "") {
+					if (b_table == "measurement" || b_table == "observation") {
+						var condition_max = document.getElementById("value_max_condition_in").value;
+						switch (condition_max) {
+							case "less than":
+								value_end = "and value_as_number < " + value_max + " ";
+								itemlist_in[b_index].addition = itemlist_in[b_index].addition + value_end;
+								value_data = value_data + "＜" + value_max;
+								itemlist_in[b_index].max_condition = "less than";
+								break;
+
+							case "less than or equal":
+								value_end = "and value_as_number <= " + value_max + " ";
+								itemlist_in[b_index].addition = itemlist_in[b_index].addition + value_end;
+								value_data = value_data + " ≤ " + value_max;
+								itemlist_in[b_index].max_condition = "less than or equal";
+								break;
+						}
+
+						itemlist_in[b_index].value_max = value_max;
+					}
+
+				}
+
+			}
+			if (jQuery("#no-check-measure").is(":checked")) { }
+			else {
+				var last_value = document.getElementById("measure_count").value;
+				var calc_method = document.getElementById("measure_calc").value;
+				if (last_value != "") {
+					if (b_table == "measurement" || b_table == "observation") {
+						itemlist_in[b_index].measure_count = last_value;
+						itemlist_in[b_index].measure_method = calc_method;
+					}
+
+				}
+			}
+			if (jQuery("#no-check").is(":checked")) {
+			}
+			else {
+				jQuery("#no-check").prop('checked', true);
+				document.getElementById("duration_in_button_3_b").setAttribute("disabled", "");
+				document.getElementById("duration_in_button_6_b").setAttribute("disabled", "");
+				document.getElementById("duration_in_button_9_b").setAttribute("disabled", "");
+				document.getElementById("duration_in_button_12_b").setAttribute("disabled", "");
+				document.getElementById("duration_in_button_self_b").setAttribute("disabled", "");
+				document.getElementById("duration_in_button_3").setAttribute("disabled", "");
+				document.getElementById("duration_in_button_6").setAttribute("disabled", "");
+				document.getElementById("duration_in_button_9").setAttribute("disabled", "");
+				document.getElementById("duration_in_button_12").setAttribute("disabled", "");
+				document.getElementById("duration_in_button_self").setAttribute("disabled", "");
+
+			}
+
+			if (jQuery('#no-check-value').is(":checked")) { }
+			else {
+				jQuery("#no-check-value").prop('checked', true);
+				document.getElementById("value_min").setAttribute("disabled", "");
+				document.getElementById("value_max").setAttribute("disabled", "");
+			}
+
+			if (jQuery('#no-check-measure').is(":checked")) { }
+			else {
+				jQuery("#no-check-measure").prop('checked', true);
+				document.getElementById("measure_count").setAttribute("disabled", "");
+				document.getElementById("measure_calc").setAttribute("disabled", "");
+			}
+
+
+			jQuery('#duration_' + value_item).remove();
+			if (value_date != null) {
+				if (value_data != null) {
+					var durtaion_div = document.createElement("div");
+					durtaion_div.setAttribute("style", "margin-left: 30px; margin-top:1px; color:rgb(106,115,124); font-size:12px");
+					durtaion_div.setAttribute("id", "duration_" + value_item);
+
+					var duration_text = document.createTextNode("기간:" + '\u00a0' + value_date + '\u00a0' + '\u00a0' + '\u00a0' + '\u00a0' + "수치:" + '\u00a0' + value_data);
+					itemlist_in[b_index].addition_text = duration_text.wholeText;
+					durtaion_div.appendChild(duration_text);
+					document.getElementById("buttonin_" + value_item).appendChild(durtaion_div);
+				}
+				else {
+					var durtaion_div = document.createElement("div");
+					durtaion_div.setAttribute("style", "margin-left: 30px; margin-top:1px; color:rgb(106,115,124); font-size:12px");
+					durtaion_div.setAttribute("id", "duration_" + value_item);
+
+					var duration_text = document.createTextNode("기간:" + '\u00a0' + value_date);
+					itemlist_in[b_index].addition_text = duration_text.wholeText;
+					durtaion_div.appendChild(duration_text);
+					document.getElementById("buttonin_" + value_item).appendChild(durtaion_div);
+				}
+			}
+			else {
+				if (value_data != null) {
+					var durtaion_div = document.createElement("div");
+					durtaion_div.setAttribute("style", "margin-left: 30px; margin-top:1px; color:rgb(106,115,124); font-size:12px");
+					durtaion_div.setAttribute("id", "duration_" + value_item);
+
+					var duration_text = document.createTextNode("수치:" + '\u00a0' + value_data);
+					itemlist_in[b_index].addition_text = duration_text.wholeText;
+					durtaion_div.appendChild(duration_text);
+					document.getElementById("buttonin_" + value_item).appendChild(durtaion_div);
+				}
+			}
+		}
+
+		function addtion_save_button_cliked_in_mini() {
+			var b_index = itemlist_in.map(function (e) { return e.attribute; }).indexOf(Number(value_item));
+			var b_table = itemlist_in[b_index].table;
+			var date_start, date_end, value_start, value_end;
+			itemlist_in[b_index].addition = "";
+			itemlist_in[b_index].addition_text = "";
+			itemlist_in[b_index].date_addition = "";
+			itemlist_in[b_index].value_min = "";
+			itemlist_in[b_index].value_max = "";
+
+			if (jQuery("#check-all").is(":checked")) {
+				itemlist_in[b_index].condition = "0";
+			}
+			else if (jQuery("#check-first").is(":checked")) itemlist_in[b_index].condition = "1";
+			else if (jQuery("#check-last").is(":checked")) itemlist_in[b_index].condition = "2";
+
+			if (jQuery("#no-check-mini").is(":checked")) { }
+			else {
+				var value_date = document.getElementById("duration_modal_mini").value;
+				var split_date = value_date.split(" - ");
+				var start_date = split_date[0];
+				var end_date = split_date[1];
+				var start_split = start_date.split("/");
+				var end_split = end_date.split("/");
+				var start_data = start_split[2] + "-" + start_split[1] + "-" + start_split[0];
+				var end_data = end_split[2] + "-" + end_split[1] + "-" + end_split[0];
+
+				if (b_table == "measurement") {
+					date_start = "and measurement_date >= '" + start_data + "' ";
+					date_end = "and measurement_date <= '" + end_data + "' ";
+				}
+				else if (b_table == "observation") {
+					date_start = "and observation_date >= '" + start_data + "' ";
+					date_end = "and observation_date <= '" + end_data + "' ";
+				}
+				else if (b_table == "condition") {
+					date_start = "and condition_start_date >= '" + start_data + "' ";
+					date_end = "and condition_start_date <= '" + end_data + "' ";
+				}
+				else if (b_table == "drug") {
+					date_start = "and drug_exposure_start_date >= '" + start_data + "' ";
+					date_end = "and drug_exposure_start_date <= '" + end_data + "' ";
+				}
+				itemlist_in[b_index].addition = itemlist_in[b_index].addition + date_start + date_end;
+				itemlist_in[b_index].date_addition = value_date;
+			}
+
+
+			if (jQuery("#no-check-mini").is(":checked")) { }
+			else {
+				jQuery("#no-check-mini").prop('checked', true);
+				document.getElementById("duration_in_button_3_mini").setAttribute("disabled", "");
+				document.getElementById("duration_in_button_6_mini").setAttribute("disabled", "");
+				document.getElementById("duration_in_button_9_mini").setAttribute("disabled", "");
+				document.getElementById("duration_in_button_12_mini").setAttribute("disabled", "");
+				document.getElementById("duration_in_button_self_mini").setAttribute("disabled", "");
+				document.getElementById("duration_in_button_3_mini_b").setAttribute("disabled", "");
+				document.getElementById("duration_in_button_6_mini_b").setAttribute("disabled", "");
+				document.getElementById("duration_in_button_9_mini_b").setAttribute("disabled", "");
+				document.getElementById("duration_in_button_12_mini_b").setAttribute("disabled", "");
+				document.getElementById("duration_in_button_self_mini_b").setAttribute("disabled", "");
+
+			}
+
+			jQuery('#duration_' + value_item).remove();
+			if (value_date != null) {
+				var durtaion_div = document.createElement("div");
+				durtaion_div.setAttribute("style", "margin-left: 30px; margin-top:1px; color:rgb(106,115,124); font-size:12px");
+				durtaion_div.setAttribute("id", "duration_" + value_item);
+
+				var duration_text = document.createTextNode("기간:" + '\u00a0' + value_date);
+				itemlist_in[b_index].addition_text = duration_text.wholeText;
+				durtaion_div.appendChild(duration_text);
+				document.getElementById("buttonin_" + value_item).appendChild(durtaion_div);
+			}
+
+		}
+
+		function addtion_save_button_cliked_in_age() {
+			var b_index = itemlist_in.map(function (e) { return e.attribute; }).indexOf(Number(value_item));
+			var b_table = itemlist_in[b_index].table;
+			var date_start, date_end, value_start, value_end;
+			itemlist_in[b_index].addition = "";
+			itemlist_in[b_index].addition_text = "";
+			itemlist_in[b_index].date_addition = "";
+			itemlist_in[b_index].value_min = "";
+			itemlist_in[b_index].value_max = "";
+
+			if (jQuery("#no-check-age").is(":checked")) { }
+			else {
+				value_data  = "";
+				var value_min = document.getElementById("age_min").value;
+				var currentTime = new Date();
+				var value_max = document.getElementById("age_max").value;
+				if (value_min != "") {
+					if (b_table == "age") {
+						var condition_m = document.getElementById("age_min_condition").value;
+						var birth_min = currentTime.getFullYear() - value_min;
+
+						switch (condition_m) {
+							case "equal":
+								value_start = "and year_of_birth = " + birth_min + " ";
+								itemlist_in[b_index].addition = itemlist_in[b_index].addition + value_start;
+								value_data = value_min + " = age";
+								itemlist_in[b_index].min_condition = "equal";
+								break;
+
+							case "more than":
+								value_start = "and year_of_birth < " + birth_min + " ";
+								itemlist_in[b_index].addition = itemlist_in[b_index].addition + value_start;
+								value_data = value_min + "＜ age";
+								itemlist_in[b_index].min_condition = "more than";
+
+								break;
+
+							case "more than or equal":
+								value_start = "and year_of_birth <= " + birth_min + " ";
+								itemlist_in[b_index].addition = itemlist_in[b_index].addition + value_start;
+								value_data = value_min + " ≤ age";
+								itemlist_in[b_index].min_condition = "more than or equal";
+
+								break;
+						}
+						itemlist_in[b_index].value_min = value_min;
+					}
+
+				}
+				if (value_max != "") {
+					if (b_table == "age") {
+						var condition_max = document.getElementById("age_max_condition").value;
+						var birth_max = currentTime.getFullYear() - value_max;
+
+						switch (condition_max) {
+							case "less than":
+								value_end = "and year_of_birth > " + birth_max + " ";
+								itemlist_in[b_index].addition = itemlist_in[b_index].addition + value_end;
+								if(value_data == "") value_data = "age < "+value_max;
+								else value_data = value_data + "＜" + value_max;
+								itemlist_in[b_index].max_condition = "less than";
+
+								break;
+
+							case "less than or equal":
+								value_end = "and year_of_birth >= " + birth_max + " ";
+								itemlist_in[b_index].addition = itemlist_in[b_index].addition + value_end;
+								if(value_data == "") value_data = "age ≤ "+value_max;
+								else value_data = value_data + " ≤ " + value_max;
+								itemlist_in[b_index].max_condition = "less than or equal";
+
+								break;
+						}
+
+						itemlist_in[b_index].value_max = value_max;
+
+					}
+
+				}
+			}
+			jQuery('#duration_' + value_item).remove();
+			if (value_data != null) {
+				var durtaion_div = document.createElement("div");
+				durtaion_div.setAttribute("style", "margin-left: 30px; margin-top:1px; color:rgb(106,115,124); font-size:12px");
+				durtaion_div.setAttribute("id", "duration_" + value_item);
+				var duration_text;
+
+				duration_text = document.createTextNode("연령:" + '\u00a0' + value_data);
+				itemlist_in[b_index].addition_text = duration_text.wholeText;
+
+				durtaion_div.appendChild(duration_text);
+				document.getElementById("buttonin_" + value_item).appendChild(durtaion_div);
+
+			}
+		}
+
+		function addtion_save_button_cliked_in_sql() {
+			var b_index = itemlist_in.map(function (e) { return e.attribute; }).indexOf(Number(value_item));
+			var b_table = itemlist_in[b_index].table;
+			var date_start, date_end, value_start, value_end;
+			itemlist_in[b_index].addition = "";
+			itemlist_in[b_index].addition_text = "";
+			itemlist_in[b_index].date_addition = "";
+			itemlist_in[b_index].value_min = "";
+			itemlist_in[b_index].value_max = "";
+			var sql_code = document.getElementById("sqlcodein").value;
+			itemlist_in[b_index].addition_text=sql_code;
+			itemlist_in[b_index].addition=sql_code;
+			jQuery('#duration_' + value_item).remove();
+			if (sql_code != null) {
+				var durtaion_div = document.createElement("div");
+				durtaion_div.setAttribute("style", "margin-left: 30px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; margin-top:1px; color:rgb(106,115,124); font-size:12px");
+
+				durtaion_div.setAttribute("id", "duration_" + value_item);
+				var duration_text;
+
+				duration_text = document.createTextNode(sql_code);
+				itemlist_in[b_index].addition_text = duration_text.wholeText;
+
+				durtaion_div.appendChild(duration_text);
+				document.getElementById("buttonin_" + value_item).appendChild(durtaion_div);
+
+			}
+		}
+		
+		function addtion_save_button_cliked_ex_sql() {
+			var b_index = itemlist_ex.map(function (e) { return e.attribute; }).indexOf(Number(value_item));
+			var b_table = itemlist_ex[b_index].table;
+			var date_start, date_end, value_start, value_end;
+			itemlist_ex[b_index].addition = "";
+			itemlist_ex[b_index].addition_text = "";
+			itemlist_ex[b_index].date_addition = "";
+			itemlist_ex[b_index].value_min = "";
+			itemlist_ex[b_index].value_max = "";
+			var sql_code = document.getElementById("sqlcodeex").value;
+			itemlist_ex[b_index].addition_text=sql_code;
+			itemlist_ex[b_index].addition=sql_code;
+			jQuery('#duration_' + value_item).remove();
+			if (sql_code != null) {
+				var durtaion_div = document.createElement("div");
+				durtaion_div.setAttribute("style", "margin-left: 30px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; margin-top:1px; color:rgb(106,115,124); font-size:12px");
+
+				durtaion_div.setAttribute("id", "duration_" + value_item);
+				var duration_text;
+
+				duration_text = document.createTextNode(sql_code);
+				itemlist_ex[b_index].addition_text = duration_text.wholeText;
+
+				durtaion_div.appendChild(duration_text);
+				document.getElementById("buttonex_" + value_item).appendChild(durtaion_div);
+
+			}
+		}
+
+		function addtion_save_button_cliked_ex() {
+			var b_index = itemlist_ex.map(function (e) { return e.attribute; }).indexOf(Number(value_item));
+			var b_table = itemlist_ex[b_index].table;
+			var date_start, date_end, value_start, value_end, value_data, value_count, value_calc_method;
+			itemlist_ex[b_index].addition = "";
+			itemlist_ex[b_index].date_addition = "";
+			itemlist_ex[b_index].value_min = "";
+			itemlist_ex[b_index].value_max = "";
+			itemlist_ex[b_index].measure_count = "";
+			itemlist_ex[b_index].measure_method = "";
+			itemlist_ex[b_index].min_condition = "";
+			itemlist_ex[b_index].max_condition = "";
+
+			if (jQuery("#no-check-ex").is(":checked")) { }
+			else {
+				var value_date = document.getElementById("duration_modal_ex").value;
+				var split_date = value_date.split(" - ");
+				var start_date = split_date[0];
+				var end_date = split_date[1];
+				var start_split = start_date.split("/");
+				var end_split = end_date.split("/");
+				var start_data = start_split[2] + "-" + start_split[1] + "-" + start_split[0];
+				var end_data = end_split[2] + "-" + end_split[1] + "-" + end_split[0];
+
+				if (b_table == "measurement") {
+					date_start = "and measurement_date >= '" + start_data + "' ";
+					date_end = "and measurement_date <= '" + end_data + "' ";
+				}
+				else if (b_table == "observation") {
+					date_start = "and observation_date >= '" + start_data + "' ";
+					date_end = "and observation_date <= '" + end_data + "' ";
+				}
+				else if (b_table == "condition") {
+					date_start = "and condition_start_date >= '" + start_data + "' ";
+					date_end = "and condition_start_date <= '" + end_data + "' ";
+				}
+				else if (b_table == "drug") {
+					date_start = "and drug_exposure_start_date >= '" + start_data + "' ";
+					date_end = "and drug_exposure_start_date <= '" + end_data + "' ";
+				}
+				itemlist_ex[b_index].addition = itemlist_ex[b_index].addition + date_start + date_end;
+				itemlist_ex[b_index].date_addition = value_date;
+
+			}
+
+			if (jQuery("#no-check-value-ex").is(":checked")) { }
+			else {
+				var value_min = document.getElementById("value_min_ex").value;
+				var value_max = document.getElementById("value_max_ex").value;
+				if (value_min != "") {
+					if (b_table == "measurement" || b_table =="observation") {
+						var condition_m = document.getElementById("value_min_condition_ex").value;
+						switch (condition_m) {
+							case "equal":
+								value_start = "and value_as_number = " + value_min + " ";
+								itemlist_ex[b_index].addition = itemlist_ex[b_index].addition + value_start;
+								value_data = value_min + " = value";
+								itemlist_ex[b_index].min_condition = "equal";
+								break;
+
+							case "more than":
+								value_start = "and value_as_number > " + value_min + " ";
+								itemlist_ex[b_index].addition = itemlist_ex[b_index].addition + value_start;
+								value_data = value_min + "＜ value";
+								itemlist_ex[b_index].min_condition = "more than";
+
+								break;
+
+							case "more than or equal":
+								value_start = "and value_as_number >= " + value_min + " ";
+								itemlist_ex[b_index].addition = itemlist_ex[b_index].addition + value_start;
+								value_data = value_min + " ≤ value";
+								itemlist_ex[b_index].min_condition = "more than or equal";
+
+								break;
+						}
+						itemlist_ex[b_index].value_min = value_min;
+					}
+
+				}
+				if (value_max != "") {
+					if (b_table == "measurement" || b_table =="observation") {
+						var condition_max = document.getElementById("value_max_condition_ex").value;
+						switch (condition_max) {
+							case "less than":
+								value_end = "and value_as_number < " + value_max + " ";
+								itemlist_ex[b_index].addition = itemlist_ex[b_index].addition + value_end;
+								value_data = value_data + "＜" + value_max;
+								itemlist_ex[b_index].max_condition = "less than";
+
+								break;
+
+							case "less than or equal":
+								value_end = "and value_as_number <= " + value_max + " ";
+								itemlist_ex[b_index].addition = itemlist_ex[b_index].addition + value_end;
+								value_data = value_data + " ≤ " + value_max;
+								itemlist_ex[b_index].max_condition = "less than or equal";
+
+								break;
+						}
+
+						itemlist_ex[b_index].value_max = value_max;
+
+					}
+
+				}
+
+			}
+			if (jQuery("#no-check-measure-ex").is(":checked")) { }
+			else {
+				var last_value = document.getElementById("measure_count_ex").value;
+				var calc_method = document.getElementById("measure_calc_ex").value;
+				if (last_value != "") {
+					if (b_table == "measurement" || b_table =="observation") {
+						itemlist_ex[b_index].measure_count = last_value;
+						itemlist_ex[b_index].measure_method = calc_method;
+					}
+
+				}
+			}
+			if (jQuery("#no-check-ex").is(":checked")) { }
+			else {
+				jQuery("#no-check-ex").prop('checked', true);
+				document.getElementById("duration_ex_button_3_b").setAttribute("disabled", "");
+				document.getElementById("duration_ex_button_6_b").setAttribute("disabled", "");
+				document.getElementById("duration_ex_button_9_b").setAttribute("disabled", "");
+				document.getElementById("duration_ex_button_12_b").setAttribute("disabled", "");
+				document.getElementById("duration_ex_button_self_b").setAttribute("disabled", "");
+				document.getElementById("duration_ex_button_3").setAttribute("disabled", "");
+				document.getElementById("duration_ex_button_6").setAttribute("disabled", "");
+				document.getElementById("duration_ex_button_9").setAttribute("disabled", "");
+				document.getElementById("duration_ex_button_12").setAttribute("disabled", "");
+				document.getElementById("duration_ex_button_self").setAttribute("disabled", "");
+			}
+
+			if (jQuery('#no-check-value-ex').is(":checked")) { }
+			else {
+				jQuery("#no-check-value-ex").prop('checked', true);
+				document.getElementById("value_min_ex").setAttribute("disabled", "");
+				document.getElementById("value_max_ex").setAttribute("disabled", "");
+			}
+
+			if (jQuery('#no-check-measure-ex').is(":checked")) { }
+			else {
+				jQuery("#no-check-measure-ex").prop('checked', true);
+				document.getElementById("measure_count_ex").setAttribute("disabled", "");
+				document.getElementById("measure_calc_ex").setAttribute("disabled", "");
+			}
+
+
+			jQuery('#duration_' + value_item).remove();
+			if (value_date != null) {
+				if (value_data != null) {
+					var durtaion_div = document.createElement("div");
+					durtaion_div.setAttribute("style", "margin-left: 30px; margin-top:1px; color:rgb(106,115,124); font-size:12px");
+					durtaion_div.setAttribute("id", "duration_" + value_item);
+
+					var duration_text = document.createTextNode("기간:" + '\u00a0' + value_date + '\u00a0' + '\u00a0' + '\u00a0' + '\u00a0' + "수치:" + '\u00a0' + value_data);
+					itemlist_ex[b_index].addition_text = duration_text.wholeText;
+					durtaion_div.appendChild(duration_text);
+					document.getElementById("buttonex_" + value_item).appendChild(durtaion_div);
+				}
+				else {
+					var durtaion_div = document.createElement("div");
+					durtaion_div.setAttribute("style", "margin-left: 30px; margin-top:1px; color:rgb(106,115,124); font-size:12px");
+					durtaion_div.setAttribute("id", "duration_" + value_item);
+
+					var duration_text = document.createTextNode("기간:" + '\u00a0' + value_date);
+					itemlist_ex[b_index].addition_text = duration_text.wholeText;
+					durtaion_div.appendChild(duration_text);
+					document.getElementById("buttonex_" + value_item).appendChild(durtaion_div);
+				}
+			}
+			else {
+				if (value_data != null) {
+					var durtaion_div = document.createElement("div");
+					durtaion_div.setAttribute("style", "margin-left: 30px; margin-top:1px; color:rgb(106,115,124); font-size:12px");
+					durtaion_div.setAttribute("id", "duration_" + value_item);
+
+					var duration_text = document.createTextNode("수치:" + '\u00a0' + value_data);
+					itemlist_ex[b_index].addition_text = duration_text.wholeText;
+
+					durtaion_div.appendChild(duration_text);
+					document.getElementById("buttonex_" + value_item).appendChild(durtaion_div);
+				}
+			}
+
+		}
+
+		function addtion_save_button_cliked_ex_mini() {
+			var b_index = itemlist_ex.map(function (e) { return e.attribute; }).indexOf(Number(value_item));
+			var b_table = itemlist_ex[b_index].table;
+			var date_start, date_end, value_start, value_end;
+			itemlist_ex[b_index].addition = "";
+			itemlist_ex[b_index].addition_text = "";
+			itemlist_ex[b_index].date_addition = "";
+			itemlist_ex[b_index].value_min = "";
+			itemlist_ex[b_index].value_max = "";
+
+			if (jQuery("#check-ex-all").is(":checked")) {
+				itemlist_ex[b_index].condition = "0";
+			}
+			else if (jQuery("#check-ex-first").is(":checked")) itemlist_ex[b_index].condition = "1";
+			else if (jQuery("#check-ex-last").is(":checked")) itemlist_ex[b_index].condition = "2";
+
+
+			if (jQuery("#no-check-ex-mini").is(":checked")) { }
+			else {
+				var value_date = document.getElementById("duration_modal_ex_mini").value;
+				var split_date = value_date.split(" - ");
+				var start_date = split_date[0];
+				var end_date = split_date[1];
+				var start_split = start_date.split("/");
+				var end_split = end_date.split("/");
+				var start_data = start_split[2] + "-" + start_split[1] + "-" + start_split[0];
+				var end_data = end_split[2] + "-" + end_split[1] + "-" + end_split[0];
+
+				if (b_table == "measurement") {
+					date_start = "and measurement_date >= '" + start_data + "' ";
+					date_end = "and measurement_date <= '" + end_data + "' ";
+				}
+				else if (b_table == "observation") {
+					date_start = "and observation_date >= '" + start_data + "' ";
+					date_end = "and observation_date <= '" + end_data + "' ";
+				}
+				else if (b_table == "condition") {
+					date_start = "and condition_start_date >= '" + start_data + "' ";
+					date_end = "and condition_start_date <= '" + end_data + "' ";
+				}
+				else if (b_table == "drug") {
+					date_start = "and drug_exposure_start_date >= '" + start_data + "' ";
+					date_end = "and drug_exposure_start_date <= '" + end_data + "' ";
+				}
+				itemlist_ex[b_index].addition = itemlist_ex[b_index].addition + date_start + date_end;
+				itemlist_ex[b_index].date_addition = value_date;
+
+			}
+
+			if (jQuery("#no-check-ex-mini").is(":checked")) { }
+			else {
+				jQuery("#no-check-ex-mini").prop('checked', true);
+				document.getElementById("duration_ex_button_3_mini_b").setAttribute("disabled", "");
+				document.getElementById("duration_ex_button_6_mini_b").setAttribute("disabled", "");
+				document.getElementById("duration_ex_button_9_mini_b").setAttribute("disabled", "");
+				document.getElementById("duration_ex_button_12_mini_b").setAttribute("disabled", "");
+				document.getElementById("duration_ex_button_self_mini_b").setAttribute("disabled", "");
+				document.getElementById("duration_ex_button_3_mini_b").setAttribute("disabled", "");
+				document.getElementById("duration_ex_button_6_mini_b").setAttribute("disabled", "");
+				document.getElementById("duration_ex_button_9_mini_b").setAttribute("disabled", "");
+				document.getElementById("duration_ex_button_12_mini_b").setAttribute("disabled", "");
+				document.getElementById("duration_ex_button_self_mini_b").setAttribute("disabled", "");
+
+			}
+
+			jQuery('#duration_' + value_item).remove();
+			if (value_date != null) {
+				var durtaion_div = document.createElement("div");
+				durtaion_div.setAttribute("style", "margin-left: 30px; margin-top:1px; color:rgb(106,115,124); font-size:12px");
+				durtaion_div.setAttribute("id", "duration_" + value_item);
+				if (b_table == "age") {
+					var duration_text = document.createTextNode("연령:" + '\u00a0' + value_date);
+					itemlist_ex[b_index].addition_text = duration_text.wholeText;
+				}
+				else {
+					var duration_text = document.createTextNode("기간:" + '\u00a0' + value_date);
+					itemlist_ex[b_index].addition_text = duration_text.wholeText;
+				}
+				durtaion_div.appendChild(duration_text);
+				document.getElementById("buttonex_" + value_item).appendChild(durtaion_div);
+
+			}
+		}
+		
+		function addtion_save_button_cliked_ex_age() {
+			var b_index = itemlist_ex.map(function (e) { return e.attribute; }).indexOf(Number(value_item));
+			var b_table = itemlist_ex[b_index].table;
+			var date_start, date_end, value_start, value_end;
+			itemlist_ex[b_index].addition = "";
+			itemlist_ex[b_index].addition_text = "";
+			itemlist_ex[b_index].date_addition = "";
+			itemlist_ex[b_index].value_min = "";
+			itemlist_ex[b_index].value_max = "";
+			
+			if (jQuery("#no-check-age-ex").is(":checked")) { }
+			else {
+				var value_min = document.getElementById("age_min_ex").value;
+				var currentTime = new Date();
+				var value_max = document.getElementById("age_max_ex").value;
+				if (value_min != "") {
+					if (b_table == "age") {
+						var condition_m = document.getElementById("age_min_condition_ex").value;
+						var birth_min = currentTime.getFullYear() - value_min;
+
+						switch (condition_m) {
+							case "equal":
+								value_start = "and year_of_birth = " + birth_min + " ";
+								itemlist_ex[b_index].addition = itemlist_ex[b_index].addition + value_start;
+								value_data = value_min + " = age";
+								itemlist_ex[b_index].min_condition = "equal";
+								break;
+
+							case "more than":
+								value_start = "and year_of_birth < " + birth_min + " ";
+								itemlist_ex[b_index].addition = itemlist_ex[b_index].addition + value_start;
+								value_data = value_min + "＜ age";
+								itemlist_ex[b_index].min_condition = "more than";
+
+								break;
+
+							case "more than or equal":
+								value_start = "and year_of_birth <= " + birth_min + " ";
+								itemlist_ex[b_index].addition = itemlist_ex[b_index].addition + value_start;
+								value_data = value_min + " ≤ age";
+								itemlist_ex[b_index].min_condition = "more than or equal";
+
+								break;
+						}
+						itemlist_ex[b_index].value_min = value_min;
+					}
+
+				}
+				if (value_max != "") {
+					if (b_table == "age") {
+						var condition_max = document.getElementById("age_max_condition_ex").value;
+						var birth_max = currentTime.getFullYear() - value_max;
+
+						switch (condition_max) {
+							case "less than":
+								value_end = "and year_of_birth > " + birth_max + " ";
+								itemlist_ex[b_index].addition = itemlist_ex[b_index].addition + value_end;
+								value_data = value_data + "＜" + value_max;
+								itemlist_ex[b_index].max_condition = "less than";
+
+								break;
+
+							case "less than or equal":
+								value_end = "and year_of_birth >= " + birth_max + " ";
+								itemlist_ex[b_index].addition = itemlist_ex[b_index].addition + value_end;
+								value_data = value_data + " ≤ " + value_max;
+								itemlist_ex[b_index].max_condition = "less than or equal";
+
+								break;
+						}
+
+						itemlist_ex[b_index].value_max = value_max;
+
+					}
+
+				}
+			}
+			jQuery('#duration_' + value_item).remove();
+			if (value_data != null) {
+				var durtaion_div = document.createElement("div");
+				durtaion_div.setAttribute("style", "margin-left: 30px; margin-top:1px; color:rgb(106,115,124); font-size:12px");
+				durtaion_div.setAttribute("id", "duration_" + value_item);
+				var duration_text;
+
+				duration_text = document.createTextNode("연령:" + '\u00a0' + value_data);
+				itemlist_ex[b_index].addition_text = duration_text.wholeText;
+
+				durtaion_div.appendChild(duration_text);
+				document.getElementById("buttonex_" + value_item).appendChild(durtaion_div);
+
+			}
+		}
+
+		function visit_button_click(value) {
+			var durations = value;
+			visit_criteria.table = "Visit_occurrence";
+			visit_criteria.field = "id";
+			visit_criteria.condition = "0";
+			visit_criteria.attribute = "";
+			visit_criteria.value = durations;
+			visit_criteria.title = "";
+			visit_criteria.addition_text = "";
+
+			visit_criteria.value_min = "";
+			visit_criteria.value_max = "";
+			visit_criteria.measure_count = "";
+			visit_criteria.measure_method = "";
+			visit_criteria.min_condition = "";
+			visit_criteria.max_condition = "";
+
+			var today = moment().format('DD/MM/YYYY');
+			var ago = moment().subtract(durations, 'month').format('DD/MM/YYYY');
+			document.getElementById("daterange_visit").removeAttribute("disabled");
+
+			if (durations == "1200") {
+				document.getElementById("daterange_visit").value = "";
+				document.getElementById("daterange_visit").setAttribute("disabled", "");
+			}
+			else if (durations == "9999") {
+				document.getElementById("daterange_visit").value = '01/01/1900 - 01/01/2018';
+			}
+			else {
+				document.getElementById("daterange_visit").value = ago + " - " + today;
+				visit_criteria.addition = "and visit_start_date >= ''" + ago + "'' and visit_start_date <=''" + today + "''";
+				visit_criteria.date_addition_value = ago + " - " + today;
+			}
+		}
+
+		function nav_account_clicked(){
+			if(opened == false){
+				document.getElementById("userDropdown").setAttribute("aria-expanded", "true");
+				document.getElementById("userDropdowndiv").setAttribute("class", "dropdown-menu dropdown-menu-right show");
+				opened = true;
+			}
+			else{
+				document.getElementById("userDropdown").setAttribute("aria-expanded", "false");
+				document.getElementById("userDropdowndiv").setAttribute("class", "dropdown-menu dropdown-menu-right");
+				opened = false;
+			}
+		}
+	
+	</script>
+
+</head>
+
+<body>
+	<div class="wrapper">
+		<div class="d-flex">
+			<nav class="sidebar" id="sidebar_navi">
+			</nav>
+
+			<div class="main bg-white">
+				<nav class="navbar navbar-expand navbar-light bg-white">
+					<a class="sidebar-toggle d-flex mr-2">
+						<i class="hamburger align-self-center"></i>
+					</a>
+
+					<form class="form-inline d-none d-sm-inline-block" style="width:90%" id="upper_navi">
+					</form>
+
+					<div class="navbar-collapse collapse">
+						<ul class="navbar-nav ml-auto" id="navbar">
+						</ul>
+					</div>
+				</nav>
+
+				<main class="content bg-white">
+					<div class="container-fluid p-0">
+
+						<h1 class="h2 mb-3" id="user_define_head" style="color:rgb(52, 60, 67); font-weight: bold">
+						</h1>
+						<div class="row">
+							<div class="col-12">
+								<div class="card" style="border-color: transparent">
+									<table class="table table-borderless">
+										<tbody>
+											<tr>
+												<td style="width: 7%;">Name</td>
+												<td>
+													<form class="form-inline">
+														<input type="text" id="user_define_title" class="form-control" placeholder="" style="width: 60%">
+													</form>
+												</td>
+											</tr>
+											<tr>
+												<td style="width:7%;">Period</td>
+												
+												
+												<td>
+													<div class="form-check form-check-inline" style="margin-left: 25px">
+														<label class="custom-control-inline custom-radio" style="margin-right: 30px">
+															<input name="duration" id="visit_no" type="radio" class="custom-control-input" value="1200" onclick="visit_button_click(value)">
+															<span class="custom-control-label">All</span>
+														</label>
+														<label class="custom-control-inline custom-radio" style="margin-right: 30px">
+															<input name="duration" id="visit_3" type="radio" class="custom-control-input" value="3" onclick="visit_button_click(value)">
+															<span class="custom-control-label">3 months</span>
+														</label>
+														<label class="custom-control-inline custom-radio" style="margin-right: 30px">
+															<input name="duration" id="visit_6" type="radio" class="custom-control-input" value="6" onclick="visit_button_click(value)">
+															<span class="custom-control-label">6 months</span>
+														</label>
+														<label class="custom-control-inline custom-radio" style="margin-right: 30px">
+															<input name="duration" id="visit_9" type="radio" class="custom-control-input" value="9" onclick="visit_button_click(value)">
+															<span class="custom-control-label">9 months</span>
+														</label>
+														<label class="custom-control-inline custom-radio" style="margin-right: 30px">
+															<input name="duration" id="visit_12" type="radio" class="custom-control-input" value="12" onclick="visit_button_click(value)">
+															<span class="custom-control-label">1 year</span>
+														</label>
+														<label class="custom-control-inline custom-radio" style="margin-right: 30px">
+															<input name="duration" id="visit_24" type="radio" class="custom-control-input" value="24" onclick="visit_button_click(value)">
+															<span class="custom-control-label">2 years</span>
+														</label>
+														<label class="custom-control-inline custom-radio" style="margin-right: 30px">
+															<input name="duration" id="visit_36" type="radio" class="custom-control-input" value="36" onclick="visit_button_click(value)">
+															<span class="custom-control-label">3 years</span>
+														</label>
+														<label class="custom-control-inline custom-radio" style="margin-right: 30px">
+															<input name="duration" id="visit_direct" type="radio" class="custom-control-input" value="9999" onclick="visit_button_click(value)">
+															<span class="custom-control-label">Custom</span>
+														</label>
+
+														<label class="custom-control-inline custom-radio" style="margin-right: 30px">
+															<input class="form-control" id="daterange_visit" type="text" value="" name="daterange_visit" />
+														</label>
+														<script>
+															document.addEventListener("DOMContentLoaded", function (event) {
+																// Daterangepicker
+																jQuery('input[name="daterange_visit"]').daterangepicker({
+																	opens: 'left',
+																	locale: {
+																		cancelLabel: 'Clear'
+																	}
+																});
+															});
+														</script>
+													</div>
+													
+
+												</td>
+
+											</tr>
+											
+										</tbody>
+									</table>
+									<table class="table table-borderless" style="table-layout: fixed">
+										<tbody>
+											<tr>
+												<td style="width: 7%; vertical-align: bottom">user_define Criteria</td>
+												<td style="width: 40%; border-right: thin solid rgb(218, 222, 227);">
+													<label class="text" style="margin-top:2px">Inclusion</label>
+													<div class="input-group" id="inclusion_template">
+														<div class="btn-group">
+															<button type="button" class="btn btn-info dropdown-toggle" id="selected_table_inclusion" data-toggle="dropdown"
+															 aria-haspopup="true" aria-expanded="false">
+																선택
+															</button>
+															<div class="dropdown-menu">
+																<a class="dropdown-item" value="age" id="age" onclick="agemodal_in()">나이</a>
+																<a class="dropdown-item" value="gender" id="gender" onclick="select_table_inclusion(id)">성별</a>
+																<a class="dropdown-item" value="drug" id="drug" onclick="select_table_inclusion(id)">약물</a>
+																<a class="dropdown-item" value="condition" id="condition" onclick="select_table_inclusion(id)">진단</a>
+																<a class="dropdown-item" value="measurement" id="measurement" onclick="select_table_inclusion(id)">검사</a>
+																<a class="dropdown-item" value="sql" id="sql" onclick="sqlmodal_in()">SQL</a>
+															</div>
+														</div>
+														<input type="text" class="form-control" placeholder="INCLUSION CRITERIA" id="inclusion" onkeyup="enterkey_in();">
+														<span class="input-group-append">
+															<button class="btn btn-info" type="button" onclick="itemmodal_in()">Add</button>
+															<button class="btn btn-outline-info" type="button" onclick="hier_button_click()"><i class="align-middle mr-2 fas fa-fw fa-project-diagram"></i></button>
+														</span>
+													</div>
+												</td>
+												<td style="width:1%"></td>
+												<td style="width: 40%">
+													<label class="text" style="margin-top:2px">Exclusion</label>
+
+													<div class="input-group" id="exclusion_template">
+														<div class="btn-group">
+															<button type="button" class="btn btn-info dropdown-toggle" id="selected_table_exclusion" data-toggle="dropdown"
+															 aria-haspopup="true" aria-expanded="false">
+																선택
+															</button>
+															<div class="dropdown-menu">
+																<a class="dropdown-item" value="age" id="age" onclick="agemodal_ex()">나이</a>
+																<a class="dropdown-item" value="gender" id="gender" onclick="select_table_exclusion(id)">성별</a>
+																<a class="dropdown-item" value="drug" id="drug" onclick="select_table_exclusion(id)">약물</a>
+																<a class="dropdown-item" value="condition" id="condition" onclick="select_table_exclusion(id)">진단</a>
+																<a class="dropdown-item" value="measurement" id="measurement" onclick="select_table_exclusion(id)">검사</a>
+																<a class="dropdown-item" value="sql" id="sql" onclick="sqlmodal_ex()">SQL</a>
+															</div>
+														</div>
+														<input type="text" class="form-control" placeholder="EXCLUSION CRITERIA" id="exclusion" onkeyup="enterkey_ex();">
+														<span class="input-group-append">
+															<button class="btn btn-info" type="button" onclick="itemmodal_ex()">Add</button>
+															<button class="btn btn-outline-info" type="button" onclick="hier_button_ex_click()"><i class="align-middle mr-2 fas fa-fw fa-project-diagram"></i></button>														
+														</span>
+													</div>
+												</td>
+											</tr>
+
+											<tr>
+												<td style="width: 7%"> </td>
+												<td style="width: 40%; vertical-align: top; border-right: thin solid rgb(218, 222, 227);">
+													<div class="card" style="border-color: transparent; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;"
+													 id="inclusion_criteria">
+													</div>
+
+												</td>
+												<td style="width: 7%"></td>
+												<td style="width: 40%; vertical-align: top">
+													<div class="card" style="border-color: transparent" id="exclusion_criteria">
+													</div>
+												</td>
+											</tr>
+
+										</tbody>
+									</table>
+								</div>
+								<button class="btn btn-info float-sm-right" style="margin-left: 10px; margin-right: 10px" onclick="save_button_cliked();">SAVE</button>
+								<button class="btn btn-outline-info float-sm-right" onclick="cancel_button_cliked();">CANCEL</button>
+
+							</div>
+						</div>
+					</div>
+				</main>
+
+				<footer class="footer">
+					<div class="container-fluid">
+						<div class="row text-muted">
+							<div class="col-6 text-left">
+							</div>
+							<div class="col-6 text-right">
+								<p class="mb-0">
+									&copy; 2018 - <a href="index.html" class="text-muted">JBCP</a>
+								</p>
+							</div>
+						</div>
+					</div>
+				</footer>
+				<div class="modal fade" id="itemAddInFullModal" tabindex="-1" role="dialog" aria-hidden="true">
+					<div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+						<div class="modal-content">
+							<div class="modal-header">
+								<h5 class="modal-title" id="item_modal_title_In_Full"></h5>
+								<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+									<span aria-hidden="true">&times;</span>
+								</button>
+							</div>
+							<div class="modal-body m-3">
+								<table class="table table-borderless">
+									<tbody>
+										<tr>
+											<td style="width: 21%; vertical-align: 0%">
+												Time
+												<form class="form-inline">
+													<div class="custom-control custom-checkbox mb-1 mr-sm-2">
+														<input type="checkbox" class="custom-control-input" id="no-check-measure" checked>
+														<label class="custom-control-label" for="no-check-measure">All</label>
+													</div>
+												</form>
+											</td>
+											<td>
+												<form class="form-inline">
+													<label class="text" style="margin-right:8px"> Last</label>
+													<select class="form-control" id="measure_count" style="width: 60px; margin-right: 10px" disabled>
+														<option value="1" selected>1</option>
+														<option value="2">2</option>
+														<option value="3">3</option>
+														<option value="4">4</option>
+														<option value="5">5</option>
+														<option value="6">6</option>
+														<option value="7">7</option>
+														<option value="8">8</option>
+														<option value="9">9</option>
+														<option value="10">10</option>
+													</select>
+	
+													<select class="form-control" id="measure_calc" disabled>
+														<option value="avg" selected>Average</option>
+														<option value="max">Max</option>
+														<option value="min">Min</option>
+													</select>
+												</form>
+											</td>
+										</tr>
+										<tr>
+											<td style="width: 21%; vertical-align: 0%">
+												Value
+												<form class="form-inline">
+													<div class="custom-control custom-checkbox mb-1 mr-sm-2">
+														<input type="checkbox" class="custom-control-input" id="no-check-value" checked>
+														<label class="custom-control-label" for="no-check-value">All</label>
+													</div>
+												</form>
+											</td>
+											<td>
+												<form class="form-inline">
+													<input type="text" class="form-control" style="width: 60px; margin-right: 8px;" id="value_min" disabled>
+													<select class="form-control" id="value_min_condition_in" disabled>
+														<option value=""></option>
+														<option value="more than or equal">&lt;=</option>
+														<option value="more than">&lt;</option>
+														<option value="equal">=</option>
+													</select>
+													<label class="text" style="margin-left: 8px; margin-right: 8px"> value </label>
+													<select class="form-control" id="value_max_condition_in" disabled>
+														<option value=""></option>
+														<option value="less than or equal">&lt;=</option>
+														<option value="less than">&lt;</option>
+													</select>
+
+													<input type="text" class="form-control" style="width: 60px; margin-left: 8px" id="value_max" disabled>
+												</form>
+											</td>
+										</tr>
+										<tr>
+											<td style="width: 21%; vertical-align: 0%">
+												Period
+												<form class="form-inline">
+													<div class="custom-control custom-checkbox mb-1 mr-sm-2">
+														<input type="checkbox" class="custom-control-input" id="no-check" checked>
+														<label class="custom-control-label" for="no-check">All</label>
+													</div>
+												</form>
+											</td>
+											<td>
+												<div class="btn-group mb-3" role="group" aria-label="Default button group">
+													<button type="button" class="btn btn-outline-danger" style="width: 130px" value="3" id="duration_in_button_3_b"
+														onclick="duration_button_click_b(value)" disabled> 3 months before</button>
+													<button type="button" class="btn btn-outline-danger" style="width: 130px" value="6" id="duration_in_button_6_b"
+														onclick="duration_button_click_b(value)" disabled> 6 months before</button>
+													<button type="button" class="btn btn-outline-danger" style="width: 130px" value="9" id="duration_in_button_9_b"
+														onclick="duration_button_click_b(value)" disabled> 9 months before</button>
+														<button type="button" class="btn btn-outline-danger" style="width: 130px" value="12" id="duration_in_button_12_b"
+														onclick="duration_button_click_b(value)" disabled> 1 year before</button>
+													<button type="button" class="btn btn-outline-danger" style="width: 80px" id="duration_in_button_self_b"
+														onclick="direct_button_click_b()" disabled> Custom</button>
+
+												</div>
+												<div class="btn-group mb-3" role="group" aria-label="Default button group">
+													<button type="button" class="btn btn-outline-info" style="width: 130px" value="3" id="duration_in_button_3"
+													onclick="duration_button_click(value)" disabled> within 3 months</button>
+													<button type="button" class="btn btn-outline-info" style="width: 130px" value="6" id="duration_in_button_6"
+													onclick="duration_button_click(value)" disabled> within 6 months</button>
+													<button type="button" class="btn btn-outline-info" style="width: 130px" value="9" id="duration_in_button_9"
+													onclick="duration_button_click(value)" disabled> within 9 months</button>
+													<button type="button" class="btn btn-outline-info" style="width: 130px" value="12" id="duration_in_button_12"
+													onclick="duration_button_click(value)" disabled>within 1 year</button>
+													<button type="button" class="btn btn-outline-info" style="width: 80px" id="duration_in_button_self"
+													onclick="direct_button_click()" disabled> Custom</button>
+												</div>
+												<div class="form-group">
+													<input name="daterange" class="form-control" type="text" id="duration_modal" value="" disabled>
+												</div>
+												<script>
+													document.addEventListener("DOMContentLoaded", function (event) {
+														// Daterangepicker
+														jQuery('input[name="daterange"]').daterangepicker({
+															opens: 'left',
+															locale: {
+																cancelLabel: 'Clear'
+															}
+														});
+													});
+
+												</script>
+	
+											</td>
+										</tr>
+	
+									</tbody>
+								</table>
+								
+							</div>
+							<div class="modal-footer">
+								<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+								<button type="button" class="btn btn-primary" data-dismiss="modal" onclick="addtion_save_button_cliked_in()">Save</button>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="modal fade" id="itemAddExFullModal" tabindex="-1" role="dialog" aria-hidden="true">
+					<div class="modal-dialog modal-dialog-centered modal-md" role="document">
+						<div class="modal-content">
+							<div class="modal-header">
+								<h5 class="modal-title" id="item_modal_title_Ex_Full"></h5>
+								<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+									<span aria-hidden="true">&times;</span>
+								</button>
+							</div>
+							<div class="modal-body m-3">
+								<table class="table table-borderless">
+									<tbody>
+										<tr>
+											<td style="width: 21%; vertical-align: 0%">
+												Time
+												<form class="form-inline">
+													<div class="custom-control custom-checkbox mb-1 mr-sm-2">
+														<input type="checkbox" class="custom-control-input" id="no-check-measure-ex" checked>
+														<label class="custom-control-label" for="no-check-measure-ex">All</label>
+													</div>
+												</form>
+											</td>
+											<td>
+												<form class="form-inline">
+													<label class="text" style="margin-right:8px"> Last</label>
+													 <select class="form-control" id="measure_count_ex" style="width: 60px; margin-right: 10px" disabled>
+															<option value="1" selected>1</option>
+															<option value="2">2</option>
+															<option value="3">3</option>
+															<option value="3">4</option>
+															<option value="3">5</option>
+															<option value="3">6</option>
+															<option value="3">7</option>
+															<option value="3">8</option>
+															<option value="3">9</option>
+															<option value="3">10</option>
+														</select>	
+													 <select class="form-control" id="measure_calc_ex" disabled>
+														<option value="avg" selected>Average</option>
+														<option value="max">Max</option>
+														<option value="min">Min</option>
+													</select>
+												</form>
+											</td>
+										</tr>
+										<tr>
+											<td style="width: 21%; vertical-align: 0%">
+												Value
+												<form class="form-inline">
+													<div class="custom-control custom-checkbox mb-1 mr-sm-2">
+														<input type="checkbox" class="custom-control-input" id="no-check-value-ex" checked>
+														<label class="custom-control-label" for="no-check-value-ex">All</label>
+													</div>
+												</form>
+											</td>
+											<td>
+												<form class="form-inline">
+													<input type="text" class="form-control" style="width: 60px; margin-right: 8px" id="value_min_ex" disabled>
+													<select class="form-control" id="value_min_condition_ex" disabled>
+														<option value=""></option>
+														<option value="more than or equal">&lt;=</option>
+														<option value="more than">&lt;</option>
+														<option value="equal">=</option>
+													</select>
+													<label class="text" style="margin-left: 8px; margin-right: 8px"> value </label>
+													<select class="form-control" id="value_max_condition_ex" disabled>
+														<option value=""></option>
+														<option value="less than or equal">&lt;=</option>
+														<option value="less than">&lt;</option>
+													</select>
+													<input type="text" class="form-control" style="width: 60px; margin-left: 8px" id="value_max_ex" disabled>
+												</form>
+											</td>
+										</tr>
+										<tr>
+											<td style="width: 21%; vertical-align: 0%">
+												Period
+												<form class="form-inline">
+													<div class="custom-control custom-checkbox mb-1 mr-sm-2">
+														<input type="checkbox" class="custom-control-input" id="no-check-ex" checked>
+														<label class="custom-control-label" for="no-check-ex">All</label>
+													</div>
+												</form>
+											</td>
+											<td>
+												<div class="btn-group mb-3" role="group" aria-label="Default button group">
+													<button type="button" class="btn btn-outline-danger" style="width: 130px" value="3" id="duration_ex_button_3_b"
+														onclick="duration_button_click_ex_b(value)" disabled> 3 months before</button>
+													<button type="button" class="btn btn-outline-danger" style="width: 130px" value="6" id="duration_ex_button_6_b"
+														onclick="duration_button_click_ex_b(value)" disabled> 6 months before</button>
+													<button type="button" class="btn btn-outline-danger" style="width: 130px" value="9" id="duration_ex_button_9_b"
+														onclick="duration_button_click_ex_b(value)" disabled> 9 months before</button>
+														<button type="button" class="btn btn-outline-danger" style="width: 130px" value="12" id="duration_ex_button_12_b"
+														onclick="duration_button_click_ex_b(value)" disabled> 1 year before</button>
+													<button type="button" class="btn btn-outline-danger" style="width: 80px" id="duration_ex_button_self_b"
+														onclick="direct_button_click_ex_b()" disabled> Custom</button>
+
+												</div>
+												<div class="btn-group mb-3" role="group" aria-label="Default button group">
+													<button type="button" class="btn btn-outline-info" style="width: 130px" value="3" id="duration_ex_button_3"
+													onclick="duration_button_click_ex(value)" disabled> within 3 months</button>
+													<button type="button" class="btn btn-outline-info" style="width: 130px" value="6" id="duration_ex_button_6"
+													onclick="duration_button_click_ex(value)" disabled> within 6 months</button>
+													<button type="button" class="btn btn-outline-info" style="width: 130px" value="9" id="duration_ex_button_9"
+													onclick="duration_button_click_ex(value)" disabled> within 9 months</button>
+													<button type="button" class="btn btn-outline-info" style="width: 130px" value="12" id="duration_ex_button_12"
+													onclick="duration_button_click_ex(value)" disabled>within 1 year</button>
+													<button type="button" class="btn btn-outline-info" style="width: 80px" id="duration_ex_button_self"
+													onclick="direct_button_click_ex()" disabled> Custom</button>
+												</div>
+												<div class="form-group">
+													<input name="daterange" class="form-control" type="text" id="duration_modal_ex" value="" disabled>
+												</div>
+												<script>
+													document.addEventListener("DOMContentLoaded", function (event) {
+														// Daterangepicker
+														jQuery('input[name="daterange"]').daterangepicker({
+															opens: 'left',
+															locale: {
+																cancelLabel: 'Clear'
+															}
+														});
+													});
+
+												</script>
+		
+											</td>
+										</tr>
+	
+									</tbody>
+								</table>
+							</div>
+							<div class="modal-footer">
+								<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+								<button type="button" class="btn btn-primary" data-dismiss="modal" onclick="addtion_save_button_cliked_ex()">Save</button>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="modal fade" id="itemAddInModal" tabindex="-1" role="dialog" aria-hidden="true">
+					<div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+						<div class="modal-content">
+							<div class="modal-header">
+								<h5 class="modal-title" id="item_modal_title_In"></h5>
+								<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+									<span aria-hidden="true">&times;</span>
+								</button>
+							</div>
+							<div class="modal-body m-3">
+								<table class="table table-borderless">
+									<tbody>
+										<tr>
+											<td>Time</td>
+											<td>
+												<div class="form-check form-check-inline" style="margin-left: 25px">
+													<label class="custom-control-inline custom-radio" style="margin-right: 30px">
+														<input name="timestone" id="check-all" type="radio" value="0" class="custom-control-input" checked>
+														<span class="custom-control-label">All</span>
+													</label>
+													<label class="custom-control-inline custom-radio" style="margin-right: 30px">
+														<input name="timestone" id="check-first" type="radio" value="1" class="custom-control-input">
+														<span class="custom-control-label" id="first_in"></span>
+													</label>
+													<label class="custom-control-inline custom-radio" style="margin-right: 30px">
+														<input name="timestone" id="check-last" type="radio" value="2" class="custom-control-input">
+														<span class="custom-control-label" id="last_in"></span>
+													</label>
+												</div>
+											</td>
+										</tr>
+										<tr>
+											<td style="width: 10%; vertical-align: 0%">
+												Period
+												<form class="form-inline">
+													<div class="custom-control custom-checkbox mb-1 mr-sm-2">
+														<input type="checkbox" class="custom-control-input" id="no-check-mini" checked>
+														<label class="custom-control-label" for="no-check-mini">All</label>
+													</div>
+												</form>
+											</td>
+											<td>
+												<div class="btn-group mb-3" role="group" aria-label="Default button group">
+													<button type="button" class="btn btn-outline-danger" style="width: 130px" value="3" id="duration_in_button_3_mini_b"
+													 onclick="duration_button_click_mini_b(value)" disabled> 3 months before</button>
+													<button type="button" class="btn btn-outline-danger" style="width: 130px" value="6" id="duration_in_button_6_mini_b"
+													 onclick="duration_button_click_mini_b(value)" disabled> 6 months before</button>
+													<button type="button" class="btn btn-outline-danger" style="width: 130px" value="9" id="duration_in_button_9_mini_b"
+													 onclick="duration_button_click_mini_b(value)" disabled> 9 months before</button>
+													 <button type="button" class="btn btn-outline-danger" style="width: 130px" value="12" id="duration_in_button_12_mini_b"
+													 onclick="duration_button_click_mini_b(value)" disabled> 1 year before</button>
+													 <button type="button" class="btn btn-outline-danger" style="width: 80px" id="duration_in_button_self_mini_b"
+													 onclick="direct_button_click_mini_b()" disabled> Custom</button>
+												</div>
+												<div class="btn-group mb-3" role="group" aria-label="Default button group">
+													<button type="button" class="btn btn-outline-info" style="width: 130px" value="3" id="duration_in_button_3_mini"
+													onclick="duration_button_click_mini(value)" disabled> within 3 months</button>
+													<button type="button" class="btn btn-outline-info" style="width: 130px" value="6" id="duration_in_button_6_mini"
+													onclick="duration_button_click_mini(value)" disabled> within 6 months</button>
+													<button type="button" class="btn btn-outline-info" style="width: 130px" value="9" id="duration_in_button_9_mini"
+													onclick="duration_button_click_mini(value)" disabled> within 9 months</button>
+													<button type="button" class="btn btn-outline-info" style="width: 130px" value="12" id="duration_in_button_12_mini"
+													onclick="duration_button_click_mini(value)" disabled>within 1 year</button>
+													<button type="button" class="btn btn-outline-info" style="width: 80px" id="duration_in_button_self_mini"
+													 onclick="direct_button_click_mini()" disabled> Custom</button>
+												</div>
+												<div class="form-group">
+													<input name="daterange" class="form-control" type="text" id="duration_modal_mini" value="" disabled>
+												</div>
+
+											</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+							<div class="modal-footer">
+								<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+								<button type="button" class="btn btn-primary" data-dismiss="modal" onclick="addtion_save_button_cliked_in_mini()">Save</button>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="modal fade" id="itemAddExModal" tabindex="-1" role="dialog" aria-hidden="true">
+					<div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+						<div class="modal-content">
+							<div class="modal-header">
+								<h5 class="modal-title" id="item_modal_title_Ex"></h5>
+								<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+									<span aria-hidden="true">&times;</span>
+								</button>
+							</div>
+							<div class="modal-body m-3">
+								<table class="table table-borderless">
+									<tbody>
+										<tr>
+											<td>Time</td>
+											<td>
+												<div class="form-check form-check-inline" style="margin-left: 25px">
+													<label class="custom-control-inline custom-radio" style="margin-right: 30px">
+														<input name="timestone" id="check-ex-all" type="radio" value="0" class="custom-control-input" checked>
+														<span class="custom-control-label">All</span>
+													</label>
+													<label class="custom-control-inline custom-radio" style="margin-right: 30px">
+														<input name="timestone" id="check-ex-first" type="radio" value="1" class="custom-control-input">
+														<span class="custom-control-label" id="first_ex"></span>
+													</label>
+													<label class="custom-control-inline custom-radio" style="margin-right: 30px">
+														<input name="timestone" id="check-ex-last" type="radio" value="2" class="custom-control-input">
+														<span class="custom-control-label" id="last_ex"></span>
+													</label>
+												</div>
+											</td>
+										</tr>
+		
+										<tr>
+											<td style="width: 21%; vertical-align: 0%">
+												Period
+												<form class="form-inline">
+													<div class="custom-control custom-checkbox mb-1 mr-sm-2">
+														<input type="checkbox" class="custom-control-input" id="no-check-ex-mini" checked>
+														<label class="custom-control-label" for="no-check-ex-mini">All</label>
+													</div>
+												</form>
+											</td>
+											<td>
+												<div class="btn-group mb-3" role="group" aria-label="Default button group">
+													<button type="button" class="btn btn-outline-danger" style="width: 130px" value="3" id="duration_ex_button_3_mini_b"
+													 onclick="duration_button_click_ex_mini_b(value)" disabled> 3 months before</button>
+													<button type="button" class="btn btn-outline-danger" style="width: 130px" value="6" id="duration_ex_button_6_mini_b"
+													 onclick="duration_button_click_ex_mini_b(value)" disabled> 6 months before</button>
+													<button type="button" class="btn btn-outline-danger" style="width: 130px" value="9" id="duration_ex_button_9_mini_b"
+													 onclick="duration_button_click_ex_mini_b(value)" disabled> 9 months before</button>
+													 <button type="button" class="btn btn-outline-danger" style="width: 130px" value="12" id="duration_ex_button_12_mini_b"
+													 onclick="duration_button_click_ex_mini_b(value)" disabled> 1 year before</button>
+													<button type="button" class="btn btn-outline-danger" style="width: 80px" id="duration_ex_button_self_mini_b"
+													 onclick="direct_button_click_ex_mini_b()" disabled> Custom</button>
+
+												</div>
+												<div class="btn-group mb-3" role="group" aria-label="Default button group">
+													<button type="button" class="btn btn-outline-info" style="width: 130px" value="3" id="duration_ex_button_3_mini"
+													onclick="duration_button_click_ex_mini(value)" disabled> within 3 months</button>
+													<button type="button" class="btn btn-outline-info" style="width: 130px" value="6" id="duration_ex_button_6_mini"
+													onclick="duration_button_click_ex_mini(value)" disabled> within 6 months</button>
+													<button type="button" class="btn btn-outline-info" style="width: 130px" value="9" id="duration_ex_button_9_mini"
+													onclick="duration_button_click_ex_mini(value)" disabled> within 9 months</button>
+													<button type="button" class="btn btn-outline-info" style="width: 130px" value="12" id="duration_ex_button_12_mini"
+													onclick="duration_button_click_ex_mini(value)" disabled>within 1 year</button>
+													<button type="button" class="btn btn-outline-info" style="width: 80px" id="duration_ex_button_self_mini"
+													onclick="direct_button_click_ex_mini()" disabled> Custom</button>
+												</div>
+												<div class="form-group">
+													<input name="daterange" class="form-control" type="text" id="duration_modal_ex_mini" value="" disabled>
+												</div>
+												<script>
+													document.addEventListener("DOMContentLoaded", function (event) {
+														// Daterangepicker
+														jQuery('input[name="daterange"]').daterangepicker({
+															opens: 'left',
+															locale: {
+																cancelLabel: 'Clear'
+															}
+														});
+													});
+
+												</script>
+	
+											</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+							<div class="modal-footer">
+								<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+								<button type="button" class="btn btn-primary" data-dismiss="modal" onclick="addtion_save_button_cliked_ex_mini()">Save</button>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="modal fade" id="hieracyConditionModal" tabindex="-1" role="dialog" aria-hidden="true">
+					<div class="modal-dialog modal-lg" role="document">
+						<div class="modal-content">
+							<div class="modal-header">
+								<h5 class="modal-title" id="item_modal_title">진단</h5>
+								<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+									<span aria-hidden="true">&times;</span>
+								</button>
+							</div>
+							<div class="modal-body m-3">
+								<div id="ConditionChk"></div>
+							</div>
+							<div class="modal-footer">
+								<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+								<button type="button" class="btn btn-primary" onclick="hieracyCondClicked();" data-dismiss="modal">Save</button>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="modal fade" id="hieracyDrugModal" tabindex="-1" role="dialog" aria-hidden="true">
+						<div class="modal-dialog modal-lg" role="document">
+							<div class="modal-content">
+								<div class="modal-header">
+									<h5 class="modal-title" id="item_modal_title">약물</h5>
+									<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+										<span aria-hidden="true">&times;</span>
+									</button>
+								</div>
+								<div class="modal-body m-3">
+									<div id="DrugChk"></div>
+								</div>
+								<div class="modal-footer">
+									<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+									<button type="button" class="btn btn-primary" onclick="hieracyDrugClicked();" data-dismiss="modal">Save</button>
+								</div>
+							</div>
+						</div>
+				</div>
+				<div class="modal fade" id="hieracyConditionModalEx" tabindex="-1" role="dialog" aria-hidden="true">
+						<div class="modal-dialog modal-lg" role="document">
+							<div class="modal-content">
+								<div class="modal-header">
+									<h5 class="modal-title" id="item_modal_title">진단</h5>
+									<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+										<span aria-hidden="true">&times;</span>
+									</button>
+								</div>
+								<div class="modal-body m-3">
+									<div id="ConditionChkEx"></div>
+								</div>
+								<div class="modal-footer">
+									<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+									<button type="button" class="btn btn-primary" onclick="hieracyCondClickedEx();" data-dismiss="modal">Save</button>
+								</div>
+							</div>
+						</div>
+				</div>
+				<div class="modal fade" id="hieracyDrugModalEx" tabindex="-1" role="dialog" aria-hidden="true">
+						<div class="modal-dialog modal-lg" role="document">
+							<div class="modal-content">
+								<div class="modal-header">
+									<h5 class="modal-title" id="item_modal_title">약물</h5>
+									<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+										<span aria-hidden="true">&times;</span>
+									</button>
+								</div>
+								<div class="modal-body m-3">
+									<div id="DrugChkEx"></div>
+								</div>
+								<div class="modal-footer">
+									<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+									<button type="button" class="btn btn-primary" onclick="hieracyDrugClickedEx();" data-dismiss="modal">Save</button>
+								</div>
+							</div>
+						</div>
+				</div>
+			
+				<div class="modal fade" id="ageModalIn" tabindex="-1" role="dialog" aria-hidden="true">
+					<div class="modal-dialog modal-dialog-centered modal-md" role="document">
+						<div class="modal-content">
+							<div class="modal-header">
+								<h5 class="modal-title" id="item_modal_title">Age</h5>
+								<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+									<span aria-hidden="true">&times;</span>
+								</button>
+							</div>
+							<div class="modal-body m-3">
+								<table class="table table-borderless">
+									<tbody>
+										<tr>
+											<td style="width: 21%; vertical-align: 0%">
+												연령(Year)
+												<form class="form-inline">
+													<div class="custom-control custom-checkbox mb-1 mr-sm-2">
+														<input type="checkbox" class="custom-control-input" id="no-check-age" checked>
+														<label class="custom-control-label" for="no-check-age">All</label>
+													</div>
+												</form>
+											</td>
+											<td>
+												<form class="form-inline">
+													<input type="text" class="form-control" style="width: 60px; margin-right: 8px;" id="age_min" disabled>
+													<select class="form-control" id="age_min_condition" disabled>
+														<option value=""></option>
+														<option value="more than or equal">&lt;=</option>
+														<option value="more than">&lt;</option>
+														<option value="equal">=</option>
+													</select>
+													<label class="text" style="margin-left: 8px; margin-right: 8px"> age </label>
+													<select class="form-control" id="age_max_condition" disabled>
+														<option value=""></option>
+														<option value="less than or equal">&lt;=</option>
+														<option value="less than">&lt;</option>
+													</select>
+
+													<input type="text" class="form-control" style="width: 60px; margin-left: 8px" id="age_max" disabled>
+												</form>
+											</td>
+
+										</tr>
+									</tbody>
+								</table>
+							</div>
+							<div class="modal-footer">
+								<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+								<button type="button" class="btn btn-primary" data-dismiss="modal" onclick="addtion_save_button_cliked_in_age()">Save</button>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="modal fade" id="ageModalEx" tabindex="-1" role="dialog" aria-hidden="true">
+					<div class="modal-dialog modal-dialog-centered modal-md" role="document">
+						<div class="modal-content">
+							<div class="modal-header">
+								<h5 class="modal-title" id="item_modal_title">Age</h5>
+								<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+									<span aria-hidden="true">&times;</span>
+								</button>
+							</div>
+							<div class="modal-body m-3">
+								<table class="table table-borderless">
+									<tbody>
+										<tr>
+											<td style="width: 21%; vertical-align: 0%">
+												Age
+												<form class="form-inline">
+													<div class="custom-control custom-checkbox mb-1 mr-sm-2">
+														<input type="checkbox" class="custom-control-input" id="no-check-age-ex" checked>
+														<label class="custom-control-label" for="no-check-age-ex">All</label>
+													</div>
+												</form>
+											</td>
+											<td>
+												<form class="form-inline">
+													<input type="text" class="form-control" style="width: 60px; margin-right: 8px;" id="age_min_ex" disabled>
+													<select class="form-control" id="age_min_condition_ex" disabled>
+														<option value=""></option>
+														<option value="more than or equal">&lt;=</option>
+														<option value="more than">&lt;</option>
+														<option value="equal">=</option>
+													</select>
+													<label class="text" style="margin-left: 8px; margin-right: 8px"> age </label>
+													<select class="form-control" id="age_max_condition_ex" disabled>
+														<option value=""></option>
+														<option value="less than or equal">&lt;=</option>
+														<option value="less than">&lt;</option>
+													</select>
+
+													<input type="text" class="form-control" style="width: 60px; margin-left: 8px" id="age_max_ex" disabled>
+												</form>
+											</td>
+
+										</tr>
+									</tbody>
+								</table>
+							</div>
+							<div class="modal-footer">
+								<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+								<button type="button" class="btn btn-primary" data-dismiss="modal" onclick="addtion_save_button_cliked_ex_age()">Save</button>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="modal fade" id="sqlModalIn" tabindex="-1" role="dialog" aria-hidden="true">
+					<div class="modal-dialog modal-dialog-centered modal-md" role="document">
+						<div class="modal-content">
+							<div class="modal-header">
+								<h5 class="modal-title" id="item_modal_title">SQL</h5>
+								<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+									<span aria-hidden="true">&times;</span>
+								</button>
+							</div>
+							<div class="modal-body m-3">
+								<table class="table table-borderless">
+									<tbody>
+										<tr>
+											<td style="width: 21%; vertical-align: 0%">
+												SQL
+											</td>
+											<td>
+												<textarea class="form-control" rows="5" palceholder="Description" id="sqlcodein"></textarea>
+											</td>
+
+										</tr>
+									</tbody>
+								</table>
+							</div>
+							<div class="modal-footer">
+								<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+								<button type="button" class="btn btn-primary" data-dismiss="modal" onclick="addtion_save_button_cliked_in_sql()">Save</button>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="modal fade" id="sqlModalEx" tabindex="-1" role="dialog" aria-hidden="true">
+					<div class="modal-dialog modal-dialog-centered modal-md" role="document">
+						<div class="modal-content">
+							<div class="modal-header">
+								<h5 class="modal-title" id="item_modal_title">SQL</h5>
+								<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+									<span aria-hidden="true">&times;</span>
+								</button>
+							</div>
+							<div class="modal-body m-3">
+								<table class="table table-borderless">
+									<tbody>
+										<tr>
+											<td style="width: 21%; vertical-align: 0%">
+												SQL
+											</td>
+											<td>
+												<textarea class="form-control" rows="5" palceholder="Description" id="sqlcodeex"></textarea>
+											</td>
+
+										</tr>
+									</tbody>
+								</table>
+							</div>
+							<div class="modal-footer">
+								<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+								<button type="button" class="btn btn-primary" data-dismiss="modal" onclick="addtion_save_button_cliked_ex_sql()">Save</button>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+	<script src="../js/app.js"></script>
+	<script src="../js/tables.js"></script>
+	<script src="../js/forms.js"></script>
+	<script src="../js/feather.js"></script>
+	<script src="upper_navi.js"></script>
+	<script src="eligibility_function.js?version=18"></script>
+
+</body>
+
+<link type="text/css" rel="stylesheet" href="../css/jquery.autocomplete.css" />
+<link rel="stylesheet" type="text/css" href="../lib/dragula/dragula.min.css"/>
+<link href="../css/bootstrap.min.css">
+<link href="../lib/styles/wijmo.min.css " rel="stylesheet" />
+<script src="../js/jquery-ui.min.js"></script>
+<script src="../package/fancytree-master/dist/jquery.fancytree-all-deps.min.js"></script>
+<script src="../lib/scripts/vendor/controls/wijmo.min.js"></script>
+<script src="../lib/scripts/vendor/controls/wijmo.nav.min.js"></script>
+<script src="../lib/dragula/dragula.min.js"></script>
+<script>
+	wijmo.setLicenseKey(
+		'Wijmo License key'
+	);
+</script>
+<script src="../js/jquery.autocomplete.js"></script>
+</html>

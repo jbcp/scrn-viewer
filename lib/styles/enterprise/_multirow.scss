@@ -1,0 +1,24 @@
+// multirow
+.wj-multirow {
+
+    .wj-cell.wj-record-end:not(.wj-header) {
+        border-bottom-color: #787878;
+    }
+
+    .wj-cell.wj-group-end {
+        border-right-color: #787878;
+    }
+
+    .wj-hdr-collapse {
+        position: absolute;
+        padding: 6px;
+        right: 0;
+        top: 0;
+        color: $wj-sel-bkg;
+        opacity: 0.5;
+
+        &:hover {
+            opacity: 1;
+        }
+    }
+}

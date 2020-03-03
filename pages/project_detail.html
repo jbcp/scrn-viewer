@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<script src="../js/jquery-latest.js"></script>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<meta name="description" content="Responsive Bootstrap 4 Admin Template">
+	<meta name="author" content="Bootlab">
+
+	<title>SCRN</title>
+
+	<link href="../css/app.css" rel="stylesheet">
+
+	<script src='../js/ip_execute.js?version=2'>
+		var ip_execute = Get_ip_execute();
+		console.log(ip_execute);
+	</script>
+
+	<script src="./print_log.js"></script>
+
+	<script type="text/javascript">
+		var first_mem_road = false;
+		var running_eligibility = 0;
+		var running_eligibility_array = [];
+
+		$(document).ready(function () {
+			var rand = Math.random();
+			project_id = localStorage.getItem("project_id");
+			document.getElementById("modify_button").setAttribute("href", "project_modify.html");
+
+			$('#sidebar_navi').load('menu.html');
+			$('#footer').load('footer.html');
+			$('#navbar').load('navbar_item.html');
+			upper_navi_2("Projects", project_id);
+
+
+			var xhttp = new XMLHttpRequest();
+			xhttp.onreadystatechange = function () {
+				if (this.readyState == this.DONE && this.status == 200) {
+					var data_array = xhttp.responseText.split("&");
+
+					var img_src = data_array[3];
+					document.getElementById("nav_img").setAttribute("src", img_src + "?" + rand);
+
+					var user_name = data_array[4];
+					document.getElementById("user_name").appendChild(document.createTextNode(user_name));
+
+					var project_data_pre = data_array[1];
+					var project_data_eval = eval(project_data_pre);
+					project_data = project_data_eval[0];
+
+					title = JSON.stringify(project_data.project_title);
+					project_id = project_data.project_id;
+					title = title.replace(/^"(.*)"$/, '$1');
+					document.getElementById("project_title").textContent = title;
+
+					var createTR = document.createElement("tr");
+					document.getElementById("project_description").appendChild(createTR);
+					var project_protocol_Td = document.createElement("td");
+					var project_protocol = document.createTextNode("Protocol ID");
+					project_protocol_Td.appendChild(project_protocol);
+					createTR.appendChild(project_protocol_Td);
+
+					var project_protocol_data_Td = document.createElement("td");
+					var project_protocol_data = document.createTextNode(project_data.project_protocol);
+					project_protocol_data_Td.appendChild(project_protocol_data);
+					createTR.appendChild(project_protocol_data_Td);
+
+					var createTR1 = document.createElement("tr");
+					document.getElementById("project_description").appendChild(createTR1);
+					var project_title_Td = document.createElement("td");
+					var project_title = document.createTextNode("Title");
+					project_title_Td.appendChild(project_title);
+					createTR1.appendChild(project_title_Td);
+
+					var project_title_data_Td = document.createElement("td");
+					var project_title_data = document.createTextNode(project_data.project_title);
+					project_title_data_Td.appendChild(project_title_data);
+					createTR1.appendChild(project_title_data_Td);
+
+					var createTR2 = document.createElement("tr");
+					document.getElementById("project_description").appendChild(createTR2);
+					var project_created_by_Td = document.createElement("td");
+					var project_created_by = document.createTextNode("Author");
+					project_created_by_Td.appendChild(project_created_by);
+					createTR2.appendChild(project_created_by_Td);
+
+					var project_created_by_data_Td = document.createElement("td");
+					var project_created_by_data = document.createTextNode(project_data.project_creator);
+					project_created_by_data_Td.appendChild(project_created_by_data);
+					createTR2.appendChild(project_created_by_data_Td);
+
+					var createTR3 = document.createElement("tr");
+					document.getElementById("project_description").appendChild(createTR3);
+					var project_created_date_Td = document.createElement("td");
+					var project_created_date = document.createTextNode("Created");
+					project_created_date_Td.appendChild(project_created_date);
+					createTR3.appendChild(project_created_date_Td);
+
+					var project_created_date_data_Td = document.createElement("td");
+					var project_created_date_data = document.createTextNode(project_data.project_start);
+					project_created_date_data_Td.appendChild(project_created_date_data);
+					createTR3.appendChild(project_created_date_data_Td);
+
+					var createTR4 = document.createElement("tr");
+					document.getElementById("project_description").appendChild(createTR4);
+					var project_end_date_Td = document.createElement("td");
+					var project_end_date = document.createTextNode("Phase");
+					project_end_date_Td.appendChild(project_end_date);
+					createTR4.appendChild(project_end_date_Td);
+
+					var project_end_date_data_Td = document.createElement("td");
+					var project_end_date_data = document.createTextNode("-");
+
+					if (project_data.project_phase != null) project_end_date_data = document.createTextNode(project_data.project_phase);
+					project_end_date_data_Td.appendChild(project_end_date_data);
+					createTR4.appendChild(project_end_date_data_Td);
+
+					var createTR5 = document.createElement("tr");
+					document.getElementById("project_description").appendChild(createTR5);
+					var project_status_Td = document.createElement("td");
+					var project_status = document.createTextNode("Status");
+					project_status_Td.appendChild(project_status);
+					createTR5.appendChild(project_status_Td);
+
+					var project_status_data_Td = document.createElement("td");
+					var project_status_badge = document.createElement("span");
+
+					switch (project_data.project_status) {
+						case 'Draft':
+							project_status_badge.setAttribute("class", "badge badge-warning");
+							break;
+
+						case 'Running':
+							project_status_badge.setAttribute("class", "badge badge-success");
+							break;
+
+						case 'Finished':
+							project_status_badge.setAttribute("class", "badge");
+							project_status_badge.setAttribute("style", "background-color:rgb(127, 127, 127);");
+							break;
+					}
+
+					var project_status_data = document.createTextNode(project_data.project_status);
+					project_status_badge.appendChild(project_status_data);
+					project_status_data_Td.appendChild(project_status_badge);
+					createTR5.appendChild(project_status_data_Td);
+
+					var createTR6 = document.createElement("tr");
+					document.getElementById("project_description").appendChild(createTR6);
+					var project_description_Td = document.createElement("td");
+					var project_description = document.createTextNode("Description");
+					project_description_Td.appendChild(project_description);
+					createTR6.appendChild(project_description_Td);
+
+					var project_description_content_Td = document.createElement("td");
+					var project_description_content = project_data.project_description;
+					project_description_content = project_description_content.replace(/<(\/)?([a-zA-Z]*)(\s[a-zA-Z]*=[^>]*)?(\s)*(\/)?>/ig, "");
+					var project_description_content_text = document.createTextNode(project_description_content);
+					project_description_content_Td.appendChild(project_description_content_text);
+					createTR6.appendChild(project_description_content_Td);
+
+					var mem_list = data_array[0];
+					var parse_mem_list = eval(mem_list);
+					var mem_list_output = Object.keys(parse_mem_list);
+					document.getElementById("member_count").textContent = mem_list_output.length;
+					for (var i = 0; i < mem_list_output.length; i++) {
+						var createTR = document.createElement("tr");
+						document.getElementById("project_mem_table").appendChild(createTR);
+
+						var nameTd = document.createElement("td");
+						var mem_parti_name = document.createTextNode(parse_mem_list[i].mem_name);
+						var mem_img = document.createElement("img");
+						mem_img.setAttribute("class", "avatar img-fluid rounded-circle mr-2");
+						mem_img.setAttribute("style", "width:32px; height:32px");
+						mem_img.setAttribute("src", parse_mem_list[i].img_src + "?" + rand);
+
+						nameTd.appendChild(mem_img);
+						nameTd.appendChild(mem_parti_name);
+						createTR.appendChild(nameTd);
+
+						var deptTd = document.createElement("td");
+						var dept_name = document.createTextNode(parse_mem_list[i].mem_dept);
+						deptTd.appendChild(dept_name);
+						createTR.appendChild(deptTd);
+
+						var posiTd = document.createElement("td");
+						var posi_parti;
+						switch (parse_mem_list[i].mem_posi) {
+							case 'doctor':
+								posi_parti = document.createTextNode("의사");
+								break;
+							case 'nurse':
+								posi_parti = document.createTextNode("간호사");
+								break;
+							case 'administrative':
+								posi_parti = document.createTextNode("행정");
+								break;
+							default:
+								posi_parti = document.createTextNode("기타");
+								break;
+						}
+
+						posiTd.appendChild(posi_parti);
+						createTR.appendChild(posiTd);
+
+						var statusTd = document.createElement("td");
+						var status = document.createElement("span");
+
+						switch (parse_mem_list[i].accept) {
+							case 0:
+								status.setAttribute("class", "badge badge-warning");
+								status.appendChild(document.createTextNode("Waiting"));
+								break;
+
+							case 1:
+								status.setAttribute("class", "badge badge-success");
+								status.appendChild(document.createTextNode("Participating"));
+								break;
+
+							case 2:
+								status.setAttribute("class", "badge badge-danger");
+								status.appendChild(document.createTextNode("Refused"))
+						}
+						statusTd.appendChild(status);
+						createTR.appendChild(statusTd);
+
+						var deleteTd = document.createElement("td");
+						if (parse_mem_list[i].mem_role != 'Creator') {
+							var deleteButton = document.createElement("button");
+
+							deleteButton.setAttribute('class', 'btn btn-primary btn-sm');
+							deleteButton.setAttribute("style", "background-color:transparent; border-color:transparent; color: rgb(39, 201, 180)");
+							deleteButton.setAttribute('onclick', "delete_project_mem_clicked(" + parse_mem_list[i].mem_id + ");");
+							deleteButton.setAttribute('data-mem', parse_mem_list[i].mem_id);
+							deleteButton.setAttribute('id', 'deleteButton' + i);
+
+							var deleteButtonIcon = document.createElement("i");
+							deleteButtonIcon.setAttribute("class", "fas fa-trash");
+							deleteButton.appendChild(deleteButtonIcon);
+							deleteTd.appendChild(deleteButton);
+						}
+
+						createTR.appendChild(deleteTd);
+					}
+
+					var invest_list = data_array[5];
+					var parse_invest_list = eval(invest_list);
+					var invest_list_output = Object.keys(parse_invest_list);
+					document.getElementById("member_count").textContent = invest_list_output.length + mem_list_output.length;
+					for (var i = 0; i < invest_list_output.length; i++) {
+						var createTR = document.createElement("tr");
+						document.getElementById("project_mem_table").appendChild(createTR);
+
+						var nameTd = document.createElement("td");
+						var mem_parti_name = document.createTextNode(parse_invest_list[i].mem_name);
+						nameTd.appendChild(mem_parti_name);
+						createTR.appendChild(nameTd);
+
+						var deptTd = document.createElement("td");
+						var dept_name = document.createTextNode(parse_invest_list[i].mem_dept);
+						deptTd.appendChild(dept_name);
+						createTR.appendChild(deptTd);
+
+						var posiTd = document.createElement("td");
+						var posi_parti;
+						switch (parse_invest_list[i].mem_posi) {
+							case 'doctor':
+								posi_parti = document.createTextNode("의사");
+								break;
+							case 'nurse':
+								posi_parti = document.createTextNode("간호사");
+								break;
+							case 'administrative':
+								posi_parti = document.createTextNode("행정");
+								break;
+							default:
+								posi_parti = document.createTextNode("기타");
+								break;
+						}
+						posiTd.appendChild(posi_parti);
+						createTR.appendChild(posiTd);
+
+						var deleteTd = document.createElement("td");
+						var deleteButton = document.createElement("button");
+
+						deleteButton.setAttribute('class', 'btn btn-primary btn-sm');
+						deleteButton.setAttribute("style", "background-color:transparent; border-color:transparent; color: rgb(39, 201, 180)");
+						deleteButton.setAttribute('onclick', "delete_project_invest_clicked(" + parse_invest_list[i].mem_id + ");");
+						deleteButton.setAttribute('data-mem', parse_invest_list[i].mem_id);
+						deleteButton.setAttribute('id', 'deleteButton' + parse_invest_list[i].mem_id);
+
+						var deleteButtonIcon = document.createElement("i");
+						deleteButtonIcon.setAttribute("class", "fas fa-trash");
+						deleteButton.appendChild(deleteButtonIcon);
+						deleteTd.appendChild(deleteButton);
+						createTR.appendChild(deleteTd);
+					}
+
+					$('#member_table').DataTable({
+						pageLength: 3,
+						lengthChange: false
+
+					});
+
+					var eligibility_list = data_array[2];
+					var parse_eligibility_list = eval(eligibility_list);
+					var eligibility_list_output = Object.keys(parse_eligibility_list);
+					document.getElementById("eligibility_count").textContent = eligibility_list_output.length;
+					for (var i = eligibility_list_output.length - 1; i >= 0; i--) {
+
+						var duplicate_list_option = document.createElement("option");
+						duplicate_list_option.setAttribute("value", parse_eligibility_list[i].eligibility_id);
+						duplicate_list_option.appendChild(document.createTextNode(parse_eligibility_list[i].eligibility_title));
+						document.getElementById("eligibility_duplicate_list").appendChild(duplicate_list_option);
+
+						var createTR = document.createElement("tr");
+						document.getElementById("eligibility_table").appendChild(createTR);
+
+						var titleTd = document.createElement("td");
+						titleTd.setAttribute("class", "d-none d-md-table-cell");
+						titleTd.setAttribute("style", "cursor:pointer");
+						titleTd.setAttribute("onclick", "page_move('eligibility_detail.html', '" + project_id + "', '" + parse_eligibility_list[i].eligibility_id + "')");
+						var title = document.createTextNode("No title");
+						if (parse_eligibility_list[i].eligibility_title != "") title = document.createTextNode(parse_eligibility_list[i].eligibility_title);
+						var new_badge = document.createElement("span");
+						new_badge.setAttribute("class", "badge badge-success ml-2");
+						new_badge.appendChild(document.createTextNode("New"));
+						titleTd.appendChild(title);
+						
+						if(parse_eligibility_list[i].new_check == "0")
+							titleTd.appendChild(new_badge);
+						createTR.appendChild(titleTd);
+
+						var creatorTd = document.createElement("td");
+						creatorTd.setAttribute("class", "d-none d-xl-table-cell");
+						creatorTd.setAttribute("style", "cursor:pointer");
+						creatorTd.setAttribute("onclick", "page_move('eligibility_detail.html', '" + project_id + "', '" + parse_eligibility_list[i].eligibility_id + "')");
+						var creator = document.createTextNode(parse_eligibility_list[i].eligibility_creator);
+						creatorTd.appendChild(creator);
+						createTR.appendChild(creatorTd);
+
+						var create_date_Td = document.createElement("td");
+						create_date_Td.setAttribute("class", "d-none d-xl-table-cell");
+						create_date_Td.setAttribute("style", "cursor:pointer");
+						create_date_Td.setAttribute("onclick", "page_move('eligibility_detail.html', '" + project_id + "', '" + parse_eligibility_list[i].eligibility_id + "')");
+						var create_date = document.createTextNode(parse_eligibility_list[i].eligibility_create_date);
+						create_date_Td.appendChild(create_date);
+						createTR.appendChild(create_date_Td);
+
+						var modify_date_Td = document.createElement("td");
+						modify_date_Td.setAttribute("class", "d-none d-xl-table-cell");
+						modify_date_Td.setAttribute("style", "cursor:pointer");
+						modify_date_Td.setAttribute("onclick", "page_move('eligibility_detail.html', '" + project_id + "', '" + parse_eligibility_list[i].eligibility_id + "')");
+						var modify_date = document.createTextNode(parse_eligibility_list[i].eligibility_modify_date);
+						modify_date_Td.appendChild(modify_date);
+						createTR.appendChild(modify_date_Td);
+
+						var exe_date_Td = document.createElement("td");
+						exe_date_Td.setAttribute("style", "cursor:pointer");
+						exe_date_Td.setAttribute("onclick", "page_move('eligibility_detail.html', '" + project_id + "', '" + parse_eligibility_list[i].eligibility_id + "')");
+						var exe_date = document.createTextNode("-");
+						if (parse_eligibility_list[i].eligibility_execute_date != null) exe_date = document.createTextNode(parse_eligibility_list[i].eligibility_execute_date);
+						exe_date_Td.appendChild(exe_date);
+						createTR.appendChild(exe_date_Td);
+
+						var statusTd = document.createElement("td");
+						var exeButton = document.createElement("button");
+						exeButton.setAttribute("class", "btn btn-sm btn-outline-success");
+						exeButton.setAttribute("style", "margin-right:5px; background-color:transparent; border-color:transparent");
+						exeButton.setAttribute("id", "exeButton_" + parse_eligibility_list[i].eligibility_id);
+						exeButton.setAttribute("onclick", "exeButton_clicked(" + parse_eligibility_list[i].eligibility_id + ");");
+						var executeIcon = document.createElement("i");
+						executeIcon.setAttribute("id", "exeIcon_" + parse_eligibility_list[i].eligibility_id);
+
+						switch (parse_eligibility_list[i].eligibility_status) {
+							case 'Ready':
+								executeIcon.setAttribute("class", "align-middle fa fa-play");
+								executeIcon.setAttribute("style", "font-size:24px");
+								exeButton.removeAttribute("disabled");
+								break;
+
+							case 'In Progress':
+								executeIcon.setAttribute("class", "align-middle fa fa-spinner fa-spin");
+								executeIcon.setAttribute("style", "font-size:24px");
+								exeButton.setAttribute("disabled", "");
+								running_eligibility++;
+								running_eligibility_array.push(parse_eligibility_list[i].eligibility_id);
+								break;
+
+							case 'Done':
+								executeIcon.setAttribute("class", "align-middle fa fa-play");
+								executeIcon.setAttribute("style", "font-size:24px");
+								exeButton.removeAttribute("disabled");
+								break;
+
+							case 'Cancelled':
+								executeIcon.setAttribute("class", "align-middle fa fa-play");
+								executeIcon.setAttribute("style", "font-size:24px");
+								exeButton.removeAttribute("disabled");
+								break;
+						}
+
+						exeButton.appendChild(executeIcon);
+						statusTd.appendChild(exeButton);
+						createTR.appendChild(statusTd);
+
+						var actionTd = document.createElement("td");
+						actionTd.setAttribute("class", "able-action");
+
+						var resultButton = document.createElement("button");
+						resultButton.setAttribute("class", "btn btn-sm btn-primary");
+
+						var date_diff = dateDiff(parse_eligibility_list[i].eligibility_execute_date, new Date());
+						var button_transparent = 0;
+						if (date_diff < 7) button_transparent = 1.0;
+						else if (date_diff >= 7 && date_diff < 14) button_transparent = 0.75;
+						else if (date_diff >= 14 && date_diff < 21) button_transparent = 0.5;
+						else button_transparent = 0.25;
+
+						resultButton.setAttribute("style", "margin-right:5px; background-color:rgba(12, 194, 170, " + button_transparent + "); border-color:transparent");
+						resultButton.setAttribute("id", "resultButton_" + parse_eligibility_list[i].eligibility_id)
+						resultButton.setAttribute("onclick", "result_button_clicked(id)");
+
+						var resultButton_icon = document.createElement("i");
+						resultButton_icon.setAttribute("class", "fas fa-clipboard mr-2");
+
+						resultButton.appendChild(resultButton_icon);
+						resultButton.appendChild(document.createTextNode(parse_eligibility_list[i].eligibility_execute_date));
+						actionTd.appendChild(resultButton);
+						createTR.appendChild(actionTd);
+
+						var elseTd = document.createElement("td");
+
+						var sql_log_text = document.createElement("a");
+						sql_log_text.appendChild(document.createTextNode("[CODE]"));
+						sql_log_text.setAttribute("onclick", "sql_log_clicked('" + project_id + "', '" + parse_eligibility_list[i].eligibility_id + "')");
+						sql_log_text.setAttribute("style", "font-size:12px; vertical-align:bottom; margin-left:1px");
+						sql_log_text.setAttribute("href", "#");
+
+						var deletequery = document.createElement("a");
+						deletequery.setAttribute("class", "float-right")
+						deletequery.setAttribute("href", "#");
+						deletequery.setAttribute('onclick', "delete_eligibility_clicked(" + parse_eligibility_list[i].eligibility_id + ");");
+						var deleteIcon = document.createElement("i");
+						deleteIcon.setAttribute("class", "align-middle fas fa-trash");
+						deletequery.appendChild(deleteIcon);
+
+						elseTd.appendChild(sql_log_text);
+						elseTd.appendChild(deletequery);
+						createTR.appendChild(elseTd);
+					}
+
+					$('#eligibility_table_total').DataTable({
+						destroy: true,
+						pageLength: 10,
+						"order": [[2, "desc"]]
+					});
+
+					$('#member_card').height($('#description_card').height());
+
+					if (running_eligibility > 0) {
+						execute_check = setInterval(function () {
+							var xhttp1 = new XMLHttpRequest();
+							xhttp1.onreadystatechange = function () {
+								if (this.readyState == this.DONE && this.status == 200) {
+									var data_array1 = xhttp1.responseText;
+									var eligibility_status_array = eval(data_array1);
+									for(var i = 0; i < running_eligibility_array.length; i++){
+										var identifier = eligibility_status_array.map(function(e){return e.eligibility_id;}).indexOf(Number(running_eligibility_array[i]));
+										if(eligibility_status_array[identifier].eligibility_status == "Done"){
+											running_eligibility--;
+											running_eligibility_array.splice(eligibility_status_array[identifier].eligibility_id, 1);
+											document.getElementById("exeIcon_"+eligibility_status_array[identifier].eligibility_id).setAttribute("class", "align-middle fa fa-play");
+											document.getElementById("exeButton_"+eligibility_status_array[identifier].eligibility_id).removeAttribute("disabled");
+										}
+									}
+								}
+							}
+							xhttp1.open("GET", "./project_detail.jsp?action=checkdone&project_id=" + project_id);
+							xhttp1.send();
+
+							if (running_eligibility == 0) {
+								clearInterval(execute_check);
+							}
+						}, 2000);
+					}
+				}
+			}
+			xhttp.open("GET", "./project_detail.jsp?action=load&project_id=" + project_id);
+			xhttp.send();
+
+			$("#no-check-duplicate").change(function () {
+				if (jQuery('#no-check-duplicate').is(":checked")) {
+					document.getElementById("eligibility_duplicate_list").removeAttribute("disabled");
+				}
+				else {
+					document.getElementById("eligibility_duplicate_list").setAttribute("disabled", "");
+				}
+			});
+
+		})
+
+		function dateDiff(_date1, _date2) {
+			var diffDate_1 = _date1 instanceof Date ? _date1 : new Date(_date1);
+			var diffDate_2 = _date2 instanceof Date ? _date2 : new Date(_date2);
+
+			diffDate_1 = new Date(diffDate_1.getFullYear(), diffDate_1.getMonth() + 1, diffDate_1.getDate());
+			diffDate_2 = new Date(diffDate_2.getFullYear(), diffDate_2.getMonth() + 1, diffDate_2.getDate());
+
+			var diff = Math.abs(diffDate_2.getTime() - diffDate_1.getTime());
+			diff = Math.ceil(diff / (1000 * 3600 * 24));
+
+			return diff;
+		}
+
+		function sql_log_clicked(p_id, e_id) {
+			var xhttp = new XMLHttpRequest();
+			xhttp.onreadystatechange = function () {
+				if (this.readyState == this.DONE && this.status == 200) {
+
+
+					while (document.getElementById("sql_log").hasChildNodes()) document.getElementById("sql_log").removeChild(document.getElementById("sql_log").firstChild);
+					document.getElementById("sql_log").appendChild(document.createTextNode(xhttp.responseText.trim()));
+
+
+					$('#sqllogModal').modal('show');
+
+				}
+			}
+			xhttp.open("GET", "./project_detail.jsp?action=sqllogload&project_id=" + p_id + "&eligibility_id=" + e_id);
+			xhttp.send();
+
+		}
+
+		function page_move(url, data1, data2) {
+			localStorage.setItem("project_id", data1);
+			localStorage.setItem("eligibility_id", data2);
+			location.href = url;
+		}
+
+		function add_mem_click() {
+			var rand = Math.random();
+
+			if (first_mem_road == false) {
+				first_mem_road = true;
+				var xhttp = new XMLHttpRequest();
+				xhttp.onreadystatechange = function () {
+					if (this.readyState == this.DONE && this.status == 200) {
+						var mem_array = xhttp.responseText;
+						var mem_corp = eval(mem_array);
+						var mem_output = Object.keys(mem_corp);
+
+						for (var i = 0; i < mem_output.length; i++) {
+							var createTR = document.createElement("tr");
+							document.getElementById("add_mem_table").appendChild(createTR);
+
+							var mem_name_Td = document.createElement("td");
+							var mem_name = document.createTextNode(mem_corp[i].mem_name);
+							var mem_img = document.createElement("img");
+							mem_img.setAttribute("class", "avatar img-fluid rounded-circle mr-2");
+							mem_img.setAttribute("src", mem_corp[i].mem_img + "?" + rand);
+
+							mem_name_Td.appendChild(mem_img);
+							mem_name_Td.appendChild(mem_name);
+							createTR.appendChild(mem_name_Td);
+
+							var mem_dept_Td = document.createElement("td");
+							var mem_dept = document.createTextNode(mem_corp[i].mem_dept);
+							mem_dept_Td.appendChild(mem_dept);
+							createTR.appendChild(mem_dept_Td);
+
+							var mem_posi_Td = document.createElement("td");
+							var mem_posi;
+							switch (mem_corp[i].mem_posi) {
+								case 'doctor':
+									mem_posi = document.createTextNode("의사");
+									break;
+								case 'nurse':
+									mem_posi = document.createTextNode("간호사");
+									break;
+								case 'administrative':
+									mem_posi = document.createTextNode("행정");
+									break;
+								default:
+									mem_posi = document.createTextNode("기타");
+									break;
+							}
+
+							mem_posi_Td.appendChild(mem_posi);
+							createTR.appendChild(mem_posi_Td);
+
+
+							var addbuttonTd = document.createElement("td");
+							var addbutton = document.createElement("button");
+							addbutton.setAttribute("id", mem_corp[i].mem_id);
+							addbutton.setAttribute("class", "btn btn-primary float-right");
+							addbutton.setAttribute("style", "background-color:transparent; border-color:transparent; color:rgb(39, 201, 180)");
+							addbutton.setAttribute("onclick", "add_mem(id);");
+
+							var addbuttonIcon = document.createElement("i");
+							addbuttonIcon.setAttribute("class", "fas fa-user-plus");
+							addbutton.appendChild(addbuttonIcon);
+							addbuttonTd.appendChild(addbutton);
+							createTR.appendChild(addbuttonTd);
+						}
+
+						$('#add_member_table').DataTable({
+							responsive: true
+						});
+					}
+
+				}
+				xhttp.open("GET", "./project_detail.jsp?action=memberload&project_id=" + project_id);
+				xhttp.send();
+			}
+
+			$('#addMember').modal('show');
+		}
+
+		function add_mem(id) {
+			var xhttp = new XMLHttpRequest();
+			xhttp.onreadystatechange = function () {
+				if (this.readyState == this.DONE && this.status == 200) {
+					print_log("add_invest", project_id + "_" + id);
+					alert("추가를 완료했습니다.");
+					document.getElementById(id).setAttribute("disabled", "");
+				}
+			}
+			xhttp.open("GET", "./project_detail.jsp?action=membersave&project_id=" + project_id + "&mem_id=" + id);
+			xhttp.send();
+		}
+
+		function delete_project_mem_clicked(i) {
+			var mem_id = i;
+			var delete_ok = confirm("해당 멤버를 삭제하시겠습니까?");
+			if (delete_ok == true) {
+				var xhttp = new XMLHttpRequest();
+				xhttp.onreadystatechange = function () {
+					if (this.readyState == this.DONE && this.status == 200) {
+						print_log("delete_invest", project_id + "_" + mem_id);
+						location.reload();
+					}
+				}
+				xhttp.open("GET", "./project_detail.jsp?action=memberdelete&project_id=" + project_id + "&mem_id=" + mem_id);
+				xhttp.send();
+			}
+		}
+
+		function delete_project_invest_clicked(i) {
+			var mem_id = i;
+			var delete_ok = confirm("해당 멤버를 삭제하시겠습니까?");
+			if (delete_ok == true) {
+				var xhttp = new XMLHttpRequest();
+				xhttp.onreadystatechange = function () {
+					if (this.readyState == this.DONE && this.status == 200) {
+						print_log("delete_invest", project_id + "_" + mem_id);
+						location.reload();
+					}
+				}
+				xhttp.open("GET", "./project_detail.jsp?action=investdelete&project_id=" + project_id + "&mem_id=" + mem_id);
+				xhttp.send();
+			}
+		}
+
+
+		function add_member_finish() {
+			location.reload();
+		}
+
+		function create_eligibility_click() {
+			var eligibility_title = document.getElementById("new_eligibility_title").value;
+			var duplicate_eligibility = document.getElementById("eligibility_duplicate_list").value;
+			eligibility_title = escape(encodeURIComponent(eligibility_title));
+
+			var xhttp = new XMLHttpRequest();
+			xhttp.onreadystatechange = function () {
+				if (this.readyState == this.DONE && this.status == 200) {
+					print_log("add_query", project_id + "_" + eligibility_title);
+					location.reload();
+				}
+			}
+			xhttp.open("GET", "./project_detail.jsp?action=createeligibility&title=" + eligibility_title + "&project_id=" + project_id + "&duplicate=" + duplicate_eligibility);
+			xhttp.send();
+		}
+
+		function delete_eligibility_clicked(i) {
+			var eligibility_id = i;
+			var delete_ok = confirm("해당 쿼리를 삭제하시겠습니까?");
+			if (delete_ok == true) {
+				var xhttp = new XMLHttpRequest();
+				xhttp.onreadystatechange = function () {
+					if (this.readyState == this.DONE && this.status == 200) {
+						print_log("delete_query", project_id + "_" + eligibility_id);
+						location.reload();
+					}
+				}
+				xhttp.open("GET", "./project_detail.jsp?action=eligibilitydelete&project_id=" + project_id + "&eligibility_id=" + eligibility_id);
+				xhttp.send();
+			}
+		}
+
+		function exeButton_clicked(i) {
+			var eligibility_id = i;
+			var execute_ok = confirm("해당 쿼리를 실행하시겠습니까?");
+			if (execute_ok == true) {
+				var xhttp = new XMLHttpRequest();
+				xhttp.onreadystatechange = function () {
+					if (this.readyState == this.DONE && this.status == 200) {
+						print_log("execute_query", project_id + "_" + eligibility_id);
+						var eligibility_icon = document.getElementById("exeIcon_" + eligibility_id);
+						eligibility_icon.setAttribute("class", "align-middle fa fa-spinner fa-spin");
+						eligibility_icon.setAttribute("style", "font-size:24px");
+						document.getElementById("exeButton_" + eligibility_id).setAttribute("disabled", "");
+
+						var xhttp1 = new XMLHttpRequest();
+						xhttp1.onreadystatechange = function () {
+							if (this.readyState == this.DONE && this.status == 200) {
+								eligibility_icon.setAttribute("class", "align-middle fa fa-play");
+								eligibility_icon.setAttribute("style", "font-size:24px");
+							}
+						}
+						xhttp1.open("GET", Get_ip_execute() + "1/" + project_id + "/" + eligibility_id + "/" + xhttp.responseText.trim());
+						xhttp1.send();
+
+
+
+					}
+				}
+				xhttp.open("GET", "./project_detail.jsp?action=eligibilityexecute&project_id=" + project_id + "&eligibility_id=" + eligibility_id);
+				xhttp.send();
+
+			}
+
+		}
+
+		function result_button_clicked(id) {
+			var input_array = id.split("_");
+			var eligibility_id = input_array[1];
+
+			var xhttp = new XMLHttpRequest();
+			xhttp.onreadystatechange = function(){
+				if(this.readyState == this.DONE && this.status == 200){
+					localStorage.setItem("eligibility_id", eligibility_id);
+					print_log("show_result", project_id + "_" + eligibility_id);
+					var newWindow = window.open("about:blank", "toolbar=no", "menubar=no", "status = no", "directory=no", "location=no");
+					newWindow.location.href = "result_basic.html";
+
+				}
+			}
+			xhttp.open("GET", "./project_detail.jsp?action=newdelete&project_id="+project_id + "&eligibility_id="+eligibility_id);
+			xhttp.send();
+		}
+
+	</script>
+
+</head>
+
+<body>
+	<div class="wrapper">
+		<div class="d-flex">
+			<nav class="sidebar" id="sidebar_navi">
+			</nav>
+
+			<div class="main bg-white">
+				<nav class="navbar navbar-expand navbar-light bg-white">
+					<a class="sidebar-toggle d-flex mr-2">
+						<i class="hamburger align-self-center"></i>
+					</a>
+
+					<form class="form-inline d-none d-sm-inline-block" style="width:80%" id="upper_navi">
+
+					</form>
+
+					<div class="navbar-collapse collapse">
+						<ul class="navbar-nav ml-auto" id="navbar"></ul>
+						</ul>
+					</div>
+				</nav>
+
+				<main class="content">
+					<div class="container-fluid p-0">
+
+						<h1 class="h2 mb-3" id="project_title" style="color:rgb(52, 60, 67); font-weight: bold">Sample
+							project
+
+						</h1>
+
+						<div class="row">
+							<div class="col-12 col-xl-6">
+								<div class="card" id="description_card">
+									<div class="card-header">
+										<h5 class="card-title mb-0" style="color:rgb(52, 60, 67); ">Description
+											<a id="modify_button"><i class="float-right" data-feather="edit-2"></i></a>
+										</h5>
+									</div>
+									<table class="table table-borderless">
+										<tbody id="project_description">
+										</tbody>
+									</table>
+								</div>
+							</div>
+
+							<div class="col-12 col-xl-6">
+								<div class="card" id="member_card">
+									<div class="card-header">
+										<h5 class="card-title mb-0" style="color:rgb(52, 60, 67); ">Members
+											<span class="badge badge-primary" id="member_count"></span>
+											<a href="#addMember" onclick="add_mem_click();"><i class="float-right"
+													data-feather="user-plus"></i></a>
+										</h5>
+									</div>
+									<div class="card-body">
+										<table id="member_table" class="table table-borderless" style="width: 100%">
+											<thead>
+												<tr>
+													<th>Name</th>
+													<th>Department</th>
+													<th>Position</th>
+													<th>Status</th>
+													<th></th>
+												</tr>
+											</thead>
+											<tbody id="project_mem_table">
+											</tbody>
+										</table>
+									</div>
+								</div>
+							</div>
+
+							<div class="modal fade" id="addMember" tabindex="-1" role="dialog" aria-hidden="true">
+								<div class="modal-dialog modal-dialog-centered" role="document">
+									<div class="modal-content">
+										<div class="modal-header">
+											<h5 class="modal-title">Add Member </h5>
+											<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+												<span aria-hidden="true">&times;</span>
+											</button>
+										</div>
+										<div class="modal-body m-3">
+											<table id="add_member_table" class="table table-borderless"
+												style="width: 100%">
+												<thead>
+													<tr>
+														<th>Name</th>
+														<th>Department</th>
+														<th>Position</th>
+														<th>Add</th>
+													</tr>
+												</thead>
+												<tbody id="add_mem_table">
+												</tbody>
+											</table>
+										</div>
+
+										<div class="modal-footer">
+											<button type="button" class="btn btn-secondary"
+												data-dismiss="modal">Close</button>
+											<button type="button" class="btn btn-primary" onclick="add_member_finish();"
+												data-dismiss="modal">Save</button>
+										</div>
+									</div>
+								</div>
+							</div>
+
+
+							<div class="col-12" id="eligibility_div">
+								<div class="card">
+									<div class="card-header">
+										<h5 class="card-title mb-0">Eligibility Criteria
+											<span class="badge badge-primary" id="eligibility_count"></span>
+											<button class="btn btn-outline-primary float-right" data-toggle="modal"
+												data-target="#createQuery">Create</button>
+										</h5>
+
+										<div class="modal fade" id="createQuery" tabindex="-1" role="dialog"
+											aria-hidden="true">
+											<div class="modal-dialog modal-dialog-centered" role="document">
+												<div class="modal-content">
+													<div class="modal-header">
+														<h5 class="modal-title">Create</h5>
+														<button type="button" class="close" data-dismiss="modal"
+															aria-label="Close">
+															<span aria-hidden="true">&times;</span>
+														</button>
+													</div>
+													<div class="modal-body m-3">
+														<table class="table table-borderless">
+															<tbody>
+																<tr>
+																	<td style="width: 20%;">TITLE</td>
+																	<td>
+																		<input type="text" class="form-control"
+																			placeholder="Title"
+																			id="new_eligibility_title">
+																	</td>
+																</tr>
+																<tr>
+																	<td>
+																		<form class="form-inline">
+																			<div
+																				class="custom-control custom-checkbox mb-1 mr-sm-2">
+																				<input type="checkbox"
+																					class="custom-control-input"
+																					id="no-check-duplicate">
+																				<label class="custom-control-label"
+																					for="no-check-duplicate">Duplicate</label>
+																			</div>
+																		</form>
+																	</td>
+																	<td>
+																		<select class="form-control"
+																			id="eligibility_duplicate_list"
+																			style="width: 100%; margin-right: 10px"
+																			disabled>
+																			<option value="0">Select eligibility
+																				criteria</option>
+																		</select>
+																	</td>
+																</tr>
+															</tbody>
+														</table>
+													</div>
+													<div class="modal-footer">
+														<button type="button" class="btn btn-secondary"
+															data-dismiss="modal">Close</button>
+														<button type="button" class="btn btn-primary"
+															onclick="create_eligibility_click()"
+															data-dismiss="modal">Save</button>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+									<div class="card-body">
+										<table id="eligibility_table_total" class="table table-borderless"
+											style="width: 100%">
+											<thead>
+												<tr>
+													<th style="width: 40%">Name</th>
+													<th>Author</th>
+													<th>Created</th>
+													<th>Modified</th>
+													<th>Accessed</th>
+													<th style="width: 5%">Status</th>
+													<th style="width: 10%">Result</th>
+													<th style="width: 7%"></th>
+												</tr>
+											</thead>
+											<tbody id="eligibility_table">
+											</tbody>
+										</table>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</main>
+
+				<footer class="footer" id="footer"></footer>
+
+				<div class="modal fade" id="sqllogModal" tabindex="-1" role="dialog" aria-hidden="true">
+					<div class="modal-dialog modal-dialog-centered modal-md" role="document">
+						<div class="modal-content">
+							<div class="modal-header">
+								<h5 class="modal-title" id="sql_log_title"></h5>
+								<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+									<span aria-hidden="true">&times;</span>
+								</button>
+							</div>
+							<div class="modal-body m-3">
+								<code class="SQL" id="sql_log"></code>
+							</div>
+						</div>
+					</div>
+				</div>
+
+			</div>
+		</div>
+	</div>
+
+
+	<script src="../js/app.js"></script>
+	<script src="../js/tables.js"></script>
+	<script src="../js/feather.js"></script>
+	<script src="upper_navi.js"></script>
+</body>
+
+</html>

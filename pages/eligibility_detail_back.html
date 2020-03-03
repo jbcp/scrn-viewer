@@ -1,0 +1,4219 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<script src="../js/jquery-latest.js"></script>
+	<script src="../lib/dragula/dragula.min.js" type="text/javascript"></script>
+
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<meta name="description" content="Responsive Bootstrap 4 Admin Template">
+	<meta name="author" content="Bootlab">
+
+
+	<title>SCRN</title>
+
+	<link href="../css/app.css" rel="stylesheet">
+	<link rel="stylesheet" type="text/css" href="../lib/bootstrap-slider/css/bootstrap-slider.min.css" />
+
+	<style>
+	.wj-cell:not(.wj-header):not(.wj-group):not(.wj-alt):not(.wj-state-selected):not(.wj-state-multi-selected) {
+		background:#fff;
+	}
+	.wj-state-selected {           
+		border: 1px solid #5fc27e !important;
+		background: #5fc27e !important;
+		color: white !important;
+	} 	
+
+	</style>
+	<script src="../js/bootstrap.min.js"></script>
+	<script>
+		var newj = jQuery.noConflict();	
+	</script>
+	<script src="./print_log.js"></script>
+
+	<script type="text/javascript">
+		var clicked_item_in, clicked_item_ex;
+		var visit_criteria = new Object();
+		var age_item = 1010;
+		var mid_item_identifier_in = 0;
+		var mid_item_identifier_ex = 0;
+		var edit_count_in = 0;
+		var edit_count_ex = 0;
+		var itemlist_mid_in = [];
+		var itemlist_mid_ex = [];
+		var itemlist_state_in = [];
+		var itemlist_state_ex = [];
+		var itemlist_tmp_in = [];
+		var itemlist_tmp_ex = [];
+		var state_tmp_in = [];
+		var state_tmp_ex = [];
+		var in_table, ex_table;
+		var project_id, eligibility_id;
+		var value_item;
+		var modal_in, modal_in_mini, modal_ex, modal_ex_mini;
+		var selected_category;
+		var opened = false;
+		var mid_object = [];
+		var divider_count_in = [];
+		var divider_count_ex = [];
+		var first_mid_state_in = [];
+		var first_mid_state_ex = [];
+		var first_divider_in = [];
+		var first_divider_ex = [];
+		var divider_index_in = [];
+		var divider_index_ex = [];
+		var mid_state_collection_in = [];
+		var mid_state_collection_ex = [];
+		var mid_title_in = [];
+		var mid_title_ex = [];
+		var last_row_num = 0;
+
+		
+		newj('.modal').on('hidden.bs.modal', function (e) {
+			console.log('modal close');
+		});
+		onload = function () {
+			var ConditionChk = new wijmo.nav.TreeView('#ConditionChk', {
+				displayMemberPath: 'title',
+				childItemsPath: 'items',
+				itemsSource: [
+					{ "title": 'Certain infectious and parasitic diseases', "isChecked": "false", value: 1, items: [] },
+					{ "title": 'Neoplasms', "isChecked": "false", value: 1, items: [] },
+					{ "title": 'Diseases of the blood and blood-forming organs and certain disorders involving the immune mechanism', "isChecked": "false", value: 1, items: [] },
+					{ "title": 'Endocrine, nutritional and metabolic diseases', "isChecked": "false", value: 1, items: [] },
+					{ "title": 'Mental, Behavioral and Neurodevelopmental disorders', "isChecked": "false", value: 1, items: [] },
+					{ "title": 'Diseases of the nervous system', "isChecked": "false", value: 1, items: [] },
+					{ "title": 'Diseases of the eye and adnexa', "isChecked": "false", value: 1, items: [] },
+					{ "title": 'Diseases of the ear and mastoid process', "isChecked": "false", value: 1, items: [] },
+					{ "title": 'Diseases of the circulatory system', "isChecked": "false", value: 1, items: [] },
+					{ "title": 'Diseases of the respiratory system', "isChecked": "false", value: 1, items: [] },
+					{ "title": 'Diseases of the digestive system', "isChecked": "false", value: 1, items: [] },
+					{ "title": 'Diseases of the skin and subcutaneous tissue', "isChecked": "false", value: 1, items: [] },
+					{ "title": 'Diseases of the musculoskeletal system and connective tissue', "isChecked": "false", value: 1, items: [] },
+					{ "title": 'Diseases of the genitourinary system', "isChecked": "false", value: 1, items: [] },
+					{ "title": 'Pregnancy, childbirth and the puerperium', "isChecked": "false", value: 1, items: [] },
+					{ "title": 'Certain conditions originating in the perinatal period', "isChecked": "false", value: 1, items: [] },
+					{ "title": 'Congenital malformations, deformations and chromosomal abnormalities', "isChecked": "false", value: 1, items: [] },
+					{ "title": 'Symptoms, signs and abnormal clinical and laboratory findings, not elsewhere classified', "isChecked": "false", value: 1, items: [] },
+					{ "title": 'Injury, poisoning and certain other consequences of external causes', "isChecked": "false", value: 1, items: [] },
+					{ "title": 'External causes of morbidity', "isChecked": "false", value: 1, items: [] },
+					{ "title": 'Factors influencing health status and contact with health services', "isChecked": "false", value: 1, items: [] }
+				],
+				lazyLoadFunction: function (node, callback) {
+					var searchtext = node.dataItem.title.replace(/'/gi, "''");
+					searchtext = searchtext.replace("[", "%/[%");
+					searchtext = searchtext.replace("]", "%/]%");
+					searchtext = escape(encodeURIComponent(searchtext));
+					var xhttp = new XMLHttpRequest();
+					xhttp.onreadystatechange = function () {
+						if (this.readyState == this.DONE && this.status == 200) {
+							var result_pre = xhttp.responseText.trim();
+							var result = JSON.parse(result_pre);
+							callback(result);
+						}
+					}
+					xhttp.open("GET", "./icd10.jsp?level=" + node.level + "&title=" + searchtext + "&version=11");
+					xhttp.send();
+				},
+				itemClicked: function (s, e) {
+					clicked_item_in = s.selectedItem;
+					clicked_item_ex = s.selectedItem;
+				}
+			});
+
+
+			var DrugChk = new wijmo.nav.TreeView('#DrugChk', {
+				displayMemberPath: 'title',
+				childItemsPath: 'items',
+				itemsSource: [
+					{ "title": 'ALIMENTARY TRACT AND METABOLISM', "isChecked": "false", value: 1, items: [] },
+					{ "title": 'BLOOD AND BLOOD FORMING ORGANS', "isChecked": "false", value: 1, items: [] },
+					{ "title": 'CARDIOVASCULAR SYSTEM', "isChecked": "false", value: 1, items: [] },
+					{ "title": 'DERMATOLOGICALS', "isChecked": "false", value: 1, items: [] },
+					{ "title": 'GENITO URINARY SYSTEM AND SEX HORMONES', "isChecked": "false", value: 1, items: [] },
+					{ "title": 'SYSTEMIC HORMONAL PREPARATIONS, EXCL. SEX HORMONES AND INSULINS', "isChecked": "false", value: 1, items: [] },
+					{ "title": 'ANTIINFECTIVES FOR SYSTEMIC USE', "isChecked": "false", value: 1, items: [] },
+					{ "title": 'ANTINEOPLASTIC AND IMMUNOMODULATING AGENTS', "isChecked": "false", value: 1, items: [] },
+					{ "title": 'MUSCULO-SKELETAL SYSTEM', "isChecked": "false", value: 1, items: [] },
+					{ "title": 'NERVOUS SYSTEM', "isChecked": "false", value: 1, items: [] },
+					{ "title": 'ANTIPARASITIC PRODUCTS, INSECTICIDES AND REPELLENTS', "isChecked": "false", value: 1, items: [] },
+					{ "title": 'RESPIRATORY SYSTEM', "isChecked": "false", value: 1, items: [] },
+					{ "title": 'SENSORY ORGANS', "isChecked": "false", value: 1, items: [] },
+					{ "title": 'VARIOUS', "isChecked": "false", value: 1, items: [] }
+				],
+				lazyLoadFunction: function (node, callback) {
+					var xhttp = new XMLHttpRequest();
+					xhttp.onreadystatechange = function () {
+						if (this.readyState == this.DONE && this.status == 200) {
+							var result_pre = xhttp.responseText.trim();
+							var result = JSON.parse(result_pre);
+							callback(result);
+						}
+					}
+					xhttp.open("GET", "./atc.jsp?level=" + node.level + "&title=" + node.dataItem.title + "&version=11");
+					xhttp.send();
+				},
+				itemClicked: function (s, e) {
+					clicked_item_in = s.selectedItem;
+					clicked_item_ex = s.selectedItem;
+				}
+			});
+
+			var ConditionChk = new wijmo.nav.TreeView('#ConditionChkEx', {
+				displayMemberPath: 'title',
+				childItemsPath: 'items',
+				itemsSource: [
+					{ "title": 'Certain infectious and parasitic diseases', "isChecked": "false", value: 1, items: [] },
+					{ "title": 'Neoplasms', "isChecked": "false", value: 1, items: [] },
+					{ "title": 'Diseases of the blood and blood-forming organs and certain disorders involving the immune mechanism', "isChecked": "false", value: 1, items: [] },
+					{ "title": 'Endocrine, nutritional and metabolic diseases', "isChecked": "false", value: 1, items: [] },
+					{ "title": 'Mental, Behavioral and Neurodevelopmental disorders', "isChecked": "false", value: 1, items: [] },
+					{ "title": 'Diseases of the nervous system', "isChecked": "false", value: 1, items: [] },
+					{ "title": 'Diseases of the eye and adnexa', "isChecked": "false", value: 1, items: [] },
+					{ "title": 'Diseases of the ear and mastoid process', "isChecked": "false", value: 1, items: [] },
+					{ "title": 'Diseases of the circulatory system', "isChecked": "false", value: 1, items: [] },
+					{ "title": 'Diseases of the respiratory system', "isChecked": "false", value: 1, items: [] },
+					{ "title": 'Diseases of the digestive system', "isChecked": "false", value: 1, items: [] },
+					{ "title": 'Diseases of the skin and subcutaneous tissue', "isChecked": "false", value: 1, items: [] },
+					{ "title": 'Diseases of the musculoskeletal system and connective tissue', "isChecked": "false", value: 1, items: [] },
+					{ "title": 'Diseases of the genitourinary system', "isChecked": "false", value: 1, items: [] },
+					{ "title": 'Pregnancy, childbirth and the puerperium', "isChecked": "false", value: 1, items: [] },
+					{ "title": 'Certain conditions originating in the perinatal period', "isChecked": "false", value: 1, items: [] },
+					{ "title": 'Congenital malformations, deformations and chromosomal abnormalities', "isChecked": "false", value: 1, items: [] },
+					{ "title": 'Symptoms, signs and abnormal clinical and laboratory findings, not elsewhere classified', "isChecked": "false", value: 1, items: [] },
+					{ "title": 'Injury, poisoning and certain other consequences of external causes', "isChecked": "false", value: 1, items: [] },
+					{ "title": 'External causes of morbidity', "isChecked": "false", value: 1, items: [] },
+					{ "title": 'Factors influencing health status and contact with health services', "isChecked": "false", value: 1, items: [] }
+				],
+				lazyLoadFunction: function (node, callback) {
+					var xhttp = new XMLHttpRequest();
+					xhttp.onreadystatechange = function () {
+						if (this.readyState == this.DONE && this.status == 200) {
+							var result_pre = xhttp.responseText.trim();
+							var result = JSON.parse(result_pre);
+							callback(result);
+						}
+					}
+					xhttp.open("GET", "./icd10.jsp?level=" + node.level + "&title=" + node.dataItem.title + "&version=11");
+					xhttp.send();
+				},
+				itemClicked: function (s, e) {
+					clicked_item_in = s.selectedItem;
+					clicked_item_ex = s.selectedItem;
+				}
+			});
+
+			var DrugChk = new wijmo.nav.TreeView('#DrugChkEx', {
+				displayMemberPath: 'title',
+				childItemsPath: 'items',
+				itemsSource: [
+					{ "title": 'ALIMENTARY TRACT AND METABOLISM', "isChecked": "false", value: 1, items: [] },
+					{ "title": 'BLOOD AND BLOOD FORMING ORGANS', "isChecked": "false", value: 1, items: [] },
+					{ "title": 'CARDIOVASCULAR SYSTEM', "isChecked": "false", value: 1, items: [] },
+					{ "title": 'DERMATOLOGICALS', "isChecked": "false", value: 1, items: [] },
+					{ "title": 'GENITO URINARY SYSTEM AND SEX HORMONES', "isChecked": "false", value: 1, items: [] },
+					{ "title": 'SYSTEMIC HORMONAL PREPARATIONS, EXCL. SEX HORMONES AND INSULINS', "isChecked": "false", value: 1, items: [] },
+					{ "title": 'ANTIINFECTIVES FOR SYSTEMIC USE', "isChecked": "false", value: 1, items: [] },
+					{ "title": 'ANTINEOPLASTIC AND IMMUNOMODULATING AGENTS', "isChecked": "false", value: 1, items: [] },
+					{ "title": 'MUSCULO-SKELETAL SYSTEM', "isChecked": "false", value: 1, items: [] },
+					{ "title": 'NERVOUS SYSTEM', "isChecked": "false", value: 1, items: [] },
+					{ "title": 'ANTIPARASITIC PRODUCTS, INSECTICIDES AND REPELLENTS', "isChecked": "false", value: 1, items: [] },
+					{ "title": 'RESPIRATORY SYSTEM', "isChecked": "false", value: 1, items: [] },
+					{ "title": 'SENSORY ORGANS', "isChecked": "false", value: 1, items: [] },
+					{ "title": 'VARIOUS', "isChecked": "false", value: 1, items: [] }
+				],
+				lazyLoadFunction: function (node, callback) {
+					var xhttp = new XMLHttpRequest();
+					xhttp.onreadystatechange = function () {
+						if (this.readyState == this.DONE && this.status == 200) {
+							var result_pre = xhttp.responseText.trim();
+							var result = JSON.parse(result_pre);
+							callback(result);
+						}
+					}
+					xhttp.open("GET", "./atc.jsp?level=" + node.level + "&title=" + node.dataItem.title + "&version=11");
+					xhttp.send();
+				},
+				itemClicked: function (s, e) {
+					clicked_item_in = s.selectedItem;
+					clicked_item_ex = s.selectedItem;
+				}
+			});
+
+
+		}
+
+		function hieracyDrugClicked(item, status) {
+			switch (status) {
+				case 'in':
+					itemmodal_in_hier();
+					break;
+				case 'ex':
+					itemmodal_ex_hier();
+					break;
+			}
+		}
+
+
+		jQuery(document).ready(function ($) {
+			var rand = Math.random();
+			dragula([jQuery("#inclusion_criteria")[0], jQuery("#exclusion_criteria")[0]]);
+
+			modal_in = newj('#itemAddInFullModal').clone();
+			modal_in_mini = newj('#itemAddInModal').clone();
+			modal_ex = newj('#itemAddExFullModal').clone();
+			modal_ex_mini = newj('#itemAddExModal').clone();
+
+			var eligibility_data_input = location.search.substring(1);
+			var eligibility_data_split = eligibility_data_input.split("&");
+
+			var project_id_input = eligibility_data_split[0].split("=");
+			project_id = JSON.parse(project_id_input[1]);
+
+			var eligibility_id_input = eligibility_data_split[1].split("=");
+			eligibility_id = JSON.parse(eligibility_id_input[1]);
+
+			$('#sidebar_navi').load('menu.html');
+			$('#navbar').load('navbar_item.html?verson=' + rand);
+
+			upper_navi_3("Projects", project_id, eligibility_id);
+
+			var xhttp = new XMLHttpRequest();
+			xhttp.onreadystatechange = function () {
+				if (this.readyState == this.DONE && this.status == 200) {
+					var data_array = xhttp.responseText.split("&");
+
+					var img_src = data_array[3];
+					document.getElementById("nav_img").setAttribute("src", img_src + "?" + rand);
+
+					var user_name = data_array[4];
+					document.getElementById("user_name").appendChild(document.createTextNode(user_name));
+
+					var title_data = data_array[2];
+					var title_eval = eval(title_data);
+					var title = title_eval[0].title;
+
+					document.getElementById("eligibility_title").value = title;
+					document.getElementById("eligibility_title").textContent = title;
+
+					var criteria_data_pre = data_array[0];
+					var criteria_data_eval = eval(criteria_data_pre);
+					var criteria_data_output = Object.keys(criteria_data_eval);
+
+					var visit_data_pre = data_array[5];
+					var visit_data_eval = eval(visit_data_pre);
+					var visit_data_output = Object.keys(visit_data_eval);
+
+					document.getElementById("visit_no").setAttribute("checked", "");
+					document.getElementById("daterange_visit").value = "";
+					document.getElementById("daterange_visit").setAttribute("disabled", "");
+					if (visit_data_output.length > 0) {
+						document.getElementById("daterange_visit").removeAttribute("disabled");
+						if (visit_data_eval[0].period > 100) {
+							if (visit_data_eval[0].period == 9999) {
+								document.getElementById("visit_no").removeAttribute("checked");
+								document.getElementById("visit_direct").setAttribute("checked", "");
+								document.getElementById("daterange_visit").value = visit_data_eval[0].value;
+							}
+						}
+						else {
+							document.getElementById("visit_no").removeAttribute("checked");
+							jQuery("#visit_"+ visit_data_eval[0].period).prop('checked', true);
+							document.getElementById("daterange_visit").value = visit_data_eval[0].value;
+						}
+
+						var durations = visit_data_eval[0].period;
+						visit_criteria.table = "Visit_occurrence";
+						visit_criteria.field = "id";
+						visit_criteria.condition = "0";
+						visit_criteria.attribute = "";
+						visit_criteria.value = durations;
+						visit_criteria.title = "";
+						visit_criteria.addition_text = "";
+
+						visit_criteria.value_min = "";
+						visit_criteria.value_max = "";
+						visit_criteria.measure_count = "";
+						visit_criteria.measure_method = "";
+						visit_criteria.min_condition = "";
+						visit_criteria.max_condition = "";
+
+						var today = moment().format('DD/MM/YYYY');
+						var ago = moment().subtract(durations, 'month').format('DD/MM/YYYY');
+						document.getElementById("daterange_visit").removeAttribute("disabled");
+
+						if (durations == "1200") {
+							document.getElementById("daterange_visit").value = "";
+							document.getElementById("daterange_visit").setAttribute("disabled", "");
+						}
+						else if (durations == "9999") {
+							document.getElementById("daterange_visit").value = visit_data_eval[0].value;
+						}
+						else {
+							document.getElementById("daterange_visit").value = visit_data_eval[0].value;
+						}
+					}
+
+					//inclusion
+					for (var i = 0; i < criteria_data_output.length; i++) {
+
+						var load_states =[];
+
+						itemlist_mid_in[i] = criteria_data_eval[i];
+						itemlist_mid_in[i].id = mid_item_identifier_in;
+						console.log(criteria_data_eval[i]);
+						mid_title_in[i] = criteria_data_eval[i].title;
+						mid_item('in', criteria_data_eval[i].title);
+
+						for(var j = 0; j < criteria_data_eval[i].small.length; j++){
+							var table_parse;
+							var data_heir = criteria_data_eval[i].small[j].heir;
+							if (criteria_data_eval[i].small[j].table == "Drug_exposure") table_parse = "drug";
+							else if (criteria_data_eval[i].small[j].table == "Condition_occurrence") table_parse = "condition";
+							else if (criteria_data_eval[i].small[j].table == "Measurement") table_parse = "measurement";
+							else if (criteria_data_eval[i].small[j].table == "Observation") table_parse = "observation";
+							else if (criteria_data_eval[i].small[j].table == "Person" && data_heir == 1) table_parse = "age";
+							else if (criteria_data_eval[i].small[j].table == "Person" && data_heir != 1) table_parse = "gender";
+							else if (criteria_data_eval[i].small[j].table == "User_Define") table_parse = "user_define";
+							else if (criteria_data_eval[i].small[j].table == "SQL") table_parse = "sql";
+					
+							var criteria = new Object();
+							criteria.status = "inclusion";
+							criteria.title = criteria_data_eval[i].small[j].title;
+							criteria.attribute = criteria_data_eval[i].small[j].attribute;
+							criteria.table = table_parse;
+							criteria.addition = criteria_data_eval[i].small[j].addition_query;
+							criteria.addition_text = criteria_data_eval[i].small[j].addition;
+							criteria.date_addition = criteria_data_eval[i].small[j].addition_date;
+							criteria.value_min = criteria_data_eval[i].small[j].value_min;
+							criteria.value_max = criteria_data_eval[i].small[j].value_max;
+							criteria.measure_count = criteria_data_eval[i].small[j].measure_count;
+							criteria.measure_method = criteria_data_eval[i].small[j].measure_method;
+							criteria.min_condition = criteria_data_eval[i].small[j].min_condition;
+							criteria.max_condition = criteria_data_eval[i].small[j].max_condition;
+							criteria.condition = criteria_data_eval[i].small[j].condition;
+							criteria.heir = criteria_data_eval[i].small[j].heir;
+							criteria.state = criteria_data_eval[i].small[j].state;
+							criteria.isdivider = criteria_data_eval[i].small[j].isdivider;
+							criteria.id = criteria_data_eval[i].small[j].id;
+
+							itemlist_mid_in[i].small[j] = criteria;
+							if(j > 0){
+								var load_state = new Object();
+								load_state.id = String(criteria.id);
+								load_state.state = criteria.state;
+								load_state.isdivider = criteria.isdivider;
+								load_states.push(load_state);
+							}
+							age_item++;
+							first_mid_state_in[i] = false;
+							first_divider_in[i] = false;
+						}
+						itemlist_state_in[i] = load_states;
+						itemlist_tmp_in[i] = itemlist_mid_in[i];
+						state_tmp_in[i] = load_states;
+						addcriteria('in', i, "mid_collapse_in_"+i, i, "no");
+					}
+
+					criteria_data_pre = data_array[1];
+					criteria_data_eval = eval(criteria_data_pre);
+					criteria_data_output = Object.keys(criteria_data_eval);
+
+					//exclusion
+					for (var i = 0; i < criteria_data_output.length; i++) {
+
+					var load_states =[];
+
+					itemlist_mid_ex[i] = criteria_data_eval[i];
+					itemlist_mid_ex[i].id = mid_item_identifier_ex;
+					mid_item('ex', criteria_data_eval[i].title);
+
+					for(var j = 0; j < criteria_data_eval[i].small.length; j++){
+						var table_parse;
+						var data_heir = criteria_data_eval[i].small[j].heir;
+						if (criteria_data_eval[i].small[j].table == "Drug_exposure") table_parse = "drug";
+						else if (criteria_data_eval[i].small[j].table == "Condition_occurrence") table_parse = "condition";
+						else if (criteria_data_eval[i].small[j].table == "Measurement") table_parse = "measurement";
+						else if (criteria_data_eval[i].small[j].table == "Observation") table_parse = "observation";
+						else if (criteria_data_eval[i].small[j].table == "Person" && data_heir == 1) table_parse = "age";
+						else if (criteria_data_eval[i].small[j].table == "Person" && data_heir != 1) table_parse = "gender";
+						else if (criteria_data_eval[i].small[j].table == "User_Define") table_parse = "user_define";
+						else if (criteria_data_eval[i].small[j].table == "SQL") table_parse = "sql";
+
+						var criteria = new Object();
+						criteria.status = "exclusion";
+						criteria.title = criteria_data_eval[i].small[j].title;
+						criteria.attribute = criteria_data_eval[i].small[j].attribute;
+						criteria.table = table_parse;
+						criteria.addition = criteria_data_eval[i].small[j].addition_query;
+						criteria.addition_text = criteria_data_eval[i].small[j].addition;
+						criteria.date_addition = criteria_data_eval[i].small[j].addition_date;
+						criteria.value_min = criteria_data_eval[i].small[j].value_min;
+						criteria.value_max = criteria_data_eval[i].small[j].value_max;
+						criteria.measure_count = criteria_data_eval[i].small[j].measure_count;
+						criteria.measure_method = criteria_data_eval[i].small[j].measure_method;
+						criteria.min_condition = criteria_data_eval[i].small[j].min_condition;
+						criteria.max_condition = criteria_data_eval[i].small[j].max_condition;
+						criteria.condition = criteria_data_eval[i].small[j].condition;
+						criteria.heir = criteria_data_eval[i].small[j].heir;
+						criteria.state = criteria_data_eval[i].small[j].state;
+						criteria.isdivider = criteria_data_eval[i].small[j].isdivider;
+						criteria.id = criteria_data_eval[i].small[j].id;
+
+						itemlist_mid_ex[i].small[j] = criteria;
+						if(j > 0){
+							var load_state = new Object();
+							load_state.id = String(criteria.id);
+							load_state.state = criteria.state;
+							load_state.isdivider = criteria.isdivider;
+							load_states.push(load_state);
+						}
+						age_item++;
+						first_mid_state_ex[i] = false;
+						first_divider_ex[i] = false;
+					}
+					itemlist_state_ex[i] = load_states;
+					itemlist_tmp_ex[i] = itemlist_mid_ex[i];
+					state_tmp_ex[i] = load_states;
+
+					addcriteria('ex', i, "mid_collapse_ex_"+i, i, "no");
+					}
+				
+					last_row_num = Number(data_array[6]);
+				}
+			}
+			xhttp.open("GET", "./eligibility_detail.jsp?action=load&project_id=" + project_id + "&eligibility_id=" + eligibility_id);
+			xhttp.send();
+
+			jQuery("#no-check").change(function () {
+
+				if (jQuery("#no-check").is(":checked")) {
+					document.getElementById("duration_button_3_b").setAttribute("disabled", "");
+					document.getElementById("duration_button_6_b").setAttribute("disabled", "");
+					document.getElementById("duration_button_9_b").setAttribute("disabled", "");
+					document.getElementById("duration_button_12_b").setAttribute("disabled", "");
+					document.getElementById("duration_button_self_b").setAttribute("disabled", "");
+					document.getElementById("duration_button_3").setAttribute("disabled", "");
+					document.getElementById("duration_button_6").setAttribute("disabled", "");
+					document.getElementById("duration_button_9").setAttribute("disabled", "");
+					document.getElementById("duration_button_12").setAttribute("disabled", "");
+					document.getElementById("duration_button_self").setAttribute("disabled", "");
+
+				}
+				else {
+					document.getElementById("duration_button_3_b").removeAttribute("disabled");
+					document.getElementById("duration_button_6_b").removeAttribute("disabled");
+					document.getElementById("duration_button_9_b").removeAttribute("disabled");
+					document.getElementById("duration_button_12_b").removeAttribute("disabled");
+					document.getElementById("duration_button_self_b").removeAttribute("disabled");
+					document.getElementById("duration_button_3").removeAttribute("disabled");
+					document.getElementById("duration_button_6").removeAttribute("disabled");
+					document.getElementById("duration_button_9").removeAttribute("disabled");
+					document.getElementById("duration_button_12").removeAttribute("disabled");
+					document.getElementById("duration_button_self").removeAttribute("disabled");
+
+				}
+
+			});
+			jQuery("#no-check-mini").change(function () {
+
+				if (jQuery("#no-check-mini").is(":checked")) {
+					document.getElementById("duration_button_3_mini").setAttribute("disabled", "");
+					document.getElementById("duration_button_6_mini").setAttribute("disabled", "");
+					document.getElementById("duration_button_9_mini").setAttribute("disabled", "");
+					document.getElementById("duration_button_12_mini").setAttribute("disabled", "");
+					document.getElementById("duration_button_self_mini").setAttribute("disabled", "");
+					document.getElementById("duration_button_3_mini_b").setAttribute("disabled", "");
+					document.getElementById("duration_button_6_mini_b").setAttribute("disabled", "");
+					document.getElementById("duration_button_9_mini_b").setAttribute("disabled", "");
+					document.getElementById("duration_button_12_mini_b").setAttribute("disabled", "");
+					document.getElementById("duration_button_self_mini_b").setAttribute("disabled", "");
+
+				}
+				else {
+					document.getElementById("duration_button_3_mini").removeAttribute("disabled");
+					document.getElementById("duration_button_6_mini").removeAttribute("disabled");
+					document.getElementById("duration_button_9_mini").removeAttribute("disabled");
+					document.getElementById("duration_button_12_mini").removeAttribute("disabled");
+					document.getElementById("duration_button_self_mini").removeAttribute("disabled");
+					document.getElementById("duration_button_3_mini_b").removeAttribute("disabled");
+					document.getElementById("duration_button_6_mini_b").removeAttribute("disabled");
+					document.getElementById("duration_button_9_mini_b").removeAttribute("disabled");
+					document.getElementById("duration_button_12_mini_b").removeAttribute("disabled");
+					document.getElementById("duration_button_self_mini_b").removeAttribute("disabled");
+
+				}
+
+			});
+
+			jQuery("#no-check-value").change(function () {
+				if (jQuery('#no-check-value').is(":checked")) {
+					document.getElementById("value_min").setAttribute("disabled", "");
+					document.getElementById("value_max").setAttribute("disabled", "");
+					document.getElementById("value_min_condition").setAttribute("disabled", "");
+					document.getElementById("value_max_condition").setAttribute("disabled", "");
+				}
+				else {
+					document.getElementById("value_min").removeAttribute("disabled");
+					document.getElementById("value_max").removeAttribute("disabled");
+					document.getElementById("value_min_condition").removeAttribute("disabled");
+					document.getElementById("value_max_condition").removeAttribute("disabled");
+				}
+			});
+
+			jQuery("#no-check-measure").change(function () {
+				if (jQuery('#no-check-measure').is(":checked")) {
+					document.getElementById("measure_count").setAttribute("disabled", "");
+					document.getElementById("measure_calc").setAttribute("disabled", "");
+				}
+				else {
+					document.getElementById("measure_count").removeAttribute("disabled");
+					document.getElementById("measure_calc").removeAttribute("disabled");
+				}
+			});
+
+
+			jQuery("#no-check-age").change(function () {
+				if (jQuery('#no-check-age').is(":checked")) {
+					document.getElementById("age_min").setAttribute("disabled", "");
+					document.getElementById("age_max").setAttribute("disabled", "");
+					document.getElementById("age_min_condition").setAttribute("disabled", "");
+					document.getElementById("age_max_condition").setAttribute("disabled", "");
+
+					if (document.getElementById("age_max").value == "")
+						document.getElementById("age_max_condition").value = "";
+					if (document.getElementById("age_min").value == "")
+						document.getElementById("age_min_condition").value = "";
+				}
+				else {
+					document.getElementById("age_min").removeAttribute("disabled");
+					document.getElementById("age_max").removeAttribute("disabled");
+					document.getElementById("age_min_condition").removeAttribute("disabled");
+					document.getElementById("age_max_condition").removeAttribute("disabled");
+
+					if (document.getElementById("age_min").value == "")
+						document.getElementById("age_min_condition").value = "more than or equal";
+					if (document.getElementById("age_max").value == "")
+						document.getElementById("age_max_condition").value = "less than or equal"
+				}
+			});
+
+
+		})
+
+		function enterkey(status) {
+			if (window.event.keyCode == 13) {
+				//insert_itemmodal("'" + status + "'");
+			}
+		}
+
+		function insert_etcmodal(item_table, status, criteria_mid_id) {
+			var item_title;
+
+			switch (item_table) {
+				case 'age':
+					item_title = "Year";
+					break;
+				case 'sql':
+					item_title = "SQL";
+					break;
+			}
+			var criteria = new Object();
+			criteria.title = item_title;
+			switch (status) {
+				case 'in':
+					criteria.status = "inclusion";
+					break;
+				case 'ex':
+					criteria.status = "exclusion";
+					break;
+			}
+			criteria.table = item_table;
+			criteria.id = last_row_num+1;
+			last_row_num++;
+			criteria.attribute = age_item;
+			age_item++;
+			criteria.heir = 0;
+			criteria.addition = "";
+			criteria.addition_text = "";
+			criteria.date_addition = "";
+			criteria.value_min = "";
+			criteria.value_max = "";
+			criteria.measure_count = "";
+			criteria.measure_method = "";
+			criteria.min_condition = "";
+			criteria.max_condition = "";
+			criteria.condition = "0";
+			criteria.state = "AND";
+			criteria.isdivider = "No";
+
+			switch (status) {
+				case 'in':
+					itemlist_tmp_in[criteria_mid_id].small.push(criteria);
+					if(itemlist_tmp_in[criteria_mid_id].small.length > 1 && first_mid_state_in[criteria_mid_id] == false ){
+						add_state_select_button("criteria_"+status+"_" + criteria_mid_id, "state_select_in_"+criteria_mid_id+"_"+criteria.id);
+					}
+					addbutton(criteria, "criteria_"+status+"_" + criteria_mid_id, criteria_mid_id, 'no', 'no', 'button_small_', 'button_div_small_');
+					if(itemlist_tmp_in[criteria_mid_id].small.length >= 1) first_mid_state_in[criteria_mid_id] = false;
+					break;
+
+				case 'ex':
+					itemlist_tmp_ex[criteria_mid_id].small.push(criteria);
+					if(itemlist_tmp_ex[criteria_mid_id].small.length > 1 && first_mid_state_ex[criteria_mid_id] == false){
+						add_state_select_button("criteria_"+status+"_" + criteria_mid_id, "state_select_ex_"+criteria_mid_id+"_"+criteria.id);
+					}
+					addbutton(criteria, "criteria_"+status+"_" + criteria_mid_id, criteria_mid_id, 'no', 'no', 'button_small_', 'button_div_small_');
+					if(itemlist_tmp_ex[criteria_mid_id].small.length >= 1) first_mid_state_ex[criteria_mid_id] = false;
+
+					break;
+			}
+		}
+
+		function insert_itemmodal(status, mid_id) {
+			var item_title;
+			var criteria = new Object();
+			item_title = document.getElementById(status+"_"+mid_id).value;
+
+			switch (status) {
+				case 'in':
+					criteria.status = "inclusion";
+					criteria.table = in_table;
+					criteria.attribute = clicked_item_in.concept_id;
+					if (in_table == "drug") criteria.heir = "5";
+					else criteria.heir = clicked_item_in.heir;
+					break;
+
+				case 'ex':
+					criteria.status = "exclusion";
+					criteria.table = ex_table;
+					criteria.attribute = clicked_item_ex.concept_id;
+					if (ex_table == "drug") criteria.heir = "5";
+					else criteria.heir = clicked_item_ex.heir;
+					break;
+			}
+			criteria.title = item_title;
+			criteria.id = last_row_num+1;
+			last_row_num++;
+			if (item_title == "Body weight measure") criteria.table = "observation";
+			else if (item_title == "Body height measure") criteria.table = "observation";
+			criteria.addition = "";
+			if (item_title == "Both") criteria.addition = "or gender_concept_id = 8507";
+			criteria.addition_text = "";
+			criteria.date_addition = "";
+			criteria.value_min = "";
+			criteria.value_max = "";
+			criteria.measure_count = ""
+			criteria.measure_method = "";
+			criteria.min_condition = "";
+			criteria.max_condition = "";
+			criteria.condition = "0";
+			criteria.state = "AND";
+			criteria.isdivider = "No";
+
+			switch(status){
+				case 'in':
+				itemlist_tmp_in[mid_id].small.push(criteria);
+				document.getElementById(status+"_"+mid_id).value = "";
+
+				if(itemlist_tmp_in[mid_id].small.length > 1 && first_mid_state_in[mid_id] == false)
+					add_state_select_button("criteria_"+status+"_" + mid_id, "state_select_in_"+mid_id+"_"+criteria.id);
+				addbutton(criteria, "criteria_"+status+"_" + mid_id, mid_id, 'no', 'no', 'button_small_', 'button_div_small_');
+				if(itemlist_tmp_in[mid_id].small.length >= 1) first_mid_state_in[mid_id] = false;
+
+				break;
+
+				case 'ex':
+				itemlist_tmp_ex[mid_id].small.push(criteria);
+				document.getElementById(status+"_"+mid_id).value = "";
+
+				if(itemlist_tmp_ex[mid_id].small.length > 1 && first_mid_state_ex[mid_id] == false)
+					add_state_select_button("criteria_"+status+"_" + mid_id, "state_select_ex_"+mid_id+"_"+criteria.id);
+				addbutton(criteria, "criteria_"+status+"_" + mid_id,  mid_id, 'no', 'no', 'button_small_', 'button_div_small_');
+				if(itemlist_tmp_ex[mid_id].small.length >= 1) first_mid_state_ex[mid_id] = false;
+
+				break;
+			}
+
+		}
+
+		function insert_hiermodal(in_table, status, criteria_mid_id) {
+			var item_title;
+			var criteria = new Object();
+
+			switch (status) {
+				case 'in':
+					item_title = clicked_item_in.title;
+					criteria.status = "inclusion";
+					criteria.table = in_table;
+					if (in_table == "drug") {
+						if (parseInt(clicked_item_in.value) < 5) {
+							criteria.attribute = age_item;
+							age_item++;
+						}
+						else criteria.attribute = parseInt(clicked_item_in.concept_id);
+					}
+					else {
+						if (parseInt(clicked_item_in.value) < 4) {
+							criteria.attribute = age_item;
+							age_item++;
+						}
+						else criteria.attribute = parseInt(clicked_item_in.concept_id);
+					}
+					criteria.heir = clicked_item_in.value;
+
+					break;
+
+				case 'ex':
+					item_title = clicked_item_ex.title;
+					criteria.status = "exclusion";
+					criteria.table = ex_table;
+					if (ex_table == "drug") {
+						if (parseInt(clicked_item_ex.value) < 5) {
+							criteria.attribute = age_item;
+							age_item++;
+						}
+						else criteria.attribute = parseInt(clicked_item_ex.concept_id);
+					}
+					else {
+						if (parseInt(clicked_item_ex.value) < 4) {
+							criteria.attribute = age_item;
+							age_item++;
+						}
+						else criteria.attribute = parseInt(clicked_item_ex.concept_id);
+					}
+					criteria.heir = clicked_item_ex.value;
+
+					break;
+			}
+			criteria.id = last_row_num+1;
+			last_row_num++;
+			criteria.title = item_title;
+			if (item_title == "Body weight measure") criteria.table = "observation";
+			else if (item_title == "Body height measure") criteria.table = "observation";
+			criteria.addition = "";
+			if (item_title == "Both") criteria.addition = "or gender_concept_id = 8507";
+			criteria.addition_text = "";
+			criteria.date_addition = "";
+			criteria.value_min = "";
+			criteria.value_max = "";
+			criteria.measure_count = ""
+			criteria.measure_method = "";
+			criteria.min_condition = "";
+			criteria.max_condition = "";
+			criteria.condition = "0";
+			criteria.state = "AND";
+			criteria.isdivider = "No";
+
+			switch (status) {
+				case 'in':
+					itemlist_tmp_in[criteria_mid_id].small.push(criteria);
+					if(itemlist_tmp_in[criteria_mid_id].small.length > 1 && first_mid_state_in[criteria_mid_id] == false)
+						add_state_select_button("criteria_"+status+"_" + criteria_mid_id, "state_select_in_"+criteria_mid_id+"_"+criteria.id);
+					addbutton(criteria, "criteria_"+status+"_" + criteria_mid_id, criteria_mid_id, 'no', 'no', 'button_small_', 'button_div_small_');
+					if(itemlist_tmp_in[criteria_mid_id].small.length >= 1) first_mid_state_in[criteria_mid_id] = false;
+					break;
+				case 'ex':
+					itemlist_tmp_ex[criteria_mid_id].small.push(criteria);
+					if(itemlist_tmp_ex[criteria_mid_id].small.length > 1 && first_mid_state_ex[criteria_mid_id] == false)
+						add_state_select_button("criteria_"+status+"_" + criteria_mid_id, "state_select_ex_"+criteria_mid_id+"_"+criteria.id);
+					addbutton(criteria, "criteria_"+status+"_" + criteria_mid_id, criteria_mid_id, 'no', 'no', 'button_small_', 'button_div_small_');
+					if(itemlist_tmp_ex[criteria_mid_id].small.length >= 1) first_mid_state_ex[criteria_mid_id] = false;
+					break;
+			}
+		}
+
+		function setaddition(criteria, button_id) {
+			var criteria_button = document.getElementById(button_id);
+
+			var durtaion_div = document.createElement("div");
+			durtaion_div.setAttribute("style", "margin-left: 30px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; margin-top:1px; color:rgb(106,115,124); font-size:12px");
+			durtaion_div.setAttribute("id", "duration_small_" + data_attribute);
+
+			if (data_addition == null) data_addition = "";
+			var duration_text = document.createTextNode(data_addition);
+			durtaion_div.appendChild(duration_text);
+			criteria_button.appendChild(durtaion_div);
+		}
+
+		function addcriteria(status, criteria_mid, parent, item_id, is_new = "no") {
+			var parent_array = parent.split("_");
+			var parent_div = document.getElementById(parent);
+
+			switch (status) {
+				case 'in':
+					itemlist_mid_in[item_id] = itemlist_tmp_in[item_id];
+					itemlist_state_in[item_id] = state_tmp_in[item_id];
+
+					for (var i = 0; i < itemlist_tmp_in[item_id].small.length; i++){
+						if( i != 0) {
+							add_state_select_button("mid_collapse_"+status + "_"+parent_array[3], "state_selected_in_"+criteria_mid+"_"+itemlist_mid_in[item_id].small[i].id, "yes", itemlist_state_in[item_id][i-1].state, itemlist_state_in[item_id][i-1].isdivider, is_new);
+						}
+						addbutton(itemlist_mid_in[item_id].small[i], "mid_collapse_in_"+parent_array[3], item_id, 'yes', 'yes');
+					}
+					for(var i = 0; i < state_tmp_in[item_id].length; i++){
+						state_button_text_setting(state_tmp_in[item_id][i].state, "state_selected_in_"+criteria_mid+"_"+itemlist_mid_in[item_id].small[i+1].id, status, "yes", "0", state_tmp_in[item_id][i].isdivider);
+					}
+					itemlist_tmp_in[item_id] = [];
+					state_tmp_in[item_id] = [];
+
+					break;
+				case 'ex':
+					itemlist_mid_ex[item_id] = itemlist_tmp_ex[item_id];
+					itemlist_state_ex[item_id] = state_tmp_ex[item_id];
+					for (var i = 0; i < itemlist_tmp_ex[item_id].small.length; i++){
+						if( i != 0 ) add_state_select_button("mid_collapse_"+status + "_"+parent_array[3], "state_selected_ex_"+criteria_mid+"_"+itemlist_mid_ex[item_id].small[i].id, "yes", itemlist_state_ex[item_id][i-1].state, itemlist_state_ex[item_id][i-1].isdivider, is_new);
+						addbutton(itemlist_mid_ex[item_id].small[i], "mid_collapse_ex_"+parent_array[3], item_id,  'yes', 'yes');
+					}
+
+					for(var i = 0; i < state_tmp_ex[item_id].length; i++){
+						state_button_text_setting(state_tmp_ex[item_id][i].state, "state_selected_ex_"+criteria_mid+"_"+itemlist_mid_ex[item_id].small[i+1].id, status, "yes", "0", state_tmp_ex[item_id][i].isdivider);
+					}
+					itemlist_tmp_ex[item_id] = [];
+					state_tmp_ex[item_id] = [];
+
+					break;
+			}
+
+		}
+
+		function addstate(parent, margin){
+			var parent_array = parent.split("_");
+			var button_group_div = document.createElement("div");
+			button_group_div.setAttribute("class", "pb-0");
+
+			document.getElementById(parent).appendChild(button_group_div);
+
+			var and_badge = document.createElement("span");
+			and_badge.setAttribute("class", "badge badge-info");
+			if(margin == 1) and_badge.setAttribute("style", "margin-top : 45px");
+			else and_badge.setAttribute("style", "margin-top : 35px");
+			and_badge.appendChild(document.createTextNode("AND"));
+			button_group_div.appendChild(and_badge);
+		}
+
+		function addbutton(criteria, parent, criteria_mid_id, mid = 'no', addition = 'no', button_name = "button_", div_name = "button_div_", duration_div = "duration_small_") {
+			var criteria_div = document.createElement("div");
+			criteria_div.setAttribute("class", "input-group w-100 p-0 mh-100 ml-3");
+
+			var criteria_button = document.createElement("button");
+			criteria_div.appendChild(criteria_button);
+
+			switch (criteria.status) {
+				case 'inclusion':
+					var small_id = itemlist_tmp_in[criteria_mid_id].small.map(function(e){return e.id;}).indexOf(Number(criteria.id));
+					if(small_id > 0 && mid=='no' && state_tmp_in[criteria_mid_id][Number(small_id)-1].isdivider == 'yes'){
+						$('#state_select_in_'+criteria_mid_id+'_'+state_tmp_in[criteria_mid_id][Number(small_id)-1].id)[0].childNodes[1].childNodes[0].setAttribute("onclick", "state_button_text_setting(id, 'state_select_in_"+criteria_mid_id+"_"+criteria.id+"_select', 'in', 'no', '0', 'yes')");
+						$('#state_select_in_'+criteria_mid_id+'_'+state_tmp_in[criteria_mid_id][Number(small_id)-1].id)[0].childNodes[1].childNodes[1].setAttribute("onclick", "state_button_text_setting(id, 'state_select_in_"+criteria_mid_id+"_"+criteria.id+"_select', 'in', 'no', '0', 'yes')");
+						$('#state_select_in_'+criteria_mid_id+'_'+state_tmp_in[criteria_mid_id][Number(small_id)-1].id)[0].childNodes[1].childNodes[2].setAttribute("onclick", "state_button_text_setting(id, 'state_select_in_"+criteria_mid_id+"_"+criteria.id+"_select', 'in', 'no', '0', 'yes')");
+						document.getElementById("state_select_in_"+criteria_mid_id+"_"+state_tmp_in[criteria_mid_id][Number(small_id)-1].id+"_select").setAttribute("id", "state_select_in_"+criteria_mid_id+"_"+criteria.id+"_select")
+						document.getElementById("state_select_in_"+criteria_mid_id+"_"+state_tmp_in[criteria_mid_id][Number(small_id)-1].id).setAttribute("id", "state_select_in_"+criteria_mid_id+"_"+criteria.id);
+						state_tmp_in[criteria_mid_id][Number(small_id)-1].id = String(criteria.id);
+					}
+					criteria_div.setAttribute("id", div_name + criteria.id);
+					document.getElementById(parent).appendChild(criteria_div);
+					criteria_button.setAttribute("class", "btn btn-outline-info btn-square");
+					criteria_button.setAttribute("type", "button");
+					criteria_button.setAttribute("id", button_name +"in_"+ criteria.id);
+					if(mid == 'no') criteria_button.setAttribute("onclick", "criteria_button_clicked('in', id, '"+criteria_mid_id+"')");
+					var title_text = document.createTextNode(criteria.title);
+					criteria_button.setAttribute("style", "border-left-width:10px; width:90%; height: 50px; text-align:left; background-color:transparent");
+
+					var context_div = document.createElement("div");
+					context_div.setAttribute("style", "margin-left : 10px; vertical-align:middle; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; width: 90%; color:rgb(78,85,92)");
+					var domain_button = document.createElement("button");
+
+					switch (criteria.table) {
+						case 'drug':
+							domain_button.setAttribute("class", "btn btn-danger btn-sm float-left");
+							domain_button.setAttribute("style", "margin-right: 10px; background-color:RGB(244, 68, 85)");
+							domain_button.appendChild(document.createTextNode("약물"));
+							break;
+						case 'condition':
+							domain_button.setAttribute("class", "btn btn-success btn-sm float-left");
+							domain_button.setAttribute("style", "margin-right: 10px; background-color:RGB(95, 194, 126)");
+							domain_button.appendChild(document.createTextNode("진단"));
+							break;
+						case 'measurement':
+							domain_button.setAttribute("class", "btn btn-primary btn-sm float-left");
+							domain_button.setAttribute("style", "margin-right: 10px; background-color:RGB(12, 194, 170)");
+							domain_button.appendChild(document.createTextNode("검사"));
+							break;
+						case 'observation':
+							domain_button.setAttribute("class", "btn btn-primary btn-sm float-left");
+							domain_button.setAttribute("style", "margin-right: 10px; background-color:RGB(12, 194, 170)");
+							domain_button.appendChild(document.createTextNode("검사"));
+							break;
+
+						case 'age':
+							domain_button.setAttribute("class", "btn btn-warning btn-sm float-left");
+							domain_button.setAttribute("style", "margin-right: 10px; background-color:RGB(252, 193, 0)");
+							domain_button.appendChild(document.createTextNode("나이"));
+							break;
+						case 'gender':
+							domain_button.setAttribute("class", "btn btn-warning btn-sm float-left");
+							domain_button.setAttribute("style", "margin-right: 10px; background-color:RGB(252, 193, 0)");
+							domain_button.appendChild(document.createTextNode("성별"));
+							break;
+						case 'user_define':
+							domain_button.setAttribute("class", "btn btn-outline-secondary btn-sm float-left");
+							domain_button.setAttribute("style", "margin-right: 10px; border-color:RGB(161, 128, 218)");
+							domain_button.appendChild(document.createTextNode("U.D."));
+							break;
+						case 'sql':
+							domain_button.setAttribute("class", "btn btn-outline-warning btn-sm float-left");
+							domain_button.setAttribute("style", "margin-right: 10px; border-color:RGB(252, 193, 0)");
+							domain_button.appendChild(document.createTextNode("SQL"));
+							break;
+					}
+					domain_button.setAttribute("type", "button");
+					domain_button.setAttribute("disabled", "");
+
+					var title_text = document.createTextNode(criteria.title);
+					context_div.appendChild(domain_button);
+					context_div.appendChild(title_text);
+					criteria_button.appendChild(context_div);
+
+					if (mid == 'no') {
+						var delete_button = document.createElement("button");
+						criteria_div.appendChild(delete_button);
+						delete_button.setAttribute("class", "btn btn-outline-info btn-sm float-right");
+						delete_button.setAttribute("id", criteria.id);
+						delete_button.setAttribute("style", "height:50px; border-color:transparent;");
+						delete_button.setAttribute('onclick', 'delete_item("in", id, "'+criteria_mid_id+'"); event.stopPropagation();');
+
+						delete_button_icon = document.createElement("i");
+						delete_button_icon.setAttribute("class", "fas fa-trash");
+						delete_button.appendChild(delete_button_icon);
+
+					}
+
+					if(addition == 'yes'){
+						var durtaion_div = document.createElement("div");
+						durtaion_div.setAttribute("style", "margin-left: 30px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; margin-top:1px; color:rgb(106,115,124); font-size:12px");
+						durtaion_div.setAttribute("id", duration_div + criteria.id);
+
+						if (criteria.addition_text == null) data_addition = "";
+						var duration_text = document.createTextNode(criteria.addition_text);
+						durtaion_div.appendChild(duration_text);
+						context_div.appendChild(durtaion_div);
+					}
+
+
+					break;
+
+				case 'exclusion':
+					var small_id = itemlist_tmp_ex[criteria_mid_id].small.map(function(e){return e.id;}).indexOf(Number(criteria.id));
+					if(small_id > 0 && mid=='no' && state_tmp_ex[criteria_mid_id][Number(small_id)-1].isdivider == 'yes'){
+						$('#state_select_ex_'+criteria_mid_id+'_'+state_tmp_ex[criteria_mid_id][Number(small_id)-1].id)[0].childNodes[1].childNodes[0].setAttribute("onclick", "state_button_text_setting(id, 'state_select_ex_"+criteria_mid_id+"_"+criteria.id+"_select', 'ex', 'no', '0', 'yes')");
+						$('#state_select_ex_'+criteria_mid_id+'_'+state_tmp_ex[criteria_mid_id][Number(small_id)-1].id)[0].childNodes[1].childNodes[1].setAttribute("onclick", "state_button_text_setting(id, 'state_select_ex_"+criteria_mid_id+"_"+criteria.id+"_select', 'ex', 'no', '0', 'yes')");
+						$('#state_select_ex_'+criteria_mid_id+'_'+state_tmp_ex[criteria_mid_id][Number(small_id)-1].id)[0].childNodes[1].childNodes[2].setAttribute("onclick", "state_button_text_setting(id, 'state_select_ex_"+criteria_mid_id+"_"+criteria.id+"_select', 'ex', 'no', '0', 'yes')");
+						document.getElementById("state_select_ex_"+criteria_mid_id+"_"+state_tmp_ex[criteria_mid_id][Number(small_id)-1].id+"_select").setAttribute("id", "state_select_ex_"+criteria_mid_id+"_"+criteria.id+"_select")
+						document.getElementById("state_select_ex_"+criteria_mid_id+"_"+state_tmp_ex[criteria_mid_id][Number(small_id)-1].id).setAttribute("id", "state_select_ex_"+criteria_mid_id+"_"+criteria.id);
+						state_tmp_ex[criteria_mid_id][Number(small_id)-1].id = String(criteria.id);
+					}
+
+					criteria_div.setAttribute("id", div_name + criteria.id);
+					document.getElementById(parent).appendChild(criteria_div);
+					criteria_button.setAttribute("class", "btn btn-outline-info btn-square");
+					criteria_button.setAttribute("type", "button");
+					criteria_button.setAttribute("id", button_name +"ex_"+ criteria.id);
+					if(mid == 'no') criteria_button.setAttribute("onclick", "criteria_button_clicked('ex', id, '"+criteria_mid_id+"')");
+					var title_text = document.createTextNode(criteria.title);
+					criteria_button.setAttribute("style", "border-left-width:10px; width:90%; height: 50px; text-align:left; background-color:transparent");
+
+					var context_div = document.createElement("div");
+					context_div.setAttribute("style", "margin-left : 10px; vertical-align:middle; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; width: 90%; color:rgb(78,85,92)");
+					var domain_button = document.createElement("button");
+					switch (criteria.table) {
+						case 'drug':
+							domain_button.setAttribute("class", "btn btn-danger btn-sm float-left");
+							domain_button.setAttribute("style", "margin-right: 10px; background-color:RGB(244, 68, 85)");
+							domain_button.appendChild(document.createTextNode("약물"));
+							break;
+						case 'condition':
+							domain_button.setAttribute("class", "btn btn-success btn-sm float-left");
+							domain_button.setAttribute("style", "margin-right: 10px; background-color:RGB(95, 194, 126)");
+							domain_button.appendChild(document.createTextNode("진단"));
+							break;
+						case 'measurement':
+							domain_button.setAttribute("class", "btn btn-primary btn-sm float-left");
+							domain_button.setAttribute("style", "margin-right: 10px; background-color:RGB(12, 194, 170)");
+							domain_button.appendChild(document.createTextNode("검사"));
+							break;
+						case 'observation':
+							domain_button.setAttribute("class", "btn btn-primary btn-sm float-left");
+							domain_button.setAttribute("style", "margin-right: 10px; background-color:RGB(12, 194, 170)");
+							domain_button.appendChild(document.createTextNode("검사"));
+							break;
+
+						case 'age':
+							domain_button.setAttribute("class", "btn btn-warning btn-sm float-left");
+							domain_button.setAttribute("style", "margin-right: 10px; background-color:RGB(252, 193, 0)");
+							domain_button.appendChild(document.createTextNode("나이"));
+							break;
+						case 'gender':
+							domain_button.setAttribute("class", "btn btn-warning btn-sm float-left");
+							domain_button.setAttribute("style", "margin-right: 10px; background-color:RGB(252, 193, 0)");
+							domain_button.appendChild(document.createTextNode("성별"));
+							break;
+						case 'user_define':
+							domain_button.setAttribute("class", "btn btn-outline-secondary btn-sm float-left");
+							domain_button.setAttribute("style", "margin-right: 10px; border-color:RGB(161, 128, 218)");
+							domain_button.appendChild(document.createTextNode("U.D."));
+							break;
+						case 'sql':
+							domain_button.setAttribute("class", "btn btn-outline-warning btn-sm float-left");
+							domain_button.setAttribute("style", "margin-right: 10px; border-color:RGB(252, 193, 0)");
+							domain_button.appendChild(document.createTextNode("SQL"));
+							break;
+					}
+					domain_button.setAttribute("type", "button");
+					domain_button.setAttribute("disabled", "");
+					var title_text = document.createTextNode(criteria.title);
+					context_div.appendChild(domain_button);
+					context_div.appendChild(title_text);
+
+					criteria_button.appendChild(context_div);
+
+					if (mid == 'no') {
+						var delete_button = document.createElement("button");
+						criteria_div.appendChild(delete_button);
+						delete_button.setAttribute("class", "btn btn-outline-info btn-sm float-right");
+						delete_button.setAttribute("id", criteria.id);
+						delete_button.setAttribute("style", "height:50px; border-color:transparent;");
+						delete_button.setAttribute('onclick', 'delete_item("ex", id, "'+criteria_mid_id+'"); event.stopPropagation();');
+
+						delete_button_icon = document.createElement("i");
+						delete_button_icon.setAttribute("class", "fas fa-trash");
+						delete_button.appendChild(delete_button_icon);
+
+					}
+
+					if(addition == 'yes'){
+						var durtaion_div = document.createElement("div");
+						durtaion_div.setAttribute("style", "margin-left: 30px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; margin-top:1px; color:rgb(106,115,124); font-size:12px");
+						durtaion_div.setAttribute("id", "duration_small_" + criteria.id);
+
+						if (criteria.addition_text == null) data_addition = "";
+						var duration_text = document.createTextNode(criteria.addition_text);
+						durtaion_div.appendChild(duration_text);
+						context_div.appendChild(durtaion_div);
+					}
+					break;
+			}
+		}
+
+		function delete_item(status, id, mid_id) {
+			var small_id;
+			var state_tmp = [];
+			switch(status){
+				case 'in':
+					small_id = itemlist_tmp_in[mid_id].small.map(function (e) { return e.id; }).indexOf(Number(id));
+					state_tmp = state_tmp_in[mid_id];
+					if(Number(small_id) > 0 && Number(small_id)!=divider_index_in[mid_id]) {
+						if(Number(small_id+1) == divider_index_in[mid_id]){
+							divider_index_in[mid_id] = null;
+							divider_count_in = 0;
+						}
+						state_tmp.splice(Number(small_id-1), 1);
+						jQuery('#state_select_'+status+'_'+mid_id+'_'+id).remove();
+					}
+					else if(Number(small_id) == 0 || Number(small_id) == divider_index_in[mid_id]){
+						state_tmp.splice(Number(small_id-1), 1);
+						
+						if(itemlist_tmp_in[mid_id].small.length > small_id + 1){
+							var next_id;
+							next_id = itemlist_tmp_in[mid_id].small[small_id+1].id;
+							jQuery('#state_select_'+status+'_'+mid_id+'_'+next_id).remove();
+							if(Number(small_id) == divider_index_in[mid_id]){
+								var divider_tmp = document.getElementById("state_select_"+status+'_'+mid_id+"_"+id);
+								divider_tmp.childNodes[1].childNodes[0].setAttribute("onclick", "state_button_text_setting(id, 'state_select_"+status+'_'+mid_id+"_"+next_id+"_select', '"+status+"', 'no', '0', '"+state_tmp[Number(small_id-1)].isdivider+"')");
+								divider_tmp.childNodes[1].childNodes[1].setAttribute("onclick", "state_button_text_setting(id, 'state_select_"+status+'_'+mid_id+"_"+next_id+"_select', '"+status+"', 'no', '0', '"+state_tmp[Number(small_id-1)].isdivider+"')");
+								divider_tmp.childNodes[1].childNodes[2].setAttribute("onclick", "state_button_text_setting(id, 'state_select_"+status+'_'+mid_id+"_"+next_id+"_select', '"+status+"', 'no', '0', '"+state_tmp[Number(small_id-1)].isdivider+"')");
+								divider_tmp.setAttribute("id","state_select_"+status+'_'+mid_id+"_"+next_id);
+
+								divider_tmp = document.getElementById("state_select_"+status+'_'+mid_id+"_"+id+"_select");
+								divider_tmp.setAttribute("id","state_select_"+status+'_'+mid_id+"_"+next_id+"_select");
+							}
+						}
+						else{
+							jQuery('#state_select_'+status+'_'+mid_id+'_'+id).remove();
+							var divider_button_div =  document.createElement("div");
+							divider_button_div.setAttribute("id", "divider_button_"+status+"_"+mid_id);
+							document.getElementById('mid_body_'+status+"_"+mid_id).insertBefore(divider_button_div, document.getElementById('mid_body_'+status+"_"+mid_id).childNodes[2]);
+
+							var divider_button = document.createElement("button");
+							divider_button.setAttribute("class", "btn btn-outline-info w-100 mt-2");
+							divider_button.setAttribute("style", "border-style:dotted;");
+							divider_button.appendChild(document.createTextNode("Insert divider"));
+							divider_button.setAttribute("onclick", "add_state_select_button('criteria_"+status+"_"+mid_id+"', 'state_select_in_"+mid_id+"_"+age_item+"', 'no' ,'AND', 'yes', 'yes' )");
+							divider_button_div.appendChild(divider_button);
+							divider_count_in[mid_id]--;
+							first_divider_in[mid_id] = false;
+							divider_index_in[mid_id] = null;
+						}
+					}
+					itemlist_tmp_in[mid_id].small.splice(itemlist_tmp_in[mid_id].small.map(function (e) { return e.id; }).indexOf(Number(id)), 1);
+					jQuery('#button_div_small_' + id).remove();
+				break;
+
+				case 'ex':
+					small_id = itemlist_tmp_ex[mid_id].small.map(function (e) { return e.id; }).indexOf(Number(id));
+					state_tmp = state_tmp_ex[mid_id];
+					if(small_id > 0 && small_id!=divider_index_ex[mid_id]) {
+						if(Number(small_id+1) == divider_index_ex[mid_id]){
+							divider_index_ex[mid_id] = null;
+							divider_count_ex = 0;
+						}
+						state_tmp.splice(Number(small_id-1), 1);
+						jQuery('#state_select_'+status+'_'+mid_id+'_'+id).remove();
+					}
+					else if(Number(small_id) == 0 || Number(small_id) == divider_index_ex[mid_id]){
+						state_tmp.splice(Number(small_id-1), 1);
+
+						if(itemlist_tmp_ex[mid_id].small.length > small_id + 1){
+
+							var next_id;
+							next_id = itemlist_tmp_ex[mid_id].small[small_id+1].id;
+							jQuery('#state_select_'+status+'_'+mid_id+'_'+next_id).remove();
+							if(Number(small_id) == divider_index_ex[mid_id]){
+								var divider_tmp = document.getElementById("state_select_"+status+'_'+mid_id+"_"+id);
+								divider_tmp.removeAttribute("id");
+								divider_tmp.setAttribute("id","state_select_"+status+'_'+mid_id+"_"+next_id);
+								divider_tmp = document.getElementById("state_select_"+status+'_'+mid_id+"_"+id+"_select");
+								divider_tmp.removeAttribute("onclick");
+								divider_tmp.setAttribute("onclick", "add_state_select_button('criteria_"+status+"_"+mid_id+"', 'state_select_"+status+'_'+mid_id+"_"+next_id+"', 'no' ,'AND', 'yes', 'yes' )");
+								divider_tmp.removeAttribute("id");
+								divider_tmp.setAttribute("id","state_select_"+status+'_'+mid_id+"_"+next_id+"_select");
+							}
+						}
+						else{
+							jQuery('#state_select_'+status+'_'+mid_id+'_'+id).remove();
+							var divider_button_div =  document.createElement("div");
+							divider_button_div.setAttribute("id", "divider_button_"+status+"_"+mid_id);
+							document.getElementById('mid_body_'+status+"_"+mid_id).insertBefore(divider_button_div, document.getElementById('mid_body_'+status+"_"+mid_id).childNodes[2]);
+
+							var divider_button = document.createElement("button");
+							divider_button.setAttribute("class", "btn btn-outline-info w-100 mt-2");
+							divider_button.setAttribute("style", "border-style:dotted;");
+							divider_button.appendChild(document.createTextNode("Insert divider"));
+							divider_button.setAttribute("onclick", "add_state_select_button('criteria_"+status+"_"+mid_id+"', 'state_select_ex_"+mid_id+"_"+age_item+"', 'no' ,'AND', 'yes', 'yes' )");
+							divider_button_div.appendChild(divider_button);
+							divider_count_ex[mid_id]--;
+							first_divider_ex[mid_id] = false;
+							divider_index_ex[mid_id] = null;
+						}
+
+					}
+					itemlist_tmp_ex[mid_id].small.splice(itemlist_tmp_ex[mid_id].small.map(function (e) { return e.id; }).indexOf(Number(id)), 1);
+					jQuery('#button_div_small_' + id).remove();
+				break;
+			}
+			for(var i = 0; i < state_tmp.length; i++){
+				switch(status){
+					case 'in':
+						state_button_text_setting(state_tmp[i].state, "state_select_in_"+mid_id+"_"+itemlist_tmp_in[mid_id].small[i+1].id, status, "yes", "1", state_tmp[i].isdivider);
+					break;
+
+					case 'ex':
+						state_button_text_setting(state_tmp[i].state, "state_select_ex_"+mid_id+"_"+itemlist_tmp_ex[mid_id].small[i+1].id, status, "yes", "1", state_tmp[i].isdivider);
+					break;
+				}
+			}
+
+			switch(status){
+				case 'in':
+					state_tmp_in[mid_id] = state_tmp;
+				break;
+
+				case 'ex':
+					state_tmp_ex[mid_id] = state_tmp;
+				break;
+			}
+
+
+		}
+
+		function delete_mid(status, id) {
+			var id_array = id.split("_");
+			var div_id = id_array[2];
+			var first = jQuery('#mid_body_'+status+'_'+div_id)[0].firstChild.id.split("_");
+
+			switch (status) {
+				case 'in':
+					if(first[0] != "edit") edit_count_in--;
+					itemlist_mid_in.splice(itemlist_mid_in.map(function (e) { return e.id; }).indexOf(Number(div_id)), 1);
+					jQuery('#button_div_' + status + "_" + div_id).remove();
+					break;
+				case 'ex':
+					if(first[0] != "edit") edit_count_ex--;
+					itemlist_mid_ex.splice(itemlist_mid_ex.map(function (e) { return e.id; }).indexOf(Number(div_id)), 1);
+					jQuery('#button_div_' + status + "_" + div_id).remove();
+					break;
+
+			}
+		}
+
+		function select_table_criteria(id, mid_id, status) {
+			document.getElementById('selected_table_'+status+'_'+mid_id).value = id;
+			in_table = id;
+			ex_table = id;
+			switch (id) {
+				case 'age':
+					document.getElementById('selected_table_'+status+'_'+mid_id).textContent = "나이";
+					break;
+				case 'gender':
+					document.getElementById('selected_table_'+status+'_'+mid_id).textContent = "성별";
+					newj("#"+status+"_"+mid_id).attr("placeholder", "성별을 입력하세요. (예: Male, Female, Both)");
+					break;
+				case 'drug':
+					document.getElementById('selected_table_'+status+'_'+mid_id).textContent = "약물";
+					newj("#"+status+"_"+mid_id).attr("placeholder", "성분명을 입력하세요. (예: metformin)");
+					selected_category = "drug";
+					break;
+				case 'condition':
+					document.getElementById('selected_table_'+status+'_'+mid_id).textContent = "진단";
+					newj("#"+status+"_"+mid_id).attr("placeholder", "진단명을 입력하세요. (예: Diabetes Mellitus)");
+					selected_category = "condition";
+					break;
+				case 'measurement':
+					document.getElementById('selected_table_'+status+'_'+mid_id).textContent = "검사";
+					newj("#"+status+"_"+mid_id).attr("placeholder", "검사명을 입력하세요. (예: Glucose)");
+					selected_category = "measurement";
+					break;
+				case 'user_define':
+					document.getElementById('selected_table_'+status+'_'+mid_id).textContent = "U.D";
+					newj("#"+status+"_"+mid_id).attr("placeholder", "미리 정의한 User Define을 입력하세요.");
+					selected_category = "user_define";
+					break;
+				case 'sql':
+					document.getElementById('selected_table_'+status+'_'+mid_id).textContent = "SQL";
+					break;
+			}
+
+
+			jQuery("#"+status+"_"+mid_id).autocomplete('destroy').removeClass('xdsoft_input');
+			jQuery("#"+status+"_"+mid_id).autocomplete({
+				valueKey: 'title',
+				source: [{
+					url: "./criteria.jsp?table=" + id,
+					type: 'remote',
+					getValue: function (item) {
+						clicked_item_in = item;
+						clicked_item_ex = item;
+						return item.title
+					},
+					ajax: {
+						dataType: 'json'
+					}
+				}]
+			});
+
+		}
+
+		function mid_clicked(status, id) {
+			var id_pre = id.split("_");
+			var collapse_id = "mid_collapse_t_"+status + "_" + id_pre[2];
+
+			if (newj('#' + collapse_id).attr('class') == 'collapse show')
+				newj('#' + collapse_id).attr('class', 'collapse hide');
+			else if (newj('#' + collapse_id).attr('class') == 'collapse hide') {
+				newj('#' + collapse_id).attr('class', 'collapse show');
+			}
+		}
+
+		function mid_item(status, title="Insert Title") {
+
+			var criteria_div = document.createElement("div");
+			criteria_div.setAttribute("class", "input-group ");
+
+			var criteria_button = document.createElement("button");
+			criteria_div.appendChild(criteria_button);
+
+			switch (status) {
+				case 'in':
+					criteria_div.setAttribute("id", "button_div_in_" + mid_item_identifier_in);
+					document.getElementById("inclusion_criteria").appendChild(criteria_div);
+					criteria_button.setAttribute("id", "button_in_" + mid_item_identifier_in);
+					criteria_button.setAttribute("onclick", "mid_clicked('in', id)");
+					criteria_button.setAttribute("class", "btn btn-info mb-0 mt-2");
+					criteria_button.setAttribute("type", "button");
+					mid_title_in[mid_item_identifier_in] = title;
+					var title_text = document.createTextNode(mid_title_in[mid_item_identifier_in]);
+					criteria_button.setAttribute("style", "width:90%; height: 50px; margin-bottom: 10px; text-align:left; color:white ");
+
+					var context_div = document.createElement("div");
+					context_div.setAttribute("class", "form-inline");
+					context_div.setAttribute("id", "context_div_"+status+"_"+mid_item_identifier_in);
+					context_div.setAttribute("style", "margin-left : 10px; display:inline; vertical-align:middle; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; width: 90%; ");
+					criteria_button.appendChild(context_div);
+
+					var modify_title_button = document.createElement("button");
+					modify_title_button.setAttribute("class", "btn float-right");
+					modify_title_button.setAttribute("id", "modify_title_"+status+"_"+mid_item_identifier_in);
+					modify_title_button.setAttribute("style", "border-color:transparent; background-color:transparent; color:white");
+					modify_title_button.setAttribute("onclick", 'modify_title(id); event.stopPropagation();');
+					
+					context_div.appendChild(title_text);
+					context_div.appendChild(modify_title_button);
+
+					var modify_icon = document.createElement("i");
+					modify_icon.setAttribute("class", "fas fa-pen");
+					modify_title_button.appendChild(modify_icon);
+
+					var delete_button = document.createElement("button");
+					criteria_div.appendChild(delete_button);
+					delete_button.setAttribute("class", "btn btn-outline-info btn-sm float-right mt-2");
+					delete_button.setAttribute("id", "delete_mid_" + mid_item_identifier_in);
+					delete_button.setAttribute("style", " height:50px; border-color:transparent;");
+					delete_button.setAttribute('onclick', 'delete_mid("in", id);');
+
+					delete_button_icon = document.createElement("i");
+					delete_button_icon.setAttribute("class", "fas fa-trash");
+					delete_button.appendChild(delete_button_icon);
+
+					var criteria_collapse_div = document.createElement("div");
+					criteria_collapse_div.setAttribute("class", "collapse hide");
+					criteria_collapse_div.setAttribute("style", "width: 90%");
+					criteria_collapse_div.setAttribute("id", "mid_collapse_t_"+status + "_" + mid_item_identifier_in);
+
+					var collapse_card_body = document.createElement("div");
+					collapse_card_body.setAttribute("class", "card card-body");
+					collapse_card_body.setAttribute("style", "border-color : rgb(91,125,255)")
+					collapse_card_body.setAttribute("id", "mid_body_" + status + "_" + mid_item_identifier_in);
+					criteria_collapse_div.appendChild(collapse_card_body);
+					criteria_div.appendChild(criteria_collapse_div);
+
+					var input_criteria_button = document.createElement("button");
+					input_criteria_button.setAttribute("id", "edit_button_"+status+"_"+mid_item_identifier_in);
+					input_criteria_button.setAttribute("class", "btn btn-primary ");
+					input_criteria_button.setAttribute("style", "width : 20%; margin-left:80%; margin-bottom : 10px ");
+					input_criteria_button.setAttribute("onclick", "criteria_edit('" + status + "', 'mid_body_"+status + "_" + mid_item_identifier_in + "')");
+					input_criteria_button.appendChild(document.createTextNode("Edit Criteria"));
+
+					var criterias_div = document.createElement("div");
+					criterias_div.setAttribute("id", "mid_collapse_" +status + "_"+ mid_item_identifier_in);
+
+					collapse_card_body.appendChild(input_criteria_button);
+					collapse_card_body.appendChild(criterias_div);
+
+					//mid content
+					var mid_obj = new Object();
+					mid_obj.title = "title";
+					mid_obj.id = mid_item_identifier_in;
+					mid_obj.small = [];
+
+					itemlist_mid_in[mid_item_identifier_in] = mid_obj;
+
+					//mid state content
+					itemlist_state_in[mid_item_identifier_in] = [];
+					divider_count_in[mid_item_identifier_in] = 0;
+					divider_index_in[mid_item_identifier_in] = null;
+					first_mid_state_in[mid_item_identifier_in] = true;
+					mid_item_identifier_in = mid_item_identifier_in + 1;
+
+					break;
+
+				case 'ex':
+					criteria_div.setAttribute("id", "button_div_ex_" + mid_item_identifier_ex);
+					document.getElementById("exclusion_criteria").appendChild(criteria_div);
+					criteria_button.setAttribute("id", "button_ex_" + mid_item_identifier_ex);
+					criteria_button.setAttribute("onclick", "mid_clicked('ex', id)");
+					criteria_button.setAttribute("class", "btn btn-danger mb-0 mt-2");
+					criteria_button.setAttribute("type", "button");
+					mid_title_ex[mid_item_identifier_ex] = title;
+					var title_text = document.createTextNode(mid_title_ex[mid_item_identifier_ex]);
+					criteria_button.setAttribute("style", "width:90%; height: 50px; margin-bottom: 10px; text-align:left; color:white ");
+
+					var context_div = document.createElement("div");
+					context_div.setAttribute("class", "form-inline");
+					context_div.setAttribute("id", "context_div_"+status+"_"+mid_item_identifier_ex);
+					context_div.setAttribute("style", "margin-left : 10px; display:inline; vertical-align:middle; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; width: 90%;");
+					criteria_button.appendChild(context_div);
+
+					var modify_title_button = document.createElement("button");
+					modify_title_button.setAttribute("class", "btn float-right");
+					modify_title_button.setAttribute("id", "modify_title_"+status+"_"+mid_item_identifier_ex);
+					modify_title_button.setAttribute("style", "border-color:transparent; background-color:transparent; color:white ");
+					modify_title_button.setAttribute("onclick", 'modify_title(id); event.stopPropagation();');
+					
+					context_div.appendChild(title_text);
+					context_div.appendChild(modify_title_button);
+
+					var modify_icon = document.createElement("i");
+					modify_icon.setAttribute("class", "fas fa-pen");
+					modify_title_button.appendChild(modify_icon);
+
+					var delete_button = document.createElement("button");
+					criteria_div.appendChild(delete_button);
+					delete_button.setAttribute("class", "btn btn-outline-danger btn-sm float-right mt-2");
+					delete_button.setAttribute("id", "delete_mid_" + mid_item_identifier_ex);
+					delete_button.setAttribute("style", " height:50px; border-color:transparent;");
+					delete_button.setAttribute('onclick', 'delete_mid("ex", id);');
+
+					delete_button_icon = document.createElement("i");
+					delete_button_icon.setAttribute("class", "fas fa-trash");
+					delete_button.appendChild(delete_button_icon);
+
+					var criteria_collapse_div = document.createElement("div");
+					criteria_collapse_div.setAttribute("class", "collapse hide");
+					criteria_collapse_div.setAttribute("style", "width: 90%");
+					criteria_collapse_div.setAttribute("id", "mid_collapse_t_"+status + "_" + mid_item_identifier_ex);
+
+					var collapse_card_body = document.createElement("div");
+					collapse_card_body.setAttribute("class", "card card-body");
+					collapse_card_body.setAttribute("style", "border-color : rgb(244,63,79)")
+					collapse_card_body.setAttribute("id", "mid_body_" + status + "_" + mid_item_identifier_ex);
+					criteria_collapse_div.appendChild(collapse_card_body);
+					criteria_div.appendChild(criteria_collapse_div);
+
+					var input_criteria_button = document.createElement("button");
+					input_criteria_button.setAttribute("id", "edit_button_"+status+"_"+mid_item_identifier_ex);
+					input_criteria_button.setAttribute("class", "btn btn-primary ");
+					input_criteria_button.setAttribute("style", "width : 20%; margin-left:80%; margin-bottom : 10px ");
+					input_criteria_button.setAttribute("onclick", "criteria_edit('" + status + "', 'mid_body_"+status + "_" + mid_item_identifier_ex + "')");
+					input_criteria_button.appendChild(document.createTextNode("Edit Criteria"));
+
+					var criterias_div = document.createElement("div");
+					criterias_div.setAttribute("id", "mid_collapse_" +status + "_"+ mid_item_identifier_ex);
+
+					collapse_card_body.appendChild(input_criteria_button);
+					collapse_card_body.appendChild(criterias_div);
+
+					//mid content
+					var mid_obj = new Object();
+					mid_obj.title = "title";
+					mid_obj.id = mid_item_identifier_ex;
+					mid_obj.small = [];
+
+					itemlist_mid_ex[mid_item_identifier_ex] = mid_obj;
+
+					//mid state content
+					itemlist_state_ex[mid_item_identifier_ex] = [];
+					divider_count_ex[mid_item_identifier_ex] = 0;
+					divider_index_ex[mid_item_identifier_ex] = null;
+					first_mid_state_ex[mid_item_identifier_ex] = true;
+
+					mid_item_identifier_ex = mid_item_identifier_ex + 1;
+
+					break;
+			}
+			
+		}
+
+		function modify_title(id){
+			var input_array = id.split("_");
+			var context_div = document.getElementById("context_div_"+input_array[2]+"_"+input_array[3]);
+			while(context_div.hasChildNodes()) context_div.removeChild(context_div.firstChild);
+
+			var title_input = document.createElement("input");
+			title_input.setAttribute("type", "text");
+			title_input.setAttribute("id", "new_mid_title_"+input_array[2]+"_"+input_array[3]);
+			title_input.setAttribute("class", "form-control");
+			title_input.setAttribute("style", "width:90%");
+
+			context_div.appendChild(title_input);
+
+			switch(input_array[2]){
+				case 'in':
+					document.getElementById("new_mid_title_"+input_array[2]+"_"+input_array[3]).value = mid_title_in[input_array[3]];
+				break;
+
+				case 'ex':
+					document.getElementById("new_mid_title_"+input_array[2]+"_"+input_array[3]).value = mid_title_ex[input_array[3]];
+				break;
+			}
+
+			var modify_end_title_button = document.createElement("button");
+			modify_end_title_button.setAttribute("class", "btn float-right");
+			modify_end_title_button.setAttribute("id", "modify_end_title_"+input_array[2]+"_"+input_array[3]);
+			modify_end_title_button.setAttribute("style", "border-color:transparent; background-color:transparent; color:white");
+			modify_end_title_button.setAttribute("onclick", 'modify_end_title(id); event.stopPropagation();');
+			
+			var modify_end_icon = document.createElement("i");
+			modify_end_icon.setAttribute("class", "fas fa-check");
+
+			modify_end_title_button.appendChild(modify_end_icon);
+			context_div.appendChild(modify_end_title_button);
+
+			var insert_focus = document.querySelector("#new_mid_title_"+input_array[2]+"_"+input_array[3]);
+			insert_focus.addEventListener('click', function(event){
+				event.stopPropagation();
+			}, false);
+
+			insert_focus.addEventListener('keydown', function(event){
+				if(event.keyCode === 32){
+					document.getElementById("new_mid_title_"+input_array[2]+"_"+input_array[3]).value = document.getElementById("new_mid_title_"+input_array[2]+"_"+input_array[3]).value + " "
+					event.preventDefault();
+				} 
+			}, false);
+		}
+
+		function modify_end_title(id){
+			var input_array = id.split("_");
+			var input_status = input_array[3];
+
+			switch(input_status){
+				case 'in':
+					mid_title_in[input_array[4]] = document.getElementById("new_mid_title_"+input_array[3]+"_"+input_array[4]).value;
+					var context_div = document.getElementById("context_div_"+input_array[3]+"_"+input_array[4]);
+					while(context_div.hasChildNodes()) context_div.removeChild(context_div.firstChild);
+
+					context_div.appendChild(document.createTextNode(mid_title_in[input_array[4]]));
+
+					var modify_title_button = document.createElement("button");
+					modify_title_button.setAttribute("class", "btn float-right");
+					modify_title_button.setAttribute("id", "modify_title_"+input_array[3]+"_"+input_array[4]);
+					modify_title_button.setAttribute("style", "border-color:transparent; background-color:transparent; color:white");
+					modify_title_button.setAttribute("onclick", 'modify_title(id); event.stopPropagation();');
+					
+					context_div.appendChild(modify_title_button);
+
+					var modify_icon = document.createElement("i");
+					modify_icon.setAttribute("class", "fas fa-pen");
+					modify_title_button.appendChild(modify_icon);
+
+				break;
+
+				case 'ex':
+					mid_title_ex[input_array[4]] = document.getElementById("new_mid_title_"+input_array[3]+"_"+input_array[4]).value;
+					var context_div = document.getElementById("context_div_"+input_array[3]+"_"+input_array[4]);
+					while(context_div.hasChildNodes()) context_div.removeChild(context_div.firstChild);
+
+					context_div.appendChild(document.createTextNode(mid_title_ex[input_array[4]]));
+
+					var modify_title_button = document.createElement("button");
+					modify_title_button.setAttribute("class", "btn float-right");
+					modify_title_button.setAttribute("id", "modify_title_"+input_array[3]+"_"+input_array[4]);
+					modify_title_button.setAttribute("style", "border-color:transparent; background-color:transparent; color:white");
+					modify_title_button.setAttribute("onclick", 'modify_title(id); event.stopPropagation();');
+					
+					context_div.appendChild(modify_title_button);
+
+					var modify_icon = document.createElement("i");
+					modify_icon.setAttribute("class", "fas fa-pen");
+					modify_title_button.appendChild(modify_icon);
+
+
+				break;
+			}
+
+		}
+
+		function criteria_edit(status, parent) {
+			var id_input = parent.split("_");
+			var criteria_mid_id = id_input[3];
+			var criteria_parent = parent;
+			var criteria_status = status;
+
+			change_to_search(status, "edit_button_"+status+"_"+criteria_mid_id, criteria_mid_id);
+
+			var criteria_small_div = document.createElement("div");
+			document.getElementById(parent).appendChild(criteria_small_div);
+			criteria_small_div.setAttribute("id", "criteria_" +status+"_"+ criteria_mid_id);
+
+			if(status == "in" && divider_count_in[criteria_mid_id] == 0){
+				var divider_button_div =  document.createElement("div");
+				divider_button_div.setAttribute("id", "divider_button_"+status+"_"+criteria_mid_id);
+				document.getElementById(parent).appendChild(divider_button_div);
+
+				var divider_button = document.createElement("button");
+				divider_button.setAttribute("class", "btn btn-outline-info w-100 mt-2");
+				divider_button.setAttribute("style", "border-style:dotted;");
+				divider_button.appendChild(document.createTextNode("Insert divider"));
+				divider_button_div.appendChild(divider_button);
+
+			}
+			else if(status == "ex" && divider_count_ex[criteria_mid_id] == 0){
+				var divider_button_div =  document.createElement("div");
+				divider_button_div.setAttribute("id", "divider_button_"+status+"_"+criteria_mid_id);
+				document.getElementById(parent).appendChild(divider_button_div);
+
+				var divider_button = document.createElement("button");
+				divider_button.setAttribute("class", "btn btn-outline-info w-100 mt-2");
+				divider_button.setAttribute("style", "border-style:dotted;");
+				divider_button.appendChild(document.createTextNode("Insert divider"));
+				divider_button_div.appendChild(divider_button);
+			}
+
+			var finish_button_div = document.createElement("div");
+			finish_button_div.setAttribute("id", "finish_button_"+status+"_"+criteria_mid_id);
+			document.getElementById(parent).appendChild(finish_button_div);
+			
+			var finish_button = document.createElement("button");
+			finish_button.setAttribute("class", "btn float-right");
+			finish_button.setAttribute("style", "margin-top:10px; background-color:rgb(196,229,254); border-color:rgb(196,229,254)");
+			finish_button.appendChild(document.createTextNode("Finish"));
+			finish_button_div.appendChild(finish_button);
+
+
+			switch(status){
+				case 'in':
+					var now_mid_id = criteria_mid_id;
+					if(divider_count_in[criteria_mid_id] == 0){
+						divider_button.setAttribute("onclick", "add_state_select_button('criteria_"+status+"_"+criteria_mid_id+"', 'state_select_in_"+criteria_mid_id+"_"+last_row_num+"', 'no' ,'AND', 'yes', 'yes' )");
+					}
+
+					finish_button.setAttribute("onclick", "change_to_edit('" + status + "', 'mid_body_in_" + criteria_mid_id + "', '"+criteria_mid_id+"', '"+now_mid_id+"')");
+					itemlist_tmp_in[now_mid_id] = itemlist_mid_in[now_mid_id];
+					state_tmp_in[now_mid_id] = itemlist_state_in[now_mid_id];
+
+					for(var i = 0; i < itemlist_mid_in[now_mid_id].small.length; i++){
+						if(i != 0) add_state_select_button("criteria_"+status+"_" + criteria_mid_id, "state_select_in_"+criteria_mid_id+"_"+itemlist_mid_in[now_mid_id].small[i].id, "no", itemlist_state_in[criteria_mid_id][i-1].state, itemlist_state_in[criteria_mid_id][i-1].isdivider, "no");
+						addbutton(itemlist_mid_in[now_mid_id].small[i], "criteria_"+status+"_" + criteria_mid_id, criteria_mid_id, 'no', 'yes', 'button_small_', 'button_div_small_', 'duration_small_');
+					}
+
+					for(var i = 0; i < itemlist_state_in[now_mid_id].length; i++){
+						state_button_text_setting(itemlist_state_in[now_mid_id][i].state, "state_select_in_"+criteria_mid_id+"_"+itemlist_state_in[now_mid_id][i].id, status, "yes", "1", itemlist_state_in[now_mid_id][i].isdivider);
+					}
+
+				break;
+				case 'ex':
+					var now_mid_id = criteria_mid_id;
+					if(divider_count_ex[criteria_mid_id] == 0){
+						divider_button.setAttribute("onclick", "add_state_select_button('criteria_"+status+"_"+criteria_mid_id+"', 'state_select_ex_"+criteria_mid_id+"_"+last_row_num+"', 'no' ,'AND', 'yes', 'yes' )");
+					}
+
+					finish_button.setAttribute("onclick", "change_to_edit('" + status + "', 'mid_body_ex_" + criteria_mid_id + "', '"+criteria_mid_id+"', '"+now_mid_id+"')");
+					itemlist_tmp_ex[now_mid_id] = itemlist_mid_ex[now_mid_id];
+					state_tmp_ex[now_mid_id] = itemlist_state_ex[now_mid_id];
+
+					for(var i = 0; i < itemlist_tmp_ex[now_mid_id].small.length; i++){
+						if(i != 0) add_state_select_button("criteria_"+status+"_" + criteria_mid_id, "state_select_ex_"+criteria_mid_id+"_"+itemlist_tmp_ex[now_mid_id].small[i].id, "no", state_tmp_ex[criteria_mid_id][i-1].state, state_tmp_ex[criteria_mid_id][i-1].isdivider, "no");
+						addbutton(itemlist_tmp_ex[now_mid_id].small[i], "criteria_"+status+"_" + criteria_mid_id, criteria_mid_id, 'no', 'yes', 'button_small_', 'button_div_small_', 'duration_small_');
+					}
+
+					for(var i = 0; i < state_tmp_ex[now_mid_id].length; i++){
+						state_button_text_setting(state_tmp_ex[now_mid_id][i].state, "state_select_ex_"+criteria_mid_id+"_"+itemlist_state_ex[now_mid_id][i].id, status, "yes", "1", itemlist_state_ex[now_mid_id][i].isdivider);
+					}
+				break;
+			}
+		}
+
+		function change_to_edit(status, parent, mid_id, item_id){
+
+			var child_length = document.getElementById("mid_body_"+status+"_"+mid_id).childNodes.length;
+			if(status == 'in' && child_length == 4)
+				document.getElementById("divider_button_"+status+"_"+mid_id).remove();
+			else if(status == 'ex' && child_length == 4)
+				document.getElementById("divider_button_"+status+"_"+mid_id).remove();
+
+			document.getElementById("criteria_div_"+status+"_"+mid_id).remove();
+			document.getElementById("finish_button_"+status+"_"+mid_id).remove();
+			document.getElementById("criteria_"+status+"_"+mid_id).remove();
+
+			switch(status){
+				case 'in':
+					edit_count_in--;
+				break;
+				case 'ex':
+					edit_count_ex--;
+				break;
+			}
+			//add edit_button
+			var criteria_edit_button = document.createElement("button");
+			criteria_edit_button.setAttribute("class", "btn btn-primary");
+			criteria_edit_button.setAttribute("id", "edit_button_"+status+"_"+mid_id);
+			criteria_edit_button.setAttribute("style", "width : 20%; margin-left:80%; margin-bottom : 10px ");
+			criteria_edit_button.setAttribute("onclick", "criteria_edit('" + status + "', 'mid_body_" +status + "_"+ mid_id + "')");
+			criteria_edit_button.appendChild(document.createTextNode("Edit Criteria"));
+			document.getElementById(parent).appendChild(criteria_edit_button);
+
+			var mid_collapse_div = document.createElement("div");
+			mid_collapse_div.setAttribute("id", "mid_collapse_"+status + "_"+mid_id);
+			document.getElementById(parent).appendChild(mid_collapse_div);
+			addcriteria(status, mid_id, "mid_body_"+status + "_"+mid_id, item_id);
+		}
+
+		function change_to_search(status, parent, mid_id){
+
+			switch(status){
+				case 'in':
+					edit_count_in++;
+				break;
+
+				case 'ex':
+					edit_count_ex++;
+				break;
+			}
+			//delete edit button
+			document.getElementById("edit_button_"+status+"_"+mid_id).remove();
+			document.getElementById("mid_collapse_"+status + "_"+mid_id).remove();
+
+			//add search
+			var search_div = document.createElement("div");
+			search_div.setAttribute("class", "input-group mb-2");
+			search_div.setAttribute("id", "criteria_div_"+status+"_"+mid_id);
+			document.getElementById("mid_body_"+status+"_"+mid_id).appendChild(search_div);
+
+			var search_button_div = document.createElement("div");
+			search_button_div.setAttribute("class", "btn-group");
+			search_div.appendChild(search_button_div);
+
+			var search_button = document.createElement("button");
+			search_button.setAttribute("type", "buton");
+			search_button.setAttribute("class", "btn dropdown-toggle");
+			search_button.setAttribute("style", "background-color:rgb(196,229,254); border-color:rgb(196,229,254)");
+			search_button.setAttribute("id", "selected_table_"+status+"_"+mid_id);
+
+			search_button.setAttribute("data-toggle", "dropdown");
+			search_button.setAttribute("aria-haspopup", "true");
+			search_button.setAttribute("aria-expanded", "true");
+			search_button.appendChild(document.createTextNode("Select"));
+
+			search_button_div.appendChild(search_button);
+
+			var button_drop_down = document.createElement("div");
+			button_drop_down.setAttribute("class", "dropdown-menu");
+			search_button_div.appendChild(button_drop_down);
+			
+			var age_a = document.createElement("a");
+			age_a.setAttribute("class", "dropdown-item");
+			age_a.setAttribute("value", "age");
+			age_a.setAttribute("id", "age");
+			age_a.setAttribute("onclick", "insert_etcmodal('age', '"+status+"', '"+mid_id+"')");
+			age_a.appendChild(document.createTextNode("나이"));
+			button_drop_down.appendChild(age_a);
+
+			var gender_a = document.createElement("a");
+			gender_a.setAttribute("class", "dropdown-item");
+			gender_a.setAttribute("value", "gender");
+			gender_a.setAttribute("id", "gender");
+			gender_a.setAttribute("onclick", "select_table_criteria(id, '"+mid_id+"', '"+status+"')");
+			gender_a.appendChild(document.createTextNode("성별"));
+			button_drop_down.appendChild(gender_a);
+			
+			var drug_a = document.createElement("a");
+			drug_a.setAttribute("class", "dropdown-item");
+			drug_a.setAttribute("value", "drug");
+			drug_a.setAttribute("id", "drug");
+			drug_a.setAttribute("onclick", "select_table_criteria(id, '"+mid_id+"', '"+status+"')");
+			drug_a.appendChild(document.createTextNode("약물"));
+			button_drop_down.appendChild(drug_a);
+
+			var condition_a = document.createElement("a");
+			condition_a.setAttribute("class", "dropdown-item");
+			condition_a.setAttribute("value", "condition");
+			condition_a.setAttribute("id", "condition");
+			condition_a.setAttribute("onclick", "select_table_criteria(id, '"+mid_id+"', '"+status+"')");
+			condition_a.appendChild(document.createTextNode("진단"));
+			button_drop_down.appendChild(condition_a);
+
+			var measurement_a = document.createElement("a");
+			measurement_a.setAttribute("class", "dropdown-item");
+			measurement_a.setAttribute("value", "measurement");
+			measurement_a.setAttribute("id", "measurement");
+			measurement_a.setAttribute("onclick", "select_table_criteria(id, '"+mid_id+"', '"+status+"')");
+			measurement_a.appendChild(document.createTextNode("검사"));
+			button_drop_down.appendChild(measurement_a);
+
+			var sql_a = document.createElement("a");
+			sql_a.setAttribute("class", "dropdown-item");
+			sql_a.setAttribute("value", "sql");
+			sql_a.setAttribute("id", "sql");
+			sql_a.setAttribute("onclick", "insert_etcmodal('sql', '"+status+"', '"+mid_id+"')");
+			sql_a.appendChild(document.createTextNode("SQL"));
+			button_drop_down.appendChild(sql_a);
+
+			var user_define_a = document.createElement("a");
+			user_define_a.setAttribute("class", "dropdown-item");
+			user_define_a.setAttribute("value", "user_define");
+			user_define_a.setAttribute("id", "user_define");
+			user_define_a.setAttribute("onclick", "select_table_criteria(id, '"+mid_id+"', '"+status+"')");
+			user_define_a.appendChild(document.createTextNode("U.D"));
+			button_drop_down.appendChild(user_define_a);
+
+			var criteria_text_input = document.createElement("input");
+			criteria_text_input.setAttribute("type", "text");
+			criteria_text_input.setAttribute("class", "form-control");
+			criteria_text_input.setAttribute("placeholder", "CRITERIA");
+			criteria_text_input.setAttribute("id", status+"_"+mid_id);
+			criteria_text_input.setAttribute("onkeyup", "enterkey('in')");
+			search_div.appendChild(criteria_text_input);
+
+			var add_span = document.createElement("span");
+			add_span.setAttribute("class", "input-group-append");
+			search_div.appendChild(add_span);
+
+			var add_button = document.createElement("button");
+			add_button.setAttribute("class", "btn");
+			add_button.setAttribute("style", "background-color:rgb(196,229,254); border-color:rgb(196,229,254)");
+			add_button.setAttribute("type", "button");
+			add_button.setAttribute("onclick", "insert_itemmodal('"+status+"', '"+mid_id+"')");
+			add_button.appendChild(document.createTextNode("Add"));
+			add_span.appendChild(add_button);
+
+			var hier_button = document.createElement("button");
+			hier_button.setAttribute("class", "btn");
+			hier_button.setAttribute("style", "border-color:rgb(196,229,254); background-color:transparent");
+			hier_button.setAttribute("type", "button");
+			hier_button.setAttribute("onclick", "hier_button_click('"+status+"', '"+mid_id+"')");
+			add_span.appendChild(hier_button);
+
+			var hier_icon = document.createElement("i");
+			hier_icon.setAttribute("class", "align-middle mr-2 fas fa-fw fa-project-diagram");
+			hier_button.appendChild(hier_icon);
+
+		}
+
+		function add_state_select_button(parent, div_id, mid = "no", state="AND", divider="no", is_new="yes"){
+			var state_obj = new Object();
+			var state_button_div = document.createElement("div");
+			var status_array = parent.split("_");
+			var status;
+			var mid_id;
+			if(status_array.length > 3){
+				status = status_array[2];
+				mid_id = status_array[3];
+			}
+			else {
+				status = status_array[1];
+				mid_id = status_array[2];	
+			}
+			
+
+			var div_array = div_id.split("_");
+			var small_id = div_array[4];
+			if(divider == "yes" && is_new == "yes") {
+				div_id = div_array[0]+"_"+div_array[1]+"_"+div_array[2]+"_"+div_array[3]+"_"+age_item;
+				small_id = String(age_item);
+			}
+			switch(divider){
+				case 'no':
+					state_button_div.setAttribute("class", "btn-group ml-3");
+				break;
+
+				case 'yes':
+					state_button_div.setAttribute("class", "btn-group mt-2 mb-2 w-100");
+					state_button_div.setAttribute("style", "width:90%");
+				break;
+			}
+			state_button_div.setAttribute("id", div_id);
+			document.getElementById(parent).appendChild(state_button_div);
+
+			var state_button = document.createElement("button");
+			state_button.setAttribute("type", "button");
+			if(mid == "yes"){
+				switch(state){
+					case 'AND':
+						state_button.setAttribute("class", "btn btn-info btn-square");
+					break;
+					
+					case 'OR':
+						state_button.setAttribute("class", "btn btn-success btn-square");
+					break;
+
+					case 'NOT':
+						state_button.setAttribute("class", "btn btn-danger btn-square");
+					break;
+				}
+			}
+			else if(mid == "no"){
+				switch(state){
+					case 'AND':
+						state_button.setAttribute("class", "btn btn-info btn-square dropdown-toggle");
+					break;
+					
+					case 'OR':
+						state_button.setAttribute("class", "btn btn-success btn-square dropdown-toggle");
+					break;
+
+					case 'NOT':
+						state_button.setAttribute("class", "btn btn-danger btn-square dropdown-toggle");
+					break;
+				}
+
+				state_button.setAttribute("data-toggle", "dropdown");
+				state_button.setAttribute("aria-haspopup", "true");
+				state_button.setAttribute("aria-expanded", "false");
+			}
+			switch(divider){
+				case 'no':
+					state_button.setAttribute("style", "font-size:12px");
+				break;
+
+				case 'yes':
+					state_button.setAttribute("style", "font-size:12px; width:96%");
+					if(status == 'in') {
+						if(is_new == 'yes'){
+							first_mid_state_in[mid_id] = true;
+							divider_index_in[mid_id] = itemlist_mid_in[mid_id].small.length; 
+							divider_count_in[mid_id]++;
+							document.getElementById("divider_button_in_"+mid_id).remove();
+						}
+						else{
+							var tmp_state_id = itemlist_tmp_in[mid_id].small.map(function (e) { return e.id; }).indexOf(Number(small_id));
+							divider_index_in[mid_id] = tmp_state_id;
+							if(first_divider_in[mid_id] == false){
+								divider_count_in[mid_id]++;
+								first_divider_in[mid_id] = true;
+							}
+						}
+					}
+					else if(status == 'ex') {
+						if(is_new == 'yes'){
+							first_mid_state_ex[mid_id] = true;
+							divider_index_ex[mid_id] = itemlist_mid_ex[mid_id].small.length;
+							divider_count_ex[mid_id]++;
+							document.getElementById("divider_button_ex_"+mid_id).remove();
+						}
+						else{
+							var tmp_state_id = itemlist_tmp_ex[mid_id].small.map(function (e) { return e.id; }).indexOf(Number(small_id));
+							divider_index_ex[mid_id] = tmp_state_id;
+							if(first_divider_ex[mid_id] == false){
+								divider_count_ex[mid_id]++;
+								first_divider_ex[mid_id] = true;
+							}
+						}
+					}
+
+				break;
+			}
+
+			switch(status){
+				case 'in':
+					state_tmp_in[mid_id] = itemlist_state_in[mid_id];
+				break;
+
+				case 'ex':
+					state_tmp_ex[mid_id] = itemlist_state_ex[mid_id];
+				break;
+	
+			}
+
+			if(mid == "no" && is_new == "yes"){
+				state_obj.state = state;
+				state_obj.isdivider = divider;
+				state_obj.id = small_id;
+				switch(status){
+					case 'in':
+						state_tmp_in[mid_id].push(state_obj);
+					break;
+
+					case 'ex':
+						state_tmp_ex[mid_id].push(state_obj);
+					break;
+				}
+			}
+
+			state_button.setAttribute("id", div_id+"_select")
+			state_button.appendChild(document.createTextNode(state));
+			state_button_div.appendChild(state_button);
+
+			if(mid == "no"){
+				var state_button_dropdown = document.createElement("div");
+				state_button_dropdown.setAttribute("class", "dropdown-menu");
+				state_button_div.appendChild(state_button_dropdown);
+
+				var and_state_a = document.createElement("a");
+				and_state_a.setAttribute("class", "dropdown-item");
+				and_state_a.setAttribute("id", "AND");
+				switch(status){
+					case 'in':
+						var state_id = state_tmp_in[mid_id].map(function (e) { return e.id; }).indexOf(small_id);
+						and_state_a.setAttribute("onclick", "state_button_text_setting(id, '"+div_id+"_select', '"+status+"', 'no', '0', '"+state_tmp_in[mid_id][state_id].isdivider+"')");
+					break;
+
+					case 'ex':
+						var state_id = state_tmp_ex[mid_id].map(function (e) { return e.id; }).indexOf(small_id);
+						and_state_a.setAttribute("onclick", "state_button_text_setting(id, '"+div_id+"_select', '"+status+"', 'no', '0', '"+state_tmp_ex[mid_id][state_id].isdivider+"')");
+					break;
+				}
+				and_state_a.appendChild(document.createTextNode("AND"));
+				state_button_dropdown.appendChild(and_state_a);
+
+				var or_state_a = document.createElement("a");
+				or_state_a.setAttribute("class", "dropdown-item");
+				or_state_a.setAttribute("id", "OR");
+				switch(status){
+					case 'in':
+						var state_id = state_tmp_in[mid_id].map(function (e) { return e.id; }).indexOf(small_id);
+						or_state_a.setAttribute("onclick", "state_button_text_setting(id, '"+div_id+"_select', '"+status+"', 'no', '0', '"+state_tmp_in[mid_id][state_id].isdivider+"')");
+					break;
+
+					case 'ex':
+						var state_id = state_tmp_ex[mid_id].map(function (e) { return e.id; }).indexOf(small_id);
+						or_state_a.setAttribute("onclick", "state_button_text_setting(id, '"+div_id+"_select', '"+status+"', 'no', '0', '"+state_tmp_ex[mid_id][state_id].isdivider+"')");
+					break;
+				}				
+				or_state_a.appendChild(document.createTextNode("OR"));
+				state_button_dropdown.appendChild(or_state_a);
+
+				var not_state_a = document.createElement("a");
+				not_state_a.setAttribute("class", "dropdown-item");
+				not_state_a.setAttribute("id", "NOT");
+				switch(status){
+					case 'in':
+						var state_id = state_tmp_in[mid_id].map(function (e) { return e.id; }).indexOf(small_id);
+						not_state_a.setAttribute("onclick", "state_button_text_setting(id, '"+div_id+"_select', '"+status+"', 'no', '0', '"+state_tmp_in[mid_id][state_id].isdivider+"')");
+					break;
+
+					case 'ex':
+						var state_id = state_tmp_ex[mid_id].map(function (e) { return e.id; }).indexOf(small_id);
+						not_state_a.setAttribute("onclick", "state_button_text_setting(id, '"+div_id+"_select', '"+status+"', 'no', '0', '"+state_tmp_ex[mid_id][state_id].isdivider+"')");
+					break;
+				}				
+				not_state_a.appendChild(document.createTextNode("NOT"));
+				state_button_dropdown.appendChild(not_state_a);
+			}
+		}
+
+		function state_button_text_setting(id, parent, status, mid="no", setting="0", divider="no"){
+			var tmp_array = parent.split("_");
+			var tmp_id = tmp_array[4];
+			var mid_id = tmp_array[3];
+
+			var itemlist_tmp = [];
+			var state_tmp = [];
+			switch(status){
+				case 'in':
+					itemlist_tmp = itemlist_tmp_in[mid_id];
+					state_tmp = state_tmp_in[mid_id];
+				break;
+
+				case 'ex':
+					itemlist_tmp = itemlist_tmp_ex[mid_id];
+					state_tmp = state_tmp_ex[mid_id];
+				break;
+			}
+			var state_id = state_tmp.map(function (e) { return e.id; }).indexOf(tmp_id);
+			state_tmp[state_id].state = id;	
+
+			if(mid=="no"){
+				while(document.getElementById(parent).hasChildNodes()) document.getElementById(parent).removeChild(document.getElementById(parent).firstChild);
+				document.getElementById(parent).appendChild(document.createTextNode(id));
+				var criteria_button_selected = document.getElementById('button_small_'+status+'_'+state_tmp[state_id].id);
+				switch(id){
+					case 'AND':
+						document.getElementById(parent).setAttribute("class", "btn btn-info dropdown-toggle btn-square");
+						if(status == 'in' && divider == "no"){
+							criteria_button_selected.setAttribute("class", "btn btn-outline-info btn-square");
+							if(Number(state_id) == 0 || Number(state_id) == divider_index_in[mid_id]){
+								var criteria_button_before = document.getElementById('button_small_'+status+'_'+itemlist_tmp.small[state_id].id);
+								criteria_button_before.setAttribute("class", "btn btn-outline-info btn-square");
+							}
+						}
+						else if(status == 'ex' && divider == "no"){
+							criteria_button_selected.setAttribute("class", "btn btn-outline-info btn-square");
+							if(Number(state_id) == 0 || Number(state_id) == divider_index_ex[mid_id]){
+								var criteria_button_before = document.getElementById('button_small_'+status+'_'+itemlist_tmp.small[state_id].id);
+								criteria_button_before.setAttribute("class", "btn btn-outline-info btn-square");
+							}
+						}
+					break;
+
+					case 'OR':
+						document.getElementById(parent).setAttribute("class", "btn btn-success dropdown-toggle btn-square");
+						if(status == 'in' && divider == "no"){
+							criteria_button_selected.setAttribute("class", "btn btn-outline-success btn-square");
+							if(Number(state_id) == 0 || Number(state_id) == divider_index_in[mid_id]){
+								var criteria_button_before = document.getElementById('button_small_'+status+'_'+itemlist_tmp.small[state_id].id);
+								criteria_button_before.setAttribute("class", "btn btn-outline-success btn-square");
+							}
+						}
+						else if(status == 'ex' && divider == "no"){
+							criteria_button_selected.setAttribute("class", "btn btn-outline-success btn-square");
+							if(Number(state_id) == 0 || Number(state_id) == divider_index_ex[mid_id]){
+								var criteria_button_before = document.getElementById('button_small_'+status+'_'+itemlist_tmp.small[state_id].id);
+								criteria_button_before.setAttribute("class", "btn btn-outline-success btn-square");
+							}
+						}
+
+					break;
+
+					case 'NOT':
+						document.getElementById(parent).setAttribute("class", "btn btn-danger dropdown-toggle btn-square");
+						if(status == 'in' && divider == "no"){
+							criteria_button_selected.setAttribute("class", "btn btn-outline-danger btn-square");
+							if(Number(state_id) == 0 || Number(state_id) == divider_index_in[mid_id]){
+								var criteria_button_before = document.getElementById('button_small_'+status+'_'+itemlist_tmp.small[state_id].id);
+								criteria_button_before.setAttribute("class", "btn btn-outline-danger btn-square");
+							}
+						}
+						else if(status == 'ex' && divider == "no"){
+							criteria_button_selected.setAttribute("class", "btn btn-outline-danger btn-square");
+							if(Number(state_id) == 0 || Number(state_id) == divider_index_ex[mid_id]){
+								var criteria_button_before = document.getElementById('button_small_'+status+'_'+itemlist_tmp.small[state_id].id);
+								criteria_button_before.setAttribute("class", "btn btn-outline-danger btn-square");
+							}
+						}
+
+					break;
+				}
+			}
+			else{
+
+				var criteria_button_selected;
+				if(setting=="0") criteria_button_selected = document.getElementById('button_'+status+'_'+state_tmp[state_id].id);
+				else if(setting=="1") criteria_button_selected = document.getElementById('button_small_'+status+'_'+state_tmp[state_id].id);
+				switch(id){
+					case 'AND':
+					
+						if(status == 'in' && divider == 'no'){
+							criteria_button_selected.setAttribute("class", "btn btn-outline-info btn-square");
+							if(Number(state_id) == 0 || Number(state_id) == divider_index_in[mid_id]){
+								var criteria_button_before;
+								if(setting=="0") criteria_button_before = document.getElementById('button_'+status+'_'+itemlist_tmp.small[state_id].id);
+								else if(setting=="1") criteria_button_before = document.getElementById('button_small_'+status+'_'+itemlist_tmp.small[state_id].id);
+								criteria_button_before.setAttribute("class", "btn btn-outline-info btn-square");
+							}
+						}
+						else if(status == 'ex' && divider == 'no'){
+							criteria_button_selected.setAttribute("class", "btn btn-outline-info btn-square");
+							if(Number(state_id) == 0 || Number(state_id) == divider_index_ex[mid_id]){
+								var criteria_button_before;
+								if(setting=="0") criteria_button_before = document.getElementById('button_'+status+'_'+itemlist_tmp.small[state_id].id);
+								else if(setting=="1") criteria_button_before = document.getElementById('button_small_'+status+'_'+itemlist_tmp.small[state_id].id);
+								criteria_button_before.setAttribute("class", "btn btn-outline-info btn-square");
+							}
+						}
+					break;
+
+					case 'OR':
+						if(status == 'in' && divider == 'no'){
+							criteria_button_selected.setAttribute("class", "btn btn-outline-success btn-square");
+							if(Number(state_id) == 0 || Number(state_id) == divider_index_in[mid_id]){
+								if(setting=="0") criteria_button_before = document.getElementById('button_'+status+'_'+itemlist_tmp.small[state_id].id);
+								else if(setting=="1") criteria_button_before = document.getElementById('button_small_'+status+'_'+itemlist_tmp.small[state_id].id);
+								criteria_button_before.setAttribute("class", "btn btn-outline-success btn-square");
+							}
+						}
+						else if(status == 'ex' && divider == 'no'){
+							criteria_button_selected.setAttribute("class", "btn btn-outline-success btn-square");
+							if(Number(state_id) == 0 || Number(state_id) == divider_index_ex[mid_id]){
+								if(setting=="0") criteria_button_before = document.getElementById('button_'+status+'_'+itemlist_tmp.small[state_id].id);
+								else if(setting=="1") criteria_button_before = document.getElementById('button_small_'+status+'_'+itemlist_tmp.small[state_id].id);
+								criteria_button_before.setAttribute("class", "btn btn-outline-success btn-square");
+							}
+						}
+					break;
+
+					case 'NOT':
+						if(status == 'in' && divider == 'no'){
+							criteria_button_selected.setAttribute("class", "btn btn-outline-danger btn-square");
+							if(Number(state_id) == 0 || Number(state_id) == divider_index_in[mid_id]){
+								if(setting=="0") criteria_button_before = document.getElementById('button_'+status+'_'+itemlist_tmp.small[state_id].id);
+								else if(setting=="1") criteria_button_before = document.getElementById('button_small_'+status+'_'+itemlist_tmp.small[state_id].id);
+								criteria_button_before.setAttribute("class", "btn btn-outline-danger btn-square");
+							}
+						}
+						if(status == 'ex' && divider == 'no'){
+							criteria_button_selected.setAttribute("class", "btn btn-outline-danger btn-square");
+							if(Number(state_id) == 0 || Number(state_id) == divider_index_ex[mid_id]){
+								if(setting=="0") criteria_button_before = document.getElementById('button_'+status+'_'+itemlist_tmp.small[state_id].id);
+								else if(setting=="1") criteria_button_before = document.getElementById('button_small_'+status+'_'+itemlist_tmp.small[state_id].id);
+								criteria_button_before.setAttribute("class", "btn btn-outline-danger btn-square");
+							}
+						}
+					break;
+				}
+			}
+
+			switch(status){
+				case 'in':
+					state_tmp_in[tmp_array[3]] = state_tmp;
+				break;
+
+				case 'ex':
+					state_tmp_ex[tmp_array[3]] = state_tmp;
+				break;
+			}
+
+		}
+
+		function reconstruct_item_list() {
+			var new_itemlist_in = [];
+			var new_itemlist_ex = [];
+			var new_itemlist_state_in=[];
+			var new_itemlist_state_ex=[];
+			var new_title_in = [];
+			var new_title_ex = [];
+
+			//inclusion
+			var new_inclusions = jQuery('#inclusion_criteria')[0];
+			for (var i = 1; i <= new_inclusions.childElementCount; i++) {
+				var type = new_inclusions.childNodes[i].id.split("_")[2];
+				var id = new_inclusions.childNodes[i].id.split("_")[3];
+
+				if (type == 'in') {
+					var in_item = itemlist_mid_in.map(function (e) { return e.id; }).indexOf(Number(id));
+					new_itemlist_in.push(itemlist_mid_in[in_item]);
+					new_itemlist_state_in.push(itemlist_state_in[in_item]);
+					new_title_in.push(mid_title_in[in_item]);
+				}
+				else {
+					var ex_item = itemlist_mid_ex.map(function (e) { return e.id; }).indexOf(Number(id));
+					if(itemlist_mid_ex[ex_item].small.length > 0){
+						for(var i = 0; i < itemlist_mid_ex[ex_item].small.length; i++)
+							itemlist_mid_ex[ex_item].small[i].status = "inclusion";
+					}
+					new_itemlist_in.push(itemlist_mid_ex[ex_item]);
+					new_title_in.push(mid_title_ex[ex_item]);
+					new_itemlist_state_in.push(itemlist_state_ex[ex_item]);
+				}
+			}
+
+
+			//exclusion
+			var new_exclusions = jQuery('#exclusion_criteria')[0];
+			for (var i = 1; i <= new_exclusions.childElementCount; i++) {
+				var type = new_exclusions.childNodes[i].id.split("_")[2];
+				var id = new_exclusions.childNodes[i].id.split("_")[3];
+				if (type == 'in') {
+					var in_item = itemlist_mid_in.map(function (e) { return e.id; }).indexOf(Number(id));
+					if(itemlist_mid_in[in_item].small.length > 0){
+						for(var i = 0; i < itemlist_mid_in[in_item].small.length; i++)
+							itemlist_mid_in[in_item].small[i].status = "exclusion";
+					}
+					new_itemlist_ex.push(itemlist_mid_in[in_item]);
+					new_itemlist_state_ex.push(itemlist_state_in[in_item]);
+					new_title_ex.push(mid_title_in[in_item]);
+
+				}
+				else {
+					var ex_item = itemlist_mid_ex.map(function (e) { return e.id; }).indexOf(Number(id));
+					new_itemlist_ex.push(itemlist_mid_ex[ex_item]);
+					new_itemlist_state_ex.push(itemlist_state_ex[ex_item]);
+					new_title_ex.push(mid_title_ex[ex_item]);
+
+				}
+			}
+
+			itemlist_mid_in = [];
+			itemlist_mid_ex = [];
+			itemlist_state_in = [];
+			itemlist_state_ex = [];
+			mid_title_in = [];
+			mid_title_ex = [];
+
+			itemlist_mid_in = new_itemlist_in.slice();
+			itemlist_mid_ex = new_itemlist_ex.slice();
+			itemlist_state_in = new_itemlist_state_in.slice();
+			itemlist_state_ex = new_itemlist_state_ex.slice();
+			mid_title_in = new_title_in.slice();
+			mid_title_ex = new_title_ex.slice();
+
+		}
+
+		function save_check(){
+			if(edit_count_in > 0 || edit_count_ex > 0){
+				alert("모든 수정을 완료해주세요.");
+			}
+			else{
+				save_button_cliked();
+			}
+		}
+		function save_button_cliked() {
+
+			reconstruct_item_list();
+			var eligibility = new Object();
+
+			var eligibility_info = new Object();
+			eligibility_info.project_id = project_id;
+			eligibility_info.eligibility_id = eligibility_id;
+
+			eligibility.info = eligibility_info;
+
+			var criteria_set = new Array();
+			var exclusion_set = new Object();
+			var inclusion_criterias = new Array();
+			var exclusion_criterias = new Array();
+
+			var visit_date = document.getElementById("daterange_visit").value;
+
+			if (visit_date != "") {
+				visit_criteria.date_addition_value = document.getElementById("daterange_visit").value;
+				var visit_array = visit_date.split(" - ");
+				var visit_array_start = visit_array[0].split("/");
+				var visit_start = visit_array_start[2] + "-" + visit_array_start[1] + "-" + visit_array_start[0];
+
+				var visit_array_end = visit_array[1].split("/");
+				var visit_end = visit_array_end[2] + "-" + visit_array_end[1] + "-" + visit_array_end[0];
+
+				visit_criteria.addition = "and visit_start_date >= ''" + visit_start + "'' and visit_start_date <=''" + visit_end + "''";
+				if (visit_criteria.value != 1200) 
+					inclusion_criterias.push(visit_criteria);
+
+			}
+
+			//inclusion
+			for (var i = 0; i < itemlist_mid_in.length; i++) {
+				var mid_criterias = new Object();
+				var inclusion_set = new Object();
+				mid_criterias.title = mid_title_in[i];
+				mid_criterias.small = [];
+				for(var j = 0; j <itemlist_mid_in[i].small.length; j++){
+					var buf = itemlist_mid_in[i].small[j].table;
+					var criterias = new Object();
+					switch (itemlist_mid_in[i].small[j].table) {
+						case 'drug':
+							criterias.table = "Drug_exposure";
+							break;
+
+						case 'condition':
+							criterias.table = "Condition_occurrence";
+							break;
+
+						case 'measurement':
+							criterias.table = "Measurement";
+							break;
+
+						case 'observation':
+							criterias.table = "Observation";
+							break;
+
+						case 'age':
+							criterias.table = "Person";
+							break;
+
+						case 'gender':
+							criterias.table = "Person";
+							break;
+
+						case 'user_define':
+							criterias.table = "User_Define";
+							break;
+
+						case 'sql':
+							criterias.table = "SQL";
+							break;
+					}
+
+					criterias.field = "id";
+					criterias.condition = itemlist_mid_in[i].small[j].condition;
+					criterias.value = itemlist_mid_in[i].small[j].attribute;
+					criterias.attribute = itemlist_mid_in[i].small[j].heir;
+					criterias.title = itemlist_mid_in[i].small[j].title;
+					if (buf == "sql") {
+						criterias.addition = itemlist_mid_in[i].small[j].addition.replace(/'/gi, "''");
+						criterias.addition = criterias.addition.replace(/%/gi, "%25");
+						criterias.addition_text = itemlist_mid_in[i].small[j].addition_text.replace(/'/gi, "''");
+						criterias.addition_text = criterias.addition_text.replace(/%/gi, "%25");
+					}
+					else {
+						criterias.addition = itemlist_mid_in[i].small[j].addition.replace(/'/gi, "''");
+						criterias.addition_text = itemlist_mid_in[i].small[j].addition_text;
+					}
+					criterias.date_addition_value = itemlist_mid_in[i].small[j].date_addition.replace(/'/gi, "''");
+					criterias.value_min = itemlist_mid_in[i].small[j].value_min;
+					criterias.value_max = itemlist_mid_in[i].small[j].value_max;
+					criterias.measure_count = itemlist_mid_in[i].small[j].measure_count;
+					criterias.measure_method = itemlist_mid_in[i].small[j].measure_method;
+					criterias.min_condition = itemlist_mid_in[i].small[j].min_condition;
+					criterias.max_condition = itemlist_mid_in[i].small[j].max_condition;
+					if(j>0){
+						criterias.state = itemlist_state_in[i][j-1].state;
+						criterias.isdivider = itemlist_state_in[i][j-1].isdivider;
+					}
+					else{
+						criterias.state = "AND";
+						criterias.isdivider = "No";
+					}
+
+					mid_criterias.small.push(criterias);
+				}
+				inclusion_criterias.push(mid_criterias);
+			}
+
+			//exclusion
+			for (var i = 0; i < itemlist_mid_ex.length; i++) {
+				var mid_criterias = new Object();
+				var exclusion_set = new Object();
+				mid_criterias.title = mid_title_ex[i];
+				mid_criterias.small = [];
+
+				for(var j = 0; j < itemlist_mid_ex[i].small.length; j++){
+					var criterias = new Object();
+					var buf = itemlist_mid_ex[i].small[j].table;
+					switch (itemlist_mid_ex[i].small[j].table) {
+						case 'drug':
+							criterias.table = "Drug_exposure";
+							break;
+
+						case 'condition':
+							criterias.table = "Condition_occurrence";
+							break;
+
+						case 'measurement':
+							criterias.table = "Measurement";
+							break;
+
+						case 'observation':
+							criterias.table = "Observation";
+							break;
+
+						case 'age':
+							criterias.table = "Person";
+							break;
+
+						case 'gender':
+							criterias.table = "Person";
+							break;
+
+						case 'user_define':
+							criterias.table = "User_Define";
+							break;
+
+						case 'sql':
+							criterias.table = "SQL";
+							break;
+					}
+					criterias.field = "id";
+					criterias.condition = itemlist_mid_ex[i].small[j].condition;
+					criterias.value = itemlist_mid_ex[i].small[j].attribute;
+					criterias.title = itemlist_mid_ex[i].small[j].title;
+					criterias.attribute = itemlist_mid_ex[i].small[j].heir;
+					if (buf == "sql") {
+						criterias.addition = itemlist_mid_ex[i].small[j].addition.replace(/'/gi, "''");
+						criterias.addition = criterias.addition.replace(/%/gi, "%25");
+						criterias.addition_text = itemlist_mid_ex[i].small[j].addition_text.replace(/'/gi, "''");
+						criterias.addition_text = criterias.addition_text.replace(/%/gi, "%25");
+					}
+					else {
+						criterias.addition = itemlist_mid_ex[i].small[j].addition.replace(/'/gi, "''");
+						criterias.addition_text = itemlist_mid_ex[i].small[j].addition_text;
+					}
+					criterias.date_addition_value = itemlist_mid_ex[i].small[j].date_addition.replace(/'/gi, "''");
+					criterias.value_min = itemlist_mid_ex[i].small[j].value_min;
+					criterias.value_max = itemlist_mid_ex[i].small[j].value_max;
+					criterias.measure_count = itemlist_mid_ex[i].small[j].measure_count;
+					criterias.measure_method = itemlist_mid_ex[i].small[j].measure_method;
+					criterias.min_condition = itemlist_mid_ex[i].small[j].min_condition;
+					criterias.max_condition = itemlist_mid_ex[i].small[j].max_condition;
+					if(j>0){
+						criterias.state = itemlist_state_ex[i][j-1].state;
+						criterias.isdivider = itemlist_state_ex[i][j-1].isdivider;
+					}
+					else{
+						criterias.state = "AND";
+						criterias.isdivider = "No";
+					}
+
+					mid_criterias.small.push(criterias);
+				}
+
+				exclusion_criterias.push(mid_criterias);
+
+			}
+			criteria_set.push(inclusion_criterias);
+			criteria_set.push(exclusion_criterias);
+
+			eligibility.set = criteria_set;
+			eligibility = escape(encodeURIComponent(JSON.stringify(eligibility)));
+
+			var new_title = document.getElementById("eligibility_title").value;
+			new_title = escape(encodeURIComponent(new_title));
+		
+			var xhttp = new XMLHttpRequest();
+			xhttp.onreadystatechange = function () {
+				if (this.readyState == this.DONE && this.status == 200) {
+					print_log("modify_query", project_id+"_"+eligibility_id);
+					document.getElementById("eligibility_title");
+					var execute_ok = confirm("저장이 완료되었습니다. 목록으로 돌아가시겠습니까?");
+					if (execute_ok == true) {
+						location.href = "project_detail.html?project_id=" + JSON.stringify(project_id);
+					}
+
+				}
+			}
+			xhttp.open("POST", "./eligibility_detail.jsp", true);
+			xhttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+			xhttp.send("action=save&data=" + eligibility + "&title=" + new_title);
+		}
+
+		function cancel_button_cliked() {
+			location.reload();
+		}
+
+		function hier_button_click(status, mid_id) {
+			if (selected_category == "drug") {
+				document.getElementById("drug_hier_add_button").setAttribute("onclick", "insert_hiermodal('drug', '"+status+"', '"+mid_id+"')");
+				newj('#hieracyDrugModal').modal('show');
+			}
+			else if (selected_category == "condition") {
+				document.getElementById("condition_hier_add_button").setAttribute("onclick", "insert_hiermodal('condition', '"+status+"', '"+mid_id+"')");
+				newj('#hieracyConditionModal').modal('show');
+			}
+		}
+
+		function criteria_button_clicked(status, id, mid_id) {
+			var clicked_item = id.split("_");
+			value_item = clicked_item[3];
+			var itemlist_tmp = [];
+			switch(status){
+				case 'in':
+					itemlist_tmp = itemlist_tmp_in[mid_id];
+				break;
+
+				case 'ex':
+					itemlist_tmp = itemlist_tmp_ex[mid_id];
+				break;
+			}
+
+			var b_index, b_table, b_attribute, date_range, addition_value_min, addition_value_max, addition_measure_count, addition_measrue_method, addition_min_condition, addition_max_condition, addition_value_text, time_stone;
+
+			b_index = itemlist_tmp.small.map(function (e) { return e.id; }).indexOf(Number(value_item));
+			b_table = itemlist_tmp.small[b_index].table;
+			b_attribute = itemlist_tmp.small[b_index].id;
+			date_range = itemlist_tmp.small[b_index].date_addition;
+			addition_value_min = itemlist_tmp.small[b_index].value_min;
+			addition_value_max = itemlist_tmp.small[b_index].value_max;
+			addition_measure_count = itemlist_tmp.small[b_index].measure_count;
+			addition_measrue_method = itemlist_tmp.small[b_index].measure_method;
+			addition_min_condition = itemlist_tmp.small[b_index].min_condition;
+			addition_max_condition = itemlist_tmp.small[b_index].max_condition;
+			addition_value_text = itemlist_tmp.small[b_index].addition_text;
+			time_stone = itemlist_tmp.small[b_index].condition;
+
+
+			full_modal_init(b_table);
+
+			if (b_table == "measurement" || b_table == "observation") {
+
+				if (date_range != "") {
+					newj("#no-check").attr("checked", false);
+					document.getElementById("duration_button_3_b").removeAttribute("disabled", "");
+					document.getElementById("duration_button_6_b").removeAttribute("disabled", "");
+					document.getElementById("duration_button_9_b").removeAttribute("disabled", "");
+					document.getElementById("duration_button_12_b").removeAttribute("disabled", "");
+					document.getElementById("duration_button_self_b").removeAttribute("disabled", "");
+					document.getElementById("duration_button_3").removeAttribute("disabled", "");
+					document.getElementById("duration_button_6").removeAttribute("disabled", "");
+					document.getElementById("duration_button_9").removeAttribute("disabled", "");
+					document.getElementById("duration_button_12").removeAttribute("disabled", "");
+					document.getElementById("duration_button_self").removeAttribute("disabled", "");
+
+
+					document.getElementById("duration_modal").removeAttribute("disabled");
+					document.getElementById("duration_modal").value = date_range;
+				}
+				if (addition_value_min != "") {
+					newj("#no-check-value").attr("checked", false);
+					document.getElementById("value_min").removeAttribute("disabled");
+					document.getElementById("value_max").removeAttribute("disabled");
+					document.getElementById("value_min_condition").removeAttribute("disabled");
+					document.getElementById("value_max_condition").removeAttribute("disabled");
+					document.getElementById("value_min").value = addition_value_min;
+					document.getElementById("value_min_condition").value = addition_min_condition;
+				}
+				if (addition_value_max != "") {
+					if (jQuery("#no-check-value").is(":checked")) {
+						newj("#no-check-value").attr("checked", false);
+						document.getElementById("value_min").removeAttribute("disabled");
+						document.getElementById("value_max").removeAttribute("disabled");
+						document.getElementById("value_min_condition").removeAttribute("disabled");
+						document.getElementById("value_max_condition").removeAttribute("disabled");
+					}
+					document.getElementById("value_max").value = addition_value_max;
+					document.getElementById("value_max_condition").value = addition_max_condition;
+
+				}
+				if (addition_measure_count != "") {
+					newj("#no-check-measure").attr("checked", false);
+					document.getElementById("measure_count").removeAttribute("disabled");
+					document.getElementById("measure_calc").removeAttribute("disabled");
+					document.getElementById("measure_count").value = addition_measure_count;
+					document.getElementById("measure_calc").value = addition_measrue_method;
+				}
+
+				var modal_title = document.getElementById("item_modal_title_Full");
+				while (modal_title.hasChildNodes()) modal_title.removeChild(modal_title.firstChild);
+				modal_title.appendChild(document.createTextNode(itemlist_tmp.small[b_index].title));
+				document.getElementById("modal_add_button").setAttribute("onclick", "addtion_save_button_cliked('"+status+"', '"+mid_id+"')");
+				newj('#itemAddFullModal').modal('show');
+			}
+			else if (b_table == "age") {
+				if (addition_value_min != "") {
+					newj('#no-check-age').attr("checked", false);
+					document.getElementById("age_min").removeAttribute("disabled");
+					document.getElementById("age_max").removeAttribute("disabled");
+					document.getElementById("age_min_condition").removeAttribute("disabled");
+					document.getElementById("age_max_condition").removeAttribute("disabled");
+					document.getElementById("age_min").value = addition_value_min;
+					document.getElementById("age_min_condition").value = addition_min_condition;
+				}
+				if (addition_value_max != "") {
+					if (jQuery("#no-check-age").is(":checked")) {
+						newj('#no-check-value').attr("checked", false);
+						document.getElementById("age_min").removeAttribute("disabled");
+						document.getElementById("age_max").removeAttribute("disabled");
+						document.getElementById("age_min_condition").removeAttribute("disabled");
+						document.getElementById("age_max_condition").removeAttribute("disabled");
+					}
+					document.getElementById("age_max").value = addition_value_max;
+					document.getElementById("age_max_condition").value = addition_max_condition;
+				}
+
+				document.getElementById("modal_add_age_button").setAttribute("onclick", "addtion_save_button_cliked_age('"+status+"', '"+mid_id+"')");
+				newj('#ageModal').modal('show');
+			}
+			else if (b_table == "gender") { }
+			else if (b_table == "user_define") {
+				var usin = document.getElementById("user_inclusion");
+				var usex = document.getElementById("user_exclusion");
+				while (usin.hasChildNodes()) usin.removeChild(usin.firstChild);
+				while (usex.hasChildNodes()) usex.removeChild(usex.firstChild);
+				var udxhttp = new XMLHttpRequest();
+				udxhttp.onreadystatechange = function () {
+					if (this.readyState == this.DONE && this.status == 200) {
+						var result_array = udxhttp.responseText.split("&");
+
+						var ud_inclusion_pre = result_array[0];
+						var ud_inclusion = eval(ud_inclusion_pre);
+						var ud_inclusion_output = Object.keys(ud_inclusion);
+						for (var i = 0; i < ud_inclusion_output.length; i++) {
+							if (ud_inclusion[i].table != "Visit_occurrence") {
+								var ud_criteria_button = document.createElement("button");
+								ud_criteria_button.setAttribute("class", "btn btn-outline");
+								ud_criteria_button.setAttribute("type", "button");
+								ud_criteria_button.setAttribute("style", "width:100%; height: 50px; margin-bottom: 10px; text-align:left; background-color:transparent; border-color:rgb(218, 222, 227); ");
+								document.getElementById("user_inclusion").appendChild(ud_criteria_button);
+
+								var ud_context_div = document.createElement("div");
+								ud_context_div.setAttribute("style", "margin-left : 10px; vertical-align:middle; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; width: 90%; color:rgb(78,85,92)")
+								var ud_domain_button = document.createElement("button");
+
+								var table_parse;
+
+								if (ud_inclusion[i].table == "Drug_exposure") table_parse = "drug";
+								else if (ud_inclusion[i].table == "Condition_occurrence") table_parse = "condition";
+								else if (ud_inclusion[i].table == "Measurement") table_parse = "measurement";
+								else if (ud_inclusion[i].table == "Observation") table_parse = "observation";
+								else if (ud_inclusion[i].table == "Person" && ud_inclusion[i].heir == 1) table_parse = "age";
+								else if (ud_inclusion[i].table == "Person" && ud_inclusion[i].heir != 1) table_parse = "gender";
+								else if (ud_inclusion[i].table == "User_Define") table_parse = "user_define";
+								else if (ud_inclusion[i].table == "SQL") table_parse = "sql";
+
+								switch (table_parse) {
+									case 'drug':
+										ud_domain_button.setAttribute("class", "btn btn-danger btn-sm float-left");
+										ud_domain_button.setAttribute("style", "margin-right: 10px; background-color:RGB(244, 68, 85)");
+										ud_domain_button.appendChild(document.createTextNode("약물"));
+										break;
+									case 'condition':
+										ud_domain_button.setAttribute("class", "btn btn-success btn-sm float-left");
+										ud_domain_button.setAttribute("style", "margin-right: 10px; background-color:RGB(95, 194, 126)");
+										ud_domain_button.appendChild(document.createTextNode("진단"));
+										break;
+									case 'measurement':
+										ud_domain_button.setAttribute("class", "btn btn-primary btn-sm float-left");
+										ud_domain_button.setAttribute("style", "margin-right: 10px; background-color:RGB(12, 194, 170)");
+										ud_domain_button.appendChild(document.createTextNode("검사"));
+										break;
+									case 'observation':
+										ud_domain_button.setAttribute("class", "btn btn-primary btn-sm float-left");
+										ud_domain_button.setAttribute("style", "margin-right: 10px; background-color:RGB(12, 194, 170)");
+										ud_domain_button.appendChild(document.createTextNode("검사"));
+										break;
+
+									case 'age':
+										ud_domain_button.setAttribute("class", "btn btn-warning btn-sm float-left");
+										ud_domain_button.setAttribute("style", "margin-right: 10px; background-color:RGB(252, 193, 0)");
+										ud_domain_button.appendChild(document.createTextNode("나이"));
+										break;
+									case 'gender':
+										ud_domain_button.setAttribute("class", "btn btn-warning btn-sm float-left");
+										ud_domain_button.setAttribute("style", "margin-right: 10px; background-color:RGB(252, 193, 0)");
+										ud_domain_button.appendChild(document.createTextNode("성별"));
+										break;
+									case 'user_define':
+										ud_domain_button.setAttribute("class", "btn btn-outline-secondary btn-sm float-left");
+										ud_domain_button.setAttribute("style", "margin-right: 10px; border-color:RGB(161, 128, 218)");
+										ud_domain_button.appendChild(document.createTextNode("U.D."));
+										break;
+									case 'sql':
+										ud_domain_button.setAttribute("class", "btn btn-outline-warning btn-sm float-left");
+										ud_domain_button.setAttribute("style", "margin-right: 10px; border-color:RGB(252, 193, 0)");
+										ud_domain_button.appendChild(document.createTextNode("SQL"));
+										break;
+
+								}
+
+								ud_domain_button.setAttribute("type", "button");
+								ud_domain_button.setAttribute("disabled", "");
+								var ud_title_text = document.createTextNode(ud_inclusion[i].title);
+
+								ud_context_div.appendChild(ud_domain_button);
+								ud_context_div.appendChild(ud_title_text);
+								ud_criteria_button.appendChild(ud_context_div);
+
+								var ud_durtaion_div = document.createElement("div");
+								ud_durtaion_div.setAttribute("style", "margin-left: 30px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; margin-top:1px; color:rgb(106,115,124); font-size:12px");
+
+								var ud_data_addition;
+								if (ud_inclusion[i].addition == null) ud_data_addition = "";
+								else ud_data_addition = ud_inclusion[i].addition;
+								var ud_duration_text = document.createTextNode(ud_data_addition);
+								ud_durtaion_div.appendChild(ud_duration_text);
+								ud_criteria_button.appendChild(ud_durtaion_div);
+							}
+						}
+
+						var ud_exclusion_pre = result_array[1];
+						var ud_exclusion = eval(ud_exclusion_pre);
+						var ud_exclusion_output = Object.keys(ud_exclusion);
+						for (var i = 0; i < ud_exclusion_output.length; i++) {
+							if (ud_exclusion[i].table != "Visit_occurrence") {
+								var ud_criteria_button_ex = document.createElement("button");
+								ud_criteria_button_ex.setAttribute("class", "btn btn-outline");
+								ud_criteria_button_ex.setAttribute("type", "button");
+								ud_criteria_button_ex.setAttribute("style", "width:100%; height: 50px; margin-bottom: 10px; text-align:left; background-color:transparent; border-color:rgb(218, 222, 227); ");
+								document.getElementById("user_exclusion").appendChild(ud_criteria_button_ex);
+
+								var ud_context_div_ex = document.createElement("div");
+								ud_context_div_ex.setAttribute("style", "margin-left : 10px; vertical-align:middle; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; width: 90%; color:rgb(78,85,92)")
+								var ud_domain_button = document.createElement("button");
+
+								var table_parse;
+
+								if (ud_exclusion[i].table == "Drug_exposure") table_parse = "drug";
+								else if (ud_exclusion[i].table == "Condition_occurrence") table_parse = "condition";
+								else if (ud_exclusion[i].table == "Measurement") table_parse = "measurement";
+								else if (ud_exclusion[i].table == "Observation") table_parse = "observation";
+								else if (ud_exclusion[i].table == "Person" && ud_exclusion[i].heir == 1) table_parse = "age";
+								else if (ud_exclusion[i].table == "Person" && ud_exclusion[i].heir != 1) table_parse = "gender";
+								else if (ud_exclusion[i].table == "User_Define") table_parse = "user_define";
+								else if (ud_exclusion[i].table == "SQL") table_parse = "sql";
+
+								switch (table_parse) {
+									case 'drug':
+										ud_domain_button.setAttribute("class", "btn btn-danger btn-sm float-left");
+										ud_domain_button.setAttribute("style", "margin-right: 10px; background-color:RGB(244, 68, 85)");
+										ud_domain_button.appendChild(document.createTextNode("약물"));
+										break;
+									case 'condition':
+										ud_domain_button.setAttribute("class", "btn btn-success btn-sm float-left");
+										ud_domain_button.setAttribute("style", "margin-right: 10px; background-color:RGB(95, 194, 126)");
+										ud_domain_button.appendChild(document.createTextNode("진단"));
+										break;
+									case 'measurement':
+										ud_domain_button.setAttribute("class", "btn btn-primary btn-sm float-left");
+										ud_domain_button.setAttribute("style", "margin-right: 10px; background-color:RGB(12, 194, 170)");
+										ud_domain_button.appendChild(document.createTextNode("검사"));
+										break;
+									case 'observation':
+										ud_domain_button.setAttribute("class", "btn btn-primary btn-sm float-left");
+										ud_domain_button.setAttribute("style", "margin-right: 10px; background-color:RGB(12, 194, 170)");
+										ud_domain_button.appendChild(document.createTextNode("검사"));
+										break;
+
+									case 'age':
+										ud_domain_button.setAttribute("class", "btn btn-warning btn-sm float-left");
+										ud_domain_button.setAttribute("style", "margin-right: 10px; background-color:RGB(252, 193, 0)");
+										ud_domain_button.appendChild(document.createTextNode("나이"));
+										break;
+									case 'gender':
+										ud_domain_button.setAttribute("class", "btn btn-warning btn-sm float-left");
+										ud_domain_button.setAttribute("style", "margin-right: 10px; background-color:RGB(252, 193, 0)");
+										ud_domain_button.appendChild(document.createTextNode("성별"));
+										break;
+									case 'user_define':
+										ud_domain_button.setAttribute("class", "btn btn-outline-secondary btn-sm float-left");
+										ud_domain_button.setAttribute("style", "margin-right: 10px; border-color:RGB(161, 128, 218)");
+										ud_domain_button.appendChild(document.createTextNode("U.D."));
+										break;
+									case 'sql':
+										ud_domain_button.setAttribute("class", "btn btn-outline-warning btn-sm float-left");
+										ud_domain_button.setAttribute("style", "margin-right: 10px; border-color:RGB(252, 193, 0)");
+										ud_domain_button.appendChild(document.createTextNode("SQL"));
+										break;
+
+								}
+
+								ud_domain_button.setAttribute("type", "button");
+								ud_domain_button.setAttribute("disabled", "");
+								var ud_title_text = document.createTextNode(ud_exclusion[i].title);
+
+								ud_context_div_ex.appendChild(ud_domain_button);
+								ud_context_div_ex.appendChild(ud_title_text);
+								ud_criteria_button_ex.appendChild(ud_context_div_ex);
+
+								var ud_durtaion_div = document.createElement("div");
+								ud_durtaion_div.setAttribute("style", "margin-left: 30px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; margin-top:1px; color:rgb(106,115,124); font-size:12px");
+
+								var ud_data_addition;
+								if (ud_exclusion[i].addition == null) ud_data_addition = "";
+								else ud_data_addition = ud_exclusion[i].addition;
+								var ud_duration_text = document.createTextNode(ud_data_addition);
+								ud_durtaion_div.appendChild(ud_duration_text);
+								ud_criteria_button_ex.appendChild(ud_durtaion_div);
+							}
+						}
+
+
+					}
+				}
+				udxhttp.open("GET", "./eligibility_detail.jsp?action=userdefineload&user_define_id=" + value_item);
+				udxhttp.send();
+				var modal_title = document.getElementById("item_modal_title_user_define");
+				while (modal_title.hasChildNodes()) modal_title.removeChild(modal_title.firstChild);
+				modal_title.appendChild(document.createTextNode(itemlist_in[b_index].title));
+
+				newj('#userdefineModal').modal('show');
+			}
+			else if (b_table == "sql") {
+				document.getElementById("sqlcode").value = addition_value_text;
+				document.getElementById("modal_add_sql_button").setAttribute("onclick", "addtion_save_button_cliked_sql('"+status+"', '"+mid_id+"')");
+				newj('#sqlModal').modal('show');
+			}
+			else {
+				if (date_range != "") {
+					newj("#no-check-mini").attr("checked", false);
+					document.getElementById("duration_button_3_mini").removeAttribute("disabled", "");
+					document.getElementById("duration_button_6_mini").removeAttribute("disabled", "");
+					document.getElementById("duration_button_9_mini").removeAttribute("disabled", "");
+					document.getElementById("duration_button_12_mini").removeAttribute("disabled", "");
+					document.getElementById("duration_button_self_mini").removeAttribute("disabled", "");
+					document.getElementById("duration_button_3_mini_b").removeAttribute("disabled");
+					document.getElementById("duration_button_6_mini_b").removeAttribute("disabled");
+					document.getElementById("duration_button_9_mini_b").removeAttribute("disabled");
+					document.getElementById("duration_button_12_mini_b").removeAttribute("disabled");
+					document.getElementById("duration_button_self_mini_b").removeAttribute("disabled");
+					document.getElementById("duration_modal_mini").removeAttribute("disabled");
+					document.getElementById("duration_modal_mini").value = date_range;
+
+				}
+
+				var span_first = document.getElementById("first_in");
+				var span_last = document.getElementById("last_in");
+
+				while (span_first.hasChildNodes()) span_first.removeChild(span_first.firstChild);
+				while (span_last.hasChildNodes()) span_last.removeChild(span_last.firstChild);
+
+				if (b_table == "condition") {
+					span_first.appendChild(document.createTextNode("첫 진단일"));
+					span_last.appendChild(document.createTextNode("마지막 진단일"));
+				}
+
+				else if (b_table = document = "drug") {
+					span_first.appendChild(document.createTextNode("첫 처방일"));
+					span_last.appendChild(document.createTextNode("마지막 처방일"));
+				}
+
+				var modal_title = document.getElementById("item_modal_title_In");
+				while (modal_title.hasChildNodes()) modal_title.removeChild(modal_title.firstChild);
+				modal_title.appendChild(document.createTextNode(itemlist_tmp.small[b_index].title));
+
+				switch (time_stone) {
+					case "0":
+						newj('#check-all').prop("checked", true);
+						break;
+					case "1":
+						newj('#check-first').prop("checked", true);
+						break;
+					case "2":
+						newj('#check-last').prop("checked", true);
+						break;
+					case 0:
+						newj('#check-all').prop("checked", true);
+						break;
+					case 1:
+						newj('#check-first').prop("checked", true);
+						break;
+					case 2:
+						newj('#check-last').prop("checked", true);
+						break;
+				}
+
+				document.getElementById("modal_add_mini_button").setAttribute("onclick", "addtion_save_button_clicked_mini('"+status+"', '"+mid_id+"')");
+				newj('#itemAddInModal').modal('show');
+			}
+		}
+
+		function duration_button_click(value) {
+			if (jQuery("#duration_modal").is(":disabled")) { }
+			else document.getElementById("duration_modal").setAttribute("disabled", "");
+
+			var durations = value;
+
+			var today = moment().format('DD/MM/YYYY');
+			var ago = moment().subtract(durations, 'month').format('DD/MM/YYYY');
+
+			var range_label = document.getElementById("duration_modal_label")
+			while (range_label.hasChildNodes()) range_label.removeChild(range_label.firstChild);
+			range_label.appendChild(document.createTextNode("Within"));
+
+			document.getElementById("duration_modal").value = ago + " - " + today;
+		}
+
+		function duration_button_click_b(value) {
+			if (jQuery("#duration_modal").is(":disabled")) { }
+			else document.getElementById("duration_modal").setAttribute("disabled", "");
+			var durations = value;
+			var range_label = document.getElementById("duration_modal_label")
+			while (range_label.hasChildNodes()) range_label.removeChild(range_label.firstChild);
+			range_label.appendChild(document.createTextNode("Before"));
+			var today = moment().subtract(durations, 'month').format('DD/MM/YYYY');
+			var ago = moment('1900-01-01').format('DD/MM/YYYY');
+
+			document.getElementById("duration_modal").value = today;
+		}
+
+		function duration_button_click_mini(value) {
+			if (jQuery("#duration_modal_mini").is(":disabled")) { }
+			else document.getElementById("duration_modal_mini").setAttribute("disabled", "");
+
+			var durations = value;
+
+			var today = moment().format('DD/MM/YYYY');
+			var ago = moment().subtract(durations, 'month').format('DD/MM/YYYY');
+
+			document.getElementById("duration_modal_mini").value = ago + " - " + today;
+		}
+
+		function duration_button_click_mini_b(value) {
+			if (jQuery("#duration_modal_mini").is(":disabled")) { }
+			else document.getElementById("duration_modal_mini").setAttribute("disabled", "");
+
+			var durations = value;
+
+			var today = moment().subtract(durations, 'month').format('DD/MM/YYYY');
+			var ago = moment('1900-01-01').format('DD/MM/YYYY');
+
+			document.getElementById("duration_modal_mini").value = today;
+		}
+
+		function direct_button_click() {
+			if (jQuery("#duration_modal").is(":disabled")) document.getElementById("duration_modal").removeAttribute("disabled");
+			var range_label = document.getElementById("duration_modal_label")
+			while (range_label.hasChildNodes()) range_label.removeChild(range_label.firstChild);
+			range_label.appendChild(document.createTextNode("Within"));
+			jQuery('input[name="daterange-range-in"]').daterangepicker({
+				opens: 'left',
+				startDate: "01/16/2019",
+				endDate: "01/22/2019",
+				locale: {
+					cancelLabel: 'Clear'
+				}
+			});
+
+		}
+		function direct_button_click_b() {
+			if (jQuery("#duration_modal").is(":disabled")) document.getElementById("duration_modal").removeAttribute("disabled");
+			var range_label = document.getElementById("duration_modal_label")
+			while (range_label.hasChildNodes()) range_label.removeChild(range_label.firstChild);
+			range_label.appendChild(document.createTextNode("Before"));
+			jQuery('input[name="daterange-range-in"]').daterangepicker({
+				opens: 'left',
+				startDate: "01/16/2019",
+				endDate: "01/22/2019",
+				singleDatePicker: true,
+				showDropdowns: true,
+				locale: {
+					cancelLabel: 'Clear'
+				}
+			});
+
+		}
+
+		function direct_button_click_mini() {
+			if (jQuery("#duration_modal_mini").is(":disabled")) document.getElementById("duration_modal_mini").removeAttribute("disabled");
+			var range_label = document.getElementById("duration_modal_label_mini")
+			while (range_label.hasChildNodes()) range_label.removeChild(range_label.firstChild);
+			range_label.appendChild(document.createTextNode("Within"));
+			jQuery('input[name="daterange-range-mini"]').daterangepicker({
+				opens: 'left',
+				startDate: "01/16/2019",
+				endDate: "01/22/2019",
+				locale: {
+					cancelLabel: 'Clear'
+				}
+			});
+		}
+
+		function direct_button_click_mini_b() {
+			if (jQuery("#duration_modal_mini").is(":disabled")) document.getElementById("duration_modal_mini").removeAttribute("disabled");
+			var range_label = document.getElementById("duration_modal_label_mini")
+			while (range_label.hasChildNodes()) range_label.removeChild(range_label.firstChild);
+			range_label.appendChild(document.createTextNode("Before"));
+			jQuery('input[name="daterange-range-mini"]').daterangepicker({
+				opens: 'left',
+				startDate: "01/16/2019",
+				endDate: "01/22/2019",
+				singleDatePicker: true,
+				showDropdowns: true,
+				locale: {
+					cancelLabel: 'Clear'
+				}
+			});
+
+
+		}
+
+		function addtion_save_button_cliked(status, mid_id) {
+
+			var itemlist_tmp = [];
+
+			switch(status){
+				case 'in':
+					itemlist_tmp = itemlist_tmp_in[mid_id];
+				break;
+
+				case 'ex':
+					itemlist_tmp = itemlist_tmp_ex[mid_id];
+				break;
+			}
+
+			var b_index = itemlist_tmp.small.map(function (e) { return e.id; }).indexOf(Number(value_item));
+			var b_table = itemlist_tmp.small[b_index].table;
+			var date_start, date_end, value_start, value_end, value_data;
+			itemlist_tmp.small[b_index].addition = "";
+			itemlist_tmp.small[b_index].addition_text = "";
+			itemlist_tmp.small[b_index].date_addition = "";
+			itemlist_tmp.small[b_index].value_min = "";
+			itemlist_tmp.small[b_index].value_max = "";
+			itemlist_tmp.small[b_index].measure_count = "";
+			itemlist_tmp.small[b_index].measure_method = "";
+			itemlist_tmp.small[b_index].min_condition = "";
+			itemlist_tmp.small[b_index].max_condition = "";
+
+			if (jQuery("#no-check").is(":checked")) { }
+			else {
+				var value_date = document.getElementById("duration_modal").value;
+				var length_check = value_date.split(" - ");
+				if (length_check.length < 2) value_date = "01/01/1900 - " + document.getElementById("duration_modal").value;
+				var split_date = value_date.split(" - ");
+				var start_date = split_date[0];
+				var end_date = split_date[1];
+				var start_split = start_date.split("/");
+				var end_split = end_date.split("/");
+				var start_data = start_split[2] + "-" + start_split[1] + "-" + start_split[0];
+				var end_data = end_split[2] + "-" + end_split[1] + "-" + end_split[0];
+				
+				if (b_table == "measurement") {
+					date_start = "and measurement_date >= '" + start_data + "' ";
+					date_end = "and measurement_date <= '" + end_data + "' ";
+				}
+				else if (b_table == "observation") {
+					date_start = "and observation_date >= '" + start_data + "' ";
+					date_end = "and observation_date <= '" + end_data + "' ";
+				}
+				else if (b_table == "condition") {
+					date_start = "and condition_start_date >= '" + start_data + "' ";
+					date_end = "and condition_start_date <= '" + end_data + "' ";
+				}
+				else if (b_table == "drug") {
+					date_start = "and drug_exposure_start_date >= '" + start_data + "' ";
+					date_end = "and drug_exposure_start_date <= '" + end_data + "' ";
+				}
+				itemlist_tmp.small[b_index].date_addition = value_date;
+				itemlist_tmp.small[b_index].addition = itemlist_tmp.small[b_index].addition + date_start + date_end;
+			}
+
+			if (jQuery("#no-check-value").is(":checked")) { }
+			else {
+				value_data ="";
+				var value_min = document.getElementById("value_min").value;
+				var value_max = document.getElementById("value_max").value;
+
+				if (value_min != "") {
+
+					if (b_table == "measurement" || b_table == "observation") {
+						var condition_m = document.getElementById("value_min_condition").value;
+						switch (condition_m) {
+							case "equal":
+								value_start = "and value_as_number = " + value_min + " ";
+								itemlist_tmp.small[b_index].addition = itemlist_tmp.small[b_index].addition + value_start;
+								value_data = value_min + " = value";
+								itemlist_tmp.small[b_index].min_condition = "equal";
+								break;
+
+							case "more than":
+								value_start = "and value_as_number > " + value_min + " ";
+								itemlist_tmp.small[b_index].addition = itemlist_tmp.small[b_index].addition + value_start;
+								value_data = value_min + "＜ value";
+								itemlist_tmp.small[b_index].min_condition = "more than";
+								break;
+
+							case "more than or equal":
+								value_start = "and value_as_number >= " + value_min + " ";
+								itemlist_tmp.small[b_index].addition = itemlist_tmp.small[b_index].addition + value_start;
+								value_data = value_min + " ≤ value";
+								itemlist_tmp.small[b_index].min_condition = "more than or equal";
+								break;
+						}
+
+						itemlist_tmp.small[b_index].value_min = value_min;
+					}
+
+				}
+				if (value_max != "") {
+					if (b_table == "measurement" || b_table == "observation") {
+						var condition_max = document.getElementById("value_max_condition").value;
+						switch (condition_max) {
+							case "less than":
+								value_end = "and value_as_number < " + value_max + " ";
+								itemlist_tmp.small[b_index].addition = itemlist_tmp.small[b_index].addition + value_end;
+								if(value_data == "") value_data = "value ＜ "+value_max;
+								else value_data = value_data + "＜" + value_max;
+								itemlist_tmp.small[b_index].max_condition = "less than";
+								break;
+
+							case "less than or equal":
+								value_end = "and value_as_number <= " + value_max + " ";
+								itemlist_tmp.small[b_index].addition = itemlist_tmp.small[b_index].addition + value_end;
+								if(value_data == "") value_data = "value ≤ " + value_max;
+								else value_data = value_data + " ≤ " + value_max;
+								itemlist_tmp.small[b_index].max_condition = "less than or equal";
+								break;
+						}
+
+						itemlist_tmp.small[b_index].value_max = value_max;
+					}
+
+				}
+
+			}
+			if (jQuery("#no-check-measure").is(":checked")) { }
+			else {
+				var last_value = document.getElementById("measure_count").value;
+				var calc_method = document.getElementById("measure_calc").value;
+				if (last_value != "") {
+					if (b_table == "measurement" || b_table == "observation") {
+						itemlist_tmp.small[b_index].measure_count = last_value;
+						itemlist_tmp.small[b_index].measure_method = calc_method;
+					}
+
+				}
+			}
+			if (jQuery("#no-check").is(":checked")) {
+			}
+			else {
+				jQuery("#no-check").prop('checked', true);
+				document.getElementById("duration_button_3_b").setAttribute("disabled", "");
+				document.getElementById("duration_button_6_b").setAttribute("disabled", "");
+				document.getElementById("duration_button_9_b").setAttribute("disabled", "");
+				document.getElementById("duration_button_12_b").setAttribute("disabled", "");
+				document.getElementById("duration_button_self_b").setAttribute("disabled", "");
+				document.getElementById("duration_button_3").setAttribute("disabled", "");
+				document.getElementById("duration_button_6").setAttribute("disabled", "");
+				document.getElementById("duration_button_9").setAttribute("disabled", "");
+				document.getElementById("duration_button_12").setAttribute("disabled", "");
+				document.getElementById("duration_button_self").setAttribute("disabled", "");
+
+			}
+
+			if (jQuery('#no-check-value').is(":checked")) { }
+			else {
+				jQuery("#no-check-value").prop('checked', true);
+				document.getElementById("value_min").setAttribute("disabled", "");
+				document.getElementById("value_max").setAttribute("disabled", "");
+			}
+
+			if (jQuery('#no-check-measure').is(":checked")) { }
+			else {
+				jQuery("#no-check-measure").prop('checked', true);
+				document.getElementById("measure_count").setAttribute("disabled", "");
+				document.getElementById("measure_calc").setAttribute("disabled", "");
+			}
+
+
+			jQuery('#duration_small_' + value_item).remove();
+			if (value_date != null) {
+				if (value_data != null) {
+					var durtaion_div = document.createElement("div");
+					durtaion_div.setAttribute("style", "margin-left: 30px; margin-top:1px; color:rgb(106,115,124); font-size:12px");
+					durtaion_div.setAttribute("id", "duration_small_" + value_item);
+
+					var duration_text = document.createTextNode("기간:" + '\u00a0' + value_date + '\u00a0' + '\u00a0' + '\u00a0' + '\u00a0' + "수치:" + '\u00a0' + value_data);
+					itemlist_tmp.small[b_index].addition_text = duration_text.wholeText;
+					durtaion_div.appendChild(duration_text);
+					document.getElementById("button_small_"+status+'_' + value_item).appendChild(durtaion_div);
+				}
+				else {
+					var durtaion_div = document.createElement("div");
+					durtaion_div.setAttribute("style", "margin-left: 30px; margin-top:1px; color:rgb(106,115,124); font-size:12px");
+					durtaion_div.setAttribute("id", "duration_small_" + value_item);
+
+					var duration_text = document.createTextNode("기간:" + '\u00a0' + value_date);
+					itemlist_tmp.small[b_index].addition_text = duration_text.wholeText;
+					durtaion_div.appendChild(duration_text);
+					document.getElementById("button_small_"+status+'_' + value_item).appendChild(durtaion_div);
+				}
+			}
+			else {
+				if (value_data != null) {
+					var durtaion_div = document.createElement("div");
+					durtaion_div.setAttribute("style", "margin-left: 30px; margin-top:1px; color:rgb(106,115,124); font-size:12px");
+					durtaion_div.setAttribute("id", "duration_small_" + value_item);
+
+					var duration_text = document.createTextNode("수치:" + '\u00a0' + value_data);
+					itemlist_tmp.small[b_index].addition_text = duration_text.wholeText;
+					durtaion_div.appendChild(duration_text);
+					document.getElementById("button_small_"+status+'_' + value_item).appendChild(durtaion_div);
+				}
+			}
+
+			switch(status){
+				case 'in':
+					itemlist_tmp_in[mid_id] = itemlist_tmp;
+				break;
+
+				case 'ex':
+					itemlist_tmp_ex[mid_id] = itemlist_tmp;
+				break;
+			}
+
+		}
+
+		function addtion_save_button_clicked_mini(status, mid_id) {
+
+			var itemlist_tmp = [];
+
+			switch(status){
+				case 'in':
+					itemlist_tmp = itemlist_tmp_in[mid_id];
+				break;
+
+				case 'ex':
+					itemlist_tmp = itemlist_tmp_ex[mid_id];
+				break;
+			}
+
+			var b_index = itemlist_tmp.small.map(function (e) { return e.id; }).indexOf(Number(value_item));
+			var b_table = itemlist_tmp.small[b_index].table;
+			var date_start, date_end, value_start, value_end;
+			itemlist_tmp.small[b_index].addition = "";
+			itemlist_tmp.small[b_index].addition_text = "";
+			itemlist_tmp.small[b_index].date_addition = "";
+			itemlist_tmp.small[b_index].value_min = "";
+			itemlist_tmp.small[b_index].value_max = "";
+
+			if (jQuery("#check-all").is(":checked")) {
+				itemlist_tmp.small[b_index].condition = "0";
+			}
+			else if (jQuery("#check-first").is(":checked")) itemlist_tmp.small[b_index].condition = "1";
+			else if (jQuery("#check-last").is(":checked")) itemlist_tmp.small[b_index].condition = "2";
+
+			if (jQuery("#no-check-mini").is(":checked")) { }
+			else {
+				var value_date = document.getElementById("duration_modal_mini").value;
+				var length_check = value_date.split(" - ");
+				if (length_check.length < 2) value_date = "01/01/1900 - " + document.getElementById("duration_modal_mini").value;
+				var split_date = value_date.split(" - ");
+				var start_date = split_date[0];
+				var end_date = split_date[1];
+				var start_split = start_date.split("/");
+				var end_split = end_date.split("/");
+				var start_data = start_split[2] + "-" + start_split[1] + "-" + start_split[0];
+				var end_data = end_split[2] + "-" + end_split[1] + "-" + end_split[0];
+
+				if (b_table == "measurement") {
+					date_start = "and measurement_date >= '" + start_data + "' ";
+					date_end = "and measurement_date <= '" + end_data + "' ";
+				}
+				else if (b_table == "observation") {
+					date_start = "and observation_date >= '" + start_data + "' ";
+					date_end = "and observation_date <= '" + end_data + "' ";
+				}
+				else if (b_table == "condition") {
+					date_start = "and condition_start_date >= '" + start_data + "' ";
+					date_end = "and condition_start_date <= '" + end_data + "' ";
+				}
+				else if (b_table == "drug") {
+					date_start = "and drug_exposure_start_date >= '" + start_data + "' ";
+					date_end = "and drug_exposure_start_date <= '" + end_data + "' ";
+				}
+				itemlist_tmp.small[b_index].addition = itemlist_tmp.small[b_index].addition + date_start + date_end;
+				itemlist_tmp.small[b_index].date_addition = value_date;
+			}
+
+
+			if (jQuery("#no-check-mini").is(":checked")) { }
+			else {
+				jQuery("#no-check-mini").prop('checked', true);
+				document.getElementById("duration_button_3_mini").setAttribute("disabled", "");
+				document.getElementById("duration_button_6_mini").setAttribute("disabled", "");
+				document.getElementById("duration_button_9_mini").setAttribute("disabled", "");
+				document.getElementById("duration_button_12_mini").setAttribute("disabled", "");
+				document.getElementById("duration_button_self_mini").setAttribute("disabled", "");
+				document.getElementById("duration_button_3_mini_b").setAttribute("disabled", "");
+				document.getElementById("duration_button_6_mini_b").setAttribute("disabled", "");
+				document.getElementById("duration_button_9_mini_b").setAttribute("disabled", "");
+				document.getElementById("duration_button_12_mini_b").setAttribute("disabled", "");
+				document.getElementById("duration_button_self_mini_b").setAttribute("disabled", "");
+
+			}
+
+			jQuery('#duration_small_' + value_item).remove();
+			if (value_date != null) {
+				var durtaion_div = document.createElement("div");
+				durtaion_div.setAttribute("style", "margin-left: 30px; margin-top:1px; color:rgb(106,115,124); font-size:12px");
+				durtaion_div.setAttribute("id", "duration_small_" + value_item);
+
+				var duration_text = document.createTextNode("기간:" + '\u00a0' + value_date);
+				itemlist_tmp.small[b_index].addition_text = duration_text.wholeText;
+				durtaion_div.appendChild(duration_text);
+				document.getElementById("button_small_"+status+'_' + value_item).appendChild(durtaion_div);
+			}
+
+			switch(status){
+				case 'in':
+					itemlist_tmp_in[mid_id] = itemlist_tmp;
+				break;
+
+				case 'ex':
+					itemlist_tmp_ex[mid_id] = itemlist_tmp;
+				break;
+			}
+
+		}
+
+		function addtion_save_button_cliked_age(status, mid_id) {
+
+			var itemlist_tmp = [];
+
+			switch(status){
+				case 'in':
+					itemlist_tmp = itemlist_tmp_in[mid_id];
+				break;
+
+				case 'ex':
+					itemlist_tmp = itemlist_tmp_ex[mid_id];
+				break;
+			}
+
+
+			var b_index = itemlist_tmp.small.map(function (e) { return e.id; }).indexOf(Number(value_item));
+			var b_table = itemlist_tmp.small[b_index].table;
+			var date_start, date_end, value_start, value_end;
+			itemlist_tmp.small[b_index].addition = "";
+			itemlist_tmp.small[b_index].addition_text = "";
+			itemlist_tmp.small[b_index].date_addition = "";
+			itemlist_tmp.small[b_index].value_min = "";
+			itemlist_tmp.small[b_index].value_max = "";
+
+			jQuery('#duration_small_' + value_item).remove();
+
+			if (jQuery("#no-check-age").is(":checked")) {
+				value_data = null;
+			}
+			else {
+				value_data = "";
+				var value_min = document.getElementById("age_min").value;
+				var currentTime = new Date();
+				var value_max = document.getElementById("age_max").value;
+				if (value_min != "") {
+					if (b_table == "age") {
+						var condition_m = document.getElementById("age_min_condition").value;
+						var birth_min = currentTime.getFullYear() - value_min;
+
+						switch (condition_m) {
+							case "equal":
+								value_start = "and year_of_birth = " + birth_min + " ";
+								itemlist_tmp.small[b_index].addition = itemlist_tmp.small[b_index].addition + value_start;
+								value_data = value_min + " = age";
+								itemlist_tmp.small[b_index].min_condition = "equal";
+								break;
+
+							case "more than":
+								value_start = "and year_of_birth < " + birth_min + " ";
+								itemlist_tmp.small[b_index].addition = itemlist_tmp.small[b_index].addition + value_start;
+								value_data = value_min + "＜ age";
+								itemlist_tmp.small[b_index].min_condition = "more than";
+
+								break;
+
+							case "more than or equal":
+								value_start = "and year_of_birth <= " + birth_min + " ";
+								itemlist_tmp.small[b_index].addition = itemlist_tmp.small[b_index].addition + value_start;
+								value_data = value_min + " ≤ age";
+								itemlist_tmp.small[b_index].min_condition = "more than or equal";
+
+								break;
+						}
+						itemlist_tmp.small[b_index].value_min = value_min;
+					}
+
+				}
+				if (value_max != "") {
+					if (b_table == "age") {
+						var condition_max = document.getElementById("age_max_condition").value;
+						var birth_max = currentTime.getFullYear() - value_max;
+
+						switch (condition_max) {
+							case "less than":
+								value_end = "and year_of_birth > " + birth_max + " ";
+								itemlist_tmp.small[b_index].addition = itemlist_tmp.small[b_index].addition + value_end;
+								if (value_data == "") value_data = "age < " + value_max;
+								else value_data = value_data + "＜" + value_max;
+								itemlist_tmp.small[b_index].max_condition = "less than";
+
+								break;
+
+							case "less than or equal":
+								value_end = "and year_of_birth >= " + birth_max + " ";
+								itemlist_tmp.small[b_index].addition = itemlist_tmp.small[b_index].addition + value_end;
+								if (value_data == "") value_data = "age ≤ " + value_max;
+								else value_data = value_data + " ≤ " + value_max;
+								itemlist_tmp.small[b_index].max_condition = "less than or equal";
+
+								break;
+						}
+
+						itemlist_tmp.small[b_index].value_max = value_max;
+
+					}
+
+				}
+			}
+			if (value_data != null) {
+				var durtaion_div = document.createElement("div");
+				durtaion_div.setAttribute("style", "margin-left: 30px; margin-top:1px; color:rgb(106,115,124); font-size:12px");
+				durtaion_div.setAttribute("id", "duration_small_" + value_item);
+				document.getElementById("button_small_"+status+'_' + value_item).appendChild(durtaion_div);
+
+				var duration_text;
+
+				duration_text = document.createTextNode("연령:" + '\u00a0' + value_data);
+				itemlist_tmp.small[b_index].addition_text = duration_text.wholeText;
+
+				durtaion_div.appendChild(duration_text);
+
+			}
+			switch(status){
+				case 'in':
+					itemlist_tmp_in[mid_id] = itemlist_tmp;
+				break;
+
+				case 'ex':
+					itemlist_tmp_ex[mid_id] = itemlist_tmp;
+				break;
+			}
+
+		}
+
+		function addtion_save_button_cliked_sql(status, mid_id) {
+
+			var itemlist_tmp = [];
+
+			switch(status){
+				case 'in':
+					itemlist_tmp = itemlist_tmp_in[mid_id];
+				break;
+
+				case 'ex':
+					itemlist_tmp = itemlist_tmp_ex[mid_id];
+				break;
+			}
+
+			var b_index = itemlist_tmp.small.map(function (e) { return e.id; }).indexOf(Number(value_item));
+			var b_table = itemlist_tmp.small[b_index].table;
+			var date_start, date_end, value_start, value_end;
+			itemlist_tmp.small[b_index].addition = "";
+			itemlist_tmp.small[b_index].addition_text = "";
+			itemlist_tmp.small[b_index].date_addition = "";
+			itemlist_tmp.small[b_index].value_min = "";
+			itemlist_tmp.small[b_index].value_max = "";
+			var sql_code = document.getElementById("sqlcode").value;
+			itemlist_tmp.small[b_index].addition_text = sql_code;
+			itemlist_tmp.small[b_index].addition = sql_code;
+			jQuery('#duration_small_' + value_item).remove();
+			if (sql_code != null) {
+				var durtaion_div = document.createElement("div");
+				durtaion_div.setAttribute("style", "margin-left: 30px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; margin-top:1px; color:rgb(106,115,124); font-size:12px");
+
+				durtaion_div.setAttribute("id", "duration_small_" + value_item);
+				var duration_text;
+
+				duration_text = document.createTextNode(sql_code);
+				itemlist_tmp[b_index].addition_text = duration_text.wholeText;
+
+				durtaion_div.appendChild(duration_text);
+				document.getElementById("button_small_"+status+'_' + value_item).appendChild(durtaion_div);
+
+			}
+			switch(status){
+				case 'in':
+					itemlist_tmp_in[mid_id] = itemlist_tmp;
+				break;
+
+				case 'ex':
+					itemlist_tmp_ex[mid_id] = itemlist_tmp;
+				break;
+			}
+
+		}
+
+		function visit_button_click(value) {
+			var durations = value;
+			visit_criteria.table = "Visit_occurrence";
+			visit_criteria.field = "id";
+			visit_criteria.condition = "0";
+			visit_criteria.attribute = 0;
+			visit_criteria.value = durations;
+			visit_criteria.title = "";
+			visit_criteria.addition_text = "";
+
+			visit_criteria.value_min = "";
+			visit_criteria.value_max = "";
+			visit_criteria.measure_count = "";
+			visit_criteria.measure_method = "";
+			visit_criteria.min_condition = "";
+			visit_criteria.max_condition = "";
+			visit_criteria.state = "AND";
+			visit_criteria.isdivider = "no";
+
+			var today = moment().format('DD/MM/YYYY');
+			var ago = moment().subtract(durations, 'month').format('DD/MM/YYYY');
+			document.getElementById("daterange_visit").removeAttribute("disabled");
+
+			if (durations == "1200") {
+				document.getElementById("daterange_visit").value = "";
+				document.getElementById("daterange_visit").setAttribute("disabled", "");
+			}
+			else if (durations == "9999") {
+				document.getElementById("daterange_visit").value = '01/01/2018 - 01/01/2019';
+			}
+			else {
+				document.getElementById("daterange_visit").value = ago + " - " + today;
+				visit_criteria.addition = "and visit_start_date >= ''" + ago + "'' and visit_start_date <=''" + today + "''";
+				visit_criteria.date_addition_value = ago + " - " + today;
+			}
+		}
+
+		function nav_account_clicked() {
+			if (opened == false) {
+				document.getElementById("userDropdown").setAttribute("aria-expanded", "true");
+				document.getElementById("userDropdowndiv").setAttribute("class", "dropdown-menu dropdown-menu-right show");
+				opened = true;
+			}
+			else {
+				document.getElementById("userDropdown").setAttribute("aria-expanded", "false");
+				document.getElementById("userDropdowndiv").setAttribute("class", "dropdown-menu dropdown-menu-right");
+				opened = false;
+			}
+		}
+
+	</script>
+
+</head>
+
+<body>
+	<div class="wrapper">
+		<div class="d-flex">
+			<nav class="sidebar" id="sidebar_navi">
+			</nav>
+
+			<div class="main bg-white">
+				<nav class="navbar navbar-expand navbar-light bg-white">
+					<a class="sidebar-toggle d-flex mr-2">
+						<i class="hamburger align-self-center"></i>
+					</a>
+
+					<form class="form-inline d-none d-sm-inline-block" style="width:80%" id="upper_navi">
+					</form>
+
+					<div class="navbar-collapse collapse">
+						<ul class="navbar-nav ml-auto" id="navbar">
+						</ul>
+					</div>
+				</nav>
+
+				<main class="content bg-white">
+					<div class="container-fluid p-0">
+
+						<h1 class="h2 mb-3" id="eligibility_head" style="color:rgb(52, 60, 67); font-weight: bold">
+						</h1>
+						<div class="row">
+							<div class="col-12">
+								<div class="card" style="border-color: transparent">
+									<table class="table table-borderless">
+										<tbody>
+											<tr>
+												<td style="width: 7%;">Name</td>
+												<td>
+													<form class="form-inline">
+														<input type="text" id="eligibility_title" class="form-control" placeholder="" style="width: 60%">
+													</form>
+												</td>
+											</tr>
+											<tr>
+												<td style="width:7%;">Period</td>
+
+												<td>
+
+													<div class="form-check form-check-inline" style="margin-left: 25px">
+														<label class="custom-control-inline custom-radio" style="margin-right: 30px">
+															<input name="duration" id="visit_no" type="radio" class="custom-control-input" value="1200" onclick="visit_button_click(value)">
+															<span class="custom-control-label">All</span>
+														</label>
+														<label class="custom-control-inline custom-radio" style="margin-right: 30px">
+															<input name="duration" id="visit_3" type="radio" class="custom-control-input" value="3" onclick="visit_button_click(value)">
+															<span class="custom-control-label">3 months</span>
+														</label>
+														<label class="custom-control-inline custom-radio" style="margin-right: 30px">
+															<input name="duration" id="visit_6" type="radio" class="custom-control-input" value="6" onclick="visit_button_click(value)">
+															<span class="custom-control-label">6 months</span>
+														</label>
+														<label class="custom-control-inline custom-radio" style="margin-right: 30px">
+															<input name="duration" id="visit_9" type="radio" class="custom-control-input" value="9" onclick="visit_button_click(value)">
+															<span class="custom-control-label">9 months</span>
+														</label>
+														<label class="custom-control-inline custom-radio" style="margin-right: 30px">
+															<input name="duration" id="visit_12" type="radio" class="custom-control-input" value="12" onclick="visit_button_click(value)">
+															<span class="custom-control-label">1 year</span>
+														</label>
+														<label class="custom-control-inline custom-radio" style="margin-right: 30px">
+															<input name="duration" id="visit_24" type="radio" class="custom-control-input" value="24" onclick="visit_button_click(value)">
+															<span class="custom-control-label">2 years</span>
+														</label>
+														<label class="custom-control-inline custom-radio" style="margin-right: 30px">
+															<input name="duration" id="visit_36" type="radio" class="custom-control-input" value="36" onclick="visit_button_click(value)">
+															<span class="custom-control-label">3 years</span>
+														</label>
+														<label class="custom-control-inline custom-radio" style="margin-right: 30px">
+															<input name="duration" id="visit_direct" type="radio" class="custom-control-input" value="9999" onclick="visit_button_click(value)">
+															<span class="custom-control-label">Custom</span>
+														</label>
+
+														<div class="custom-control-inline custom-radio" style="margin-right: 30px">
+															<input class="form-control" id="daterange_visit" type="text" value="" name="daterange_visit" />
+															</label>
+															<script>
+																document.addEventListener("DOMContentLoaded", function (event) {
+																	// Daterangepicker
+																	jQuery('input[name="daterange_visit"]').daterangepicker({
+																		opens: 'left',
+																		locale: {
+																			cancelLabel: 'Clear'
+																		}
+																	});
+																});
+															</script>
+														</div>
+
+
+												</td>
+
+											</tr>
+
+										</tbody>
+									</table>
+									<table class="table table-borderless" style="table-layout: fixed">
+										<tbody>
+											<tr>
+												<td style="width: 7%; vertical-align: bottom">Eligibility Criteria</td>
+												<td style="width: 40%; border-right: thin solid rgb(218, 222, 227);">
+													<label class="text" style="margin-top:2px">Inclusion</label>
+													<div class="input-group" id="inclusion_template">
+														<div class="btn-group">
+															<button type="button" class="btn btn-info" onclick="mid_item('in')"><i class="aglign-middle"
+																 data-feather="plus"></i>Add Inclusion</button>
+														</div>
+													</div>
+												</td>
+												<td style="width:1%"></td>
+												<td style="width: 40%">
+													<label class="text" style="margin-top:2px">Exclusion</label>
+
+													<div class="input-group" id="exclusion_template">
+														<div class="btn-group">
+															<button type="button" class="btn btn-danger" onclick="mid_item('ex')"><i class="aglign-middle"
+																 data-feather="plus"></i>Add Exclusion</button>
+														</div>
+													</div>
+												</td>
+											</tr>
+
+											<tr>
+												<td style="width: 7%"> </td>
+												<td style="width: 40%; vertical-align: top; border-right: thin solid rgb(218, 222, 227);">
+													<div class="card" style="min-height:400px; border-color: transparent; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;"
+													 id="inclusion_criteria">
+													</div>
+
+												</td>
+												<td style="width: 7%"></td>
+												<td style="width: 40%; vertical-align: top">
+													<div class="card" style="min-height:400px; border-color: transparent" id="exclusion_criteria">
+													</div>
+												</td>
+											</tr>
+
+										</tbody>
+									</table>
+								</div>
+								<button class="btn btn-info float-sm-right" style="margin-left: 10px; margin-right: 10px" onclick="save_check();">SAVE</button>
+								<button class="btn btn-outline-info float-sm-right" onclick="cancel_button_cliked();">CANCEL</button>
+
+							</div>
+						</div>
+					</div>
+				</main>
+
+				<footer class="footer">
+					<div class="container-fluid">
+						<div class="row text-muted">
+							<div class="col-6 text-left">
+							</div>
+							<div class="col-6 text-right">
+								<p class="mb-0">
+									&copy; 2018 - <a href="index.html" class="text-muted">JBCP</a>
+								</p>
+							</div>
+						</div>
+					</div>
+				</footer>
+				<div class="modal fade" id="criteria_add_small" tabindex="-1" role="dialog" aria-hidden="true">
+					<div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+						<div class="modal-content">
+							<div class="modal-header">
+								<h5 class="modal-title" id="item_modal_title_user_define"></h5>
+								<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+									<span aria-hidden="true">&times;</span>
+								</button>
+							</div>
+							<div class="modal-body mt-3 mb-1" id="criteria_div">
+								<div class="input-group mb-2" id="criteria_template">
+									<div class="btn-group">
+										<button type="button" class="btn btn-info dropdown-toggle" id="selected_table_inclusion" data-toggle="dropdown"
+										 aria-haspopup="true" aria-expanded="false">
+											Select
+										</button>
+										<div class="dropdown-menu">
+											<a class="dropdown-item" value="age" id="age" onclick="insert_etcmodal('age', 'in')">나이</a>
+											<a class="dropdown-item" value="gender" id="gender" onclick="select_table_inclusion(id)">성별</a>
+											<a class="dropdown-item" value="drug" id="drug" onclick="select_table_inclusion(id)">약물</a>
+											<a class="dropdown-item" value="condition" id="condition" onclick="select_table_inclusion(id)">진단</a>
+											<a class="dropdown-item" value="measurement" id="measurement" onclick="select_table_inclusion(id)">검사</a>
+											<a class="dropdown-item" value="sql" id="sql" onclick="insert_etcmodal('sql', 'in')">SQL</a>
+											<a class="dropdown-item" value="user_define" id="user_define" onclick="select_table_inclusion(id)">User
+												Define</a>
+										</div>
+									</div>
+									<input type="text" class="form-control" placeholder="INCLUSION CRITERIA" id="inclusion" onkeyup="enterkey('in');">
+									<span class="input-group-append">
+										<button class="btn btn-info" type="button" onclick="insert_itemmodal('in')">Add</button>
+										<button class="btn btn-outline-info" type="button" onclick="hier_button_click()"><i class="align-middle mr-2 fas fa-fw fa-project-diagram"></i></button>
+									</span>
+								</div>
+								<div class="mb-0" id="criteria"></div>
+
+								<hr class="w-100 mb-0" style="border:none; border:3px dashed rgb(218, 222, 227)" onclick="add_state_select_button('criteria_'+ criteria_mid_id, 'state_select_'+criteria_mid_id+'_'+(itemlist_tmp.small.length-1), 'And', 'yes');">
+
+							</div>
+							<div class="modal-footer">
+								<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+								<button type="button" class="btn btn-outline-secondary" onclick="addcriteria(criteria_status, criteria_mid_id, criteria_parent)"
+								 data-dismiss="modal">Save</button>
+							</div>
+						</div>
+					</div>
+				</div>
+
+
+				<div class="modal fade" id="itemAddFullModal" tabindex="-1" role="dialog" aria-hidden="true">
+					<div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+						<div class="modal-content">
+							<div class="modal-header">
+								<h5 class="modal-title" id="item_modal_title_Full"></h5>
+								<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+									<span aria-hidden="true">&times;</span>
+								</button>
+							</div>
+							<div class="modal-body m-3">
+								<table class="table table-borderless">
+									<tbody>
+										<tr>
+											<td style="width: 21%; vertical-align: 0%">
+												Time
+												<form class="form-inline">
+													<div class="custom-control custom-checkbox mb-1 mr-sm-2">
+														<input type="checkbox" class="custom-control-input" id="no-check-measure" checked>
+														<label class="custom-control-label" for="no-check-measure">All</label>
+													</div>
+												</form>
+											</td>
+											<td>
+												<form class="form-inline">
+													<label class="text" style="margin-right:8px"> Last</label>
+													<select class="form-control" id="measure_count" style="width: 60px; margin-right: 10px" disabled>
+														<option value="1" selected>1</option>
+														<option value="2">2</option>
+														<option value="3">3</option>
+														<option value="4">4</option>
+														<option value="5">5</option>
+														<option value="6">6</option>
+														<option value="7">7</option>
+														<option value="8">8</option>
+														<option value="9">9</option>
+														<option value="10">10</option>
+													</select>
+
+													<select class="form-control" id="measure_calc" disabled>
+														<option value="avg" selected>Average</option>
+														<option value="max">Max</option>
+														<option value="min">Min</option>
+													</select>
+												</form>
+											</td>
+										</tr>
+										<tr>
+											<td style="width: 21%; vertical-align: 0%">
+												Value
+												<form class="form-inline">
+													<div class="custom-control custom-checkbox mb-1 mr-sm-2">
+														<input type="checkbox" class="custom-control-input" id="no-check-value" checked>
+														<label class="custom-control-label" for="no-check-value">All</label>
+													</div>
+												</form>
+											</td>
+											<td>
+												<form class="form-inline">
+													<input type="text" class="form-control" style="width: 60px; margin-right: 8px;" id="value_min" disabled>
+													<select class="form-control" id="value_min_condition" disabled>
+														<option value=""></option>
+														<option value="more than or equal">&lt;=</option>
+														<option value="more than">&lt;</option>
+														<option value="equal">=</option>
+													</select>
+													<label class="text" style="margin-left: 8px; margin-right: 8px"> value </label>
+													<select class="form-control" id="value_max_condition" disabled>
+														<option value=""></option>
+														<option value="less than or equal">&lt;=</option>
+														<option value="less than">&lt;</option>
+													</select>
+
+													<input type="text" class="form-control" style="width: 60px; margin-left: 8px" id="value_max" disabled>
+												</form>
+											</td>
+										</tr>
+										<tr>
+											<td style="width: 21%; vertical-align: 0%">
+												Period
+												<form class="form-inline">
+													<div class="custom-control custom-checkbox mb-1 mr-sm-2">
+														<input type="checkbox" class="custom-control-input" id="no-check" checked>
+														<label class="custom-control-label" for="no-check">All</label>
+													</div>
+												</form>
+											</td>
+											<td>
+												<div class="btn-group mb-3" role="group" aria-label="Default button group">
+													<button type="button" class="btn btn-outline-danger" style="width: 130px" value="3" id="duration_button_3_b"
+													 onclick="duration_button_click_b(value)" disabled> 3 months before</button>
+													<button type="button" class="btn btn-outline-danger" style="width: 130px" value="6" id="duration_button_6_b"
+													 onclick="duration_button_click_b(value)" disabled> 6 months before</button>
+													<button type="button" class="btn btn-outline-danger" style="width: 130px" value="9" id="duration_button_9_b"
+													 onclick="duration_button_click_b(value)" disabled> 9 months before</button>
+													<button type="button" class="btn btn-outline-danger" style="width: 130px" value="12" id="duration_button_12_b"
+													 onclick="duration_button_click_b(value)" disabled> 1 year before</button>
+													<button type="button" class="btn btn-outline-danger" style="width: 80px" id="duration_button_self_b"
+													 onclick="direct_button_click_b()" disabled> Custom</button>
+
+												</div>
+												<div class="btn-group mb-3" role="group" aria-label="Default button group">
+													<button type="button" class="btn btn-outline-info" style="width: 130px" value="3" id="duration_button_3"
+													 onclick="duration_button_click(value)" disabled> within 3 months</button>
+													<button type="button" class="btn btn-outline-info" style="width: 130px" value="6" id="duration_button_6"
+													 onclick="duration_button_click(value)" disabled> within 6 months</button>
+													<button type="button" class="btn btn-outline-info" style="width: 130px" value="9" id="duration_button_9"
+													 onclick="duration_button_click(value)" disabled> within 9 months</button>
+													<button type="button" class="btn btn-outline-info" style="width: 130px" value="12" id="duration_button_12"
+													 onclick="duration_button_click(value)" disabled>within 1 year</button>
+													<button type="button" class="btn btn-outline-info" style="width: 80px" id="duration_button_self"
+													 onclick="direct_button_click()" disabled> Custom</button>
+												</div>
+												<div class="form-inline">
+													<label class="text" style="margin-right:10px" id="duration_modal_label">Within</label>
+													<input name="daterange-range-in" class="form-control" type="text" id="duration_modal" style="width:80%"
+													 value="" disabled>
+												</div>
+											</td>
+										</tr>
+
+									</tbody>
+								</table>
+
+							</div>
+							<div class="modal-footer">
+								<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+								<button type="button" class="btn btn-primary" data-dismiss="modal" id="modal_add_button">Save</button>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="modal fade" id="itemAddInModal" tabindex="-1" role="dialog" aria-hidden="true">
+					<div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+						<div class="modal-content">
+							<div class="modal-header">
+								<h5 class="modal-title" id="item_modal_title_In"></h5>
+								<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+									<span aria-hidden="true">&times;</span>
+								</button>
+							</div>
+							<div class="modal-body m-3">
+								<table class="table table-borderless">
+									<tbody>
+										<tr>
+											<td>Time</td>
+											<td>
+												<div class="form-check form-check-inline" style="margin-left: 25px">
+													<label class="custom-control-inline custom-radio" style="margin-right: 30px">
+														<input name="timestone" id="check-all" type="radio" value="0" class="custom-control-input" checked>
+														<span class="custom-control-label">All</span>
+													</label>
+													<label class="custom-control-inline custom-radio" style="margin-right: 30px">
+														<input name="timestone" id="check-first" type="radio" value="1" class="custom-control-input">
+														<span class="custom-control-label" id="first_in"></span>
+													</label>
+													<label class="custom-control-inline custom-radio" style="margin-right: 30px">
+														<input name="timestone" id="check-last" type="radio" value="2" class="custom-control-input">
+														<span class="custom-control-label" id="last_in"></span>
+													</label>
+												</div>
+											</td>
+										</tr>
+										<tr>
+											<td style="width: 10%; vertical-align: 0%">
+												Period
+												<form class="form-inline">
+													<div class="custom-control custom-checkbox mb-1 mr-sm-2">
+														<input type="checkbox" class="custom-control-input" id="no-check-mini" checked>
+														<label class="custom-control-label" for="no-check-mini">All</label>
+													</div>
+												</form>
+											</td>
+											<td>
+												<div class="btn-group mb-3" role="group" aria-label="Default button group">
+													<button type="button" class="btn btn-outline-danger" style="width: 130px" value="3" id="duration_button_3_mini_b"
+													 onclick="duration_button_click_mini_b(value)" disabled> 3 months before</button>
+													<button type="button" class="btn btn-outline-danger" style="width: 130px" value="6" id="duration_button_6_mini_b"
+													 onclick="duration_button_click_mini_b(value)" disabled> 6 months before</button>
+													<button type="button" class="btn btn-outline-danger" style="width: 130px" value="9" id="duration_button_9_mini_b"
+													 onclick="duration_button_click_mini_b(value)" disabled> 9 months before</button>
+													<button type="button" class="btn btn-outline-danger" style="width: 130px" value="12" id="duration_button_12_mini_b"
+													 onclick="duration_button_click_mini_b(value)" disabled> 1 year before</button>
+													<button type="button" class="btn btn-outline-danger" style="width: 80px" id="duration_button_self_mini_b"
+													 onclick="direct_button_click_mini_b()" disabled> Custom</button>
+												</div>
+												<div class="btn-group mb-3" role="group" aria-label="Default button group">
+													<button type="button" class="btn btn-outline-info" style="width: 130px" value="3" id="duration_button_3_mini"
+													 onclick="duration_button_click_mini(value)" disabled> within 3 months</button>
+													<button type="button" class="btn btn-outline-info" style="width: 130px" value="6" id="duration_button_6_mini"
+													 onclick="duration_button_click_mini(value)" disabled> within 6 months</button>
+													<button type="button" class="btn btn-outline-info" style="width: 130px" value="9" id="duration_button_9_mini"
+													 onclick="duration_button_click_mini(value)" disabled> within 9 months</button>
+													<button type="button" class="btn btn-outline-info" style="width: 130px" value="12" id="duration_button_12_mini"
+													 onclick="duration_button_click_mini(value)" disabled>within 1 year</button>
+													<button type="button" class="btn btn-outline-info" style="width: 80px" id="duration_button_self_mini"
+													 onclick="direct_button_click_mini()" disabled> Custom</button>
+												</div>
+												<div class="form-inline">
+													<label class="text" style="margin-right:10px" id="duration_modal_label_mini">Within</label>
+													<input name="daterange-range-mini" class="form-control" type="text" id="duration_modal_mini" style="width:80%"
+													 value="" disabled>
+												</div>
+
+											</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+							<div class="modal-footer">
+								<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+								<button type="button" class="btn btn-primary" data-dismiss="modal" id="modal_add_mini_button">Save</button>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="modal fade" id="hieracyConditionModal" tabindex="-1" role="dialog" aria-hidden="true">
+					<div class="modal-dialog modal-lg" role="document">
+						<div class="modal-content">
+							<div class="modal-header">
+								<h5 class="modal-title" id="item_modal_title">진단</h5>
+								<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+									<span aria-hidden="true">&times;</span>
+								</button>
+							</div>
+							<div class="modal-body m-3">
+								<div id="ConditionChk"></div>
+							</div>
+							<div class="modal-footer">
+								<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+								<button type="button" class="btn btn-primary" id="condition_hier_add_button" onclick="hieracyClicked('condition','in');" data-dismiss="modal">Save</button>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="modal fade" id="hieracyDrugModal" tabindex="-1" role="dialog" aria-hidden="true">
+					<div class="modal-dialog modal-lg" role="document">
+						<div class="modal-content">
+							<div class="modal-header">
+								<h5 class="modal-title" id="item_modal_title">약물</h5>
+								<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+									<span aria-hidden="true">&times;</span>
+								</button>
+							</div>
+							<div class="modal-body m-3">
+								<div id="DrugChk"></div>
+							</div>
+							<div class="modal-footer">
+								<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+								<button type="button" class="btn btn-primary" id="drug_hier_add_button" onclick="hieracyClicked('drug','in');" data-dismiss="modal">Save</button>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="modal fade" id="ageModal" tabindex="-1" role="dialog" aria-hidden="true">
+					<div class="modal-dialog modal-dialog-centered modal-md">
+						<div class="modal-content">
+							<div class="modal-header">
+								<h5 class="modal-title" id="item_modal_title">Age</h5>
+								<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+									<span aria-hidden="true">&times;</span>
+								</button>
+							</div>
+							<div class="modal-body m-3">
+								<table class="table table-borderless">
+									<tbody>
+										<tr>
+											<td style="width: 21%; vertical-align: 0%">
+												연령(Year)
+												<form class="form-inline">
+													<div class="custom-control custom-checkbox mb-1 mr-sm-2">
+														<input type="checkbox" class="custom-control-input" id="no-check-age" checked>
+														<label class="custom-control-label" for="no-check-age">All</label>
+													</div>
+												</form>
+											</td>
+											<td>
+												<form class="form-inline">
+													<input type="text" class="form-control" style="width: 60px; margin-right: 8px;" id="age_min" disabled>
+													<select class="form-control" id="age_min_condition" disabled>
+														<option value=""></option>
+														<option value="more than or equal">&lt;=</option>
+														<option value="more than">&lt;</option>
+														<option value="equal">=</option>
+													</select>
+													<label class="text" style="margin-left: 8px; margin-right: 8px"> age </label>
+													<select class="form-control" id="age_max_condition" disabled>
+														<option value=""></option>
+														<option value="less than or equal">&lt;=</option>
+														<option value="less than">&lt;</option>
+													</select>
+
+													<input type="text" class="form-control" style="width: 60px; margin-left: 8px" id="age_max" disabled>
+												</form>
+											</td>
+
+										</tr>
+									</tbody>
+								</table>
+							</div>
+							<div class="modal-footer">
+								<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+								<button type="button" class="btn btn-primary" data-dismiss="modal" id="modal_add_age_button">Save</button>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="modal fade" id="sqlModal" tabindex="-1" role="dialog" aria-hidden="true">
+					<div class="modal-dialog modal-dialog-centered modal-md" role="document">
+						<div class="modal-content">
+							<div class="modal-header">
+								<h5 class="modal-title" id="item_modal_title">SQL</h5>
+								<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+									<span aria-hidden="true">&times;</span>
+								</button>
+							</div>
+							<div class="modal-body m-3">
+								<table class="table table-borderless">
+									<tbody>
+										<tr>
+											<td style="width: 21%; vertical-align: 0%">
+												SQL
+											</td>
+											<td>
+												<textarea class="form-control" rows="5" palceholder="Description" id="sqlcode"></textarea>
+											</td>
+
+										</tr>
+									</tbody>
+								</table>
+							</div>
+							<div class="modal-footer">
+								<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+								<button type="button" class="btn btn-primary" data-dismiss="modal" id="modal_add_sql_button">Save</button>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="modal fade" id="userdefineModal" tabindex="-1" role="dialog" aria-hidden="true">
+					<div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+						<div class="modal-content">
+							<div class="modal-header">
+								<h5 class="modal-title" id="item_modal_title_user_define"></h5>
+								<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+									<span aria-hidden="true">&times;</span>
+								</button>
+							</div>
+							<div class="modal-body m-3">
+								<table class="table table-borderless" style="table-layout: fixed">
+									<tbody>
+										<tr>
+											<td style="width: 50%;">
+												Inclusion
+											</td>
+											<td style="width: 50%;">
+												Exclusion
+											</td>
+										</tr>
+										<tr>
+											<td style="vertical-align: 0%">
+												<div id="user_inclusion"></div>
+											</td>
+											<td style="vertical-align: 0%">
+												<div id="user_exclusion"></div>
+											</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+							<div class="modal-footer">
+								<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+							</div>
+						</div>
+					</div>
+				</div>
+
+			</div>
+		</div>
+	</div>
+
+
+	<script src="../js/app.js"></script>
+	<script src="../js/tables.js"></script>
+	<script src="../js/forms.js"></script>
+	<script src="../js/feather.js"></script>
+	<script src="upper_navi.js"></script>
+	<script src="eligibility_function.js?version=22"></script>
+
+</body>
+
+<link type="text/css" rel="stylesheet" href="../css/jquery.autocomplete.css" />
+<link rel="stylesheet" type="text/css" href="../lib/dragula/dragula.min.css" />
+
+<link href="../css/bootstrap.min.css">
+<link href="../lib/styles/wijmo.min.css " rel="stylesheet" />
+<script src="../js/jquery-ui.min.js"></script>
+<script src="../package/fancytree-master/dist/jquery.fancytree-all-deps.min.js"></script>
+<script src="../lib/scripts/vendor/controls/wijmo.min.js"></script>
+<script src="../lib/scripts/vendor/controls/wijmo.nav.min.js"></script>
+<script src="../lib/dragula/dragula.min.js"></script>
+<script src="../lib/bootstrap-slider/bootstrap-slider.min.js" type="text/javascript"></script>
+
+<script>
+	wijmo.setLicenseKey(
+		'Wijmo License key'
+	);
+</script>
+<script src="../js/jquery.autocomplete.js"></script>
+
+</html>

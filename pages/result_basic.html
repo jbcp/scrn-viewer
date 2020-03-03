@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8">
+	<script src="../js/jquery-latest.js"></script>
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<meta name="description" content="Responsive Bootstrap 4 Admin Template">
+	<meta name="author" content="Bootlab">
+
+	<title>SCRN</title>
+
+	<link href="../css/app.css" rel="stylesheet">
+
+	<script type="text/javascript">
+		Project_id = localStorage.getItem("project_id");
+		Eligibility_id = localStorage.getItem("eligibility_id");
+
+		var chart_data_gender = [0, 0];
+		var chart_data_age = [0, 0, 0, 0, 0, 0, 0, 0];
+		var chart_data_visit = [0, 0, 0];
+		function numberWithCommas(x) {
+		    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+		}
+
+		$(document).ready(function () {
+			$('#sidebar_navi').load('result_menu.html');
+			$('#cirteria').load('result_criteria_new.html');
+			$('#footer').load('footer.html');
+			upper_navi_1("Basic");
+			upper_navi_4(Project_id, Eligibility_id)
+
+			var xhttp = new XMLHttpRequest();
+
+			xhttp.onreadystatechange = function () {
+				if (this.readyState == this.DONE && this.status == 200) {
+
+					var result_array = xhttp.responseText.split("&");
+					var img_src = result_array[0];
+					var rand = Math.random();
+					document.getElementById("nav_img").setAttribute("src", img_src + "?" + rand);
+
+					var user_name = result_array[1];
+					document.getElementById("user_name").appendChild(document.createTextNode(user_name));
+
+					var total_patient = result_array[3];
+					var doctor_patient = result_array[4];
+					var result_patient = result_array[5];
+
+					document.getElementById("criteria_label").appendChild(document.createTextNode("병원 내 환자는 총 "+numberWithCommas(total_patient)+"명이며, 그 중 연구자의 환자는 "+numberWithCommas(doctor_patient)+"명입니다."));
+					document.getElementById("criteria_result").appendChild(document.createTextNode("위 조건을 만족하는 환자는 " + numberWithCommas(result_patient)+"명입니다."));
+					var person_data = JSON.parse(result_array[2]);
+					var person = person_data.age.range_9 + ", " + person_data.age.range_10 + ", " + person_data.age.range_20 + ", " + person_data.age.range_30 + ", " + person_data.age.range_40 + ", " + person_data.age.range_50 + ", " + person_data.age.range_60 + ", " + person_data.age.range_70;
+					var tmp_chart_data_age = person.split(", ").map(Number);
+					for (var i = 0; i < tmp_chart_data_age.length; i++) {
+						chart_data_age[i] = 0;
+						chart_data_age[i] = chart_data_age[i] + tmp_chart_data_age[i];
+					}
+					new Chart(document.getElementById("chartjs-dashboard-bar"), {
+						type: 'bar',
+						data: {
+							labels: ["0-9", "10-19", "20-29", "30-39", "40-49", "50-59", "60-69", "70+"],
+							datasets: [{
+								label: "AGE",
+								backgroundColor: "#0cc2aa",
+								borderColor: "#0cc2aa",
+								hoverBackgroundColor: "#0cc2aa",
+								hoverBorderColor: "#0cc2aa",
+								data: chart_data_age
+							}]
+						},
+						options: {
+							maintainAspectRatio: false,
+							legend: {
+								display: false
+							},
+							title: {
+								display: true
+							},
+							scales: {
+								yAxes: [{
+									gridLines: {
+										display: false
+									},
+									stacked: false,
+									ticks: {
+
+									},
+									scaleLabel: {
+										display: true,
+										labelString: 'Number of Patients'
+									}
+
+								}],
+								xAxes: [{
+									barPercentage: .75,
+									categoryPercentage: .5,
+									stacked: false,
+									gridLines: {
+										color: "transparent"
+									},
+									scaleLabel: {
+										display: true,
+										labelString: 'Age'
+									},
+									ticks: {
+
+									}
+
+								}]
+							},
+							showValue: {
+								fontSize: 13,
+								fontStyle: 'Helvetica'
+							}
+
+						}
+					});
+
+					var gender_total = person_data.gender.male + person_data.gender.female;
+					var male_percent = Math.round(person_data.gender.male / gender_total * 100);
+					var female_percent = Math.round(person_data.gender.female / gender_total * 100);
+
+					document.getElementById("male_num").appendChild(document.createTextNode(person_data.gender.male + "명(" + male_percent + "%)"));
+					document.getElementById("female_num").appendChild(document.createTextNode(person_data.gender.female + "명(" + female_percent + "%)"));
+
+					var gender = person_data.gender.male + ", " + person_data.gender.female;
+					var tmp_chart_data_gender = gender.split(", ").map(Number);
+					for (var i = 0; i < tmp_chart_data_gender.length; i++) {
+						chart_data_gender[i] = 0;
+						chart_data_gender[i] = chart_data_gender[i] + tmp_chart_data_gender[i];
+					}
+
+					new Chart(document.getElementById("chartjs-dashboard-pie"), {
+						type: 'pie',
+						data: {
+							labels: ["MALE", "FEMALE"],
+							datasets: [{
+								data: chart_data_gender,
+								backgroundColor: ["#0cc2aa", "#fcc100"],
+								borderColor: "transparent"
+							}]
+						},
+						options: {
+							responsive: !window.MSInputMethodContext,
+							maintainAspectRatio: false,
+							legend: {
+								display: false
+							},
+
+							animation: {
+								duration: 500,
+								easing: "easeOutQuart",
+								onComplete: function () {
+									var ctx = this.chart.ctx;
+									ctx.textAlign = 'center';
+									ctx.textBaseline = 'bottom';
+
+									this.data.datasets.forEach(function (dataset) {
+
+										for (var i = 0; i < dataset.data.length; i++) {
+											var model = dataset._meta[Object.keys(dataset._meta)[0]].data[i]._model,
+												total = dataset._meta[Object.keys(dataset._meta)[0]].total,
+												mid_radius = model.innerRadius + (model.outerRadius - model.innerRadius) / 2,
+												start_angle = model.startAngle,
+												end_angle = model.endAngle,
+												mid_angle = start_angle + (end_angle - start_angle) / 2;
+
+											var x = mid_radius * Math.cos(mid_angle);
+											var y = mid_radius * Math.sin(mid_angle);
+
+											ctx.fillStyle = 'black';
+											if (i == 3) { // Darker text color for lighter background
+												ctx.fillStyle = '#444';
+											}
+											var percent = "(" + String(Math.round(dataset.data[i] / total * 100)) + "%)";
+											if (dataset.data[i] != 0)
+												ctx.fillText(dataset.data[i] + "명" + percent, model.x + x, model.y + y);
+										}
+									});
+								}
+							}
+						}
+
+
+					});
+
+					var type_total = person_data.visit.in + person_data.visit.out + person_data.visit.emergency;
+					var in_percent = Math.round(person_data.visit.in / type_total * 100);
+					var out_percent = Math.round(person_data.visit.out / type_total * 100);
+					var emergency_percent = Math.round(person_data.visit.emergency / type_total * 100);
+					document.getElementById("inpatient_num").appendChild(document.createTextNode(person_data.visit.in + "명(" + in_percent + "%)"));
+					document.getElementById("outpatient_num").appendChild(document.createTextNode(person_data.visit.out + "명(" + out_percent + "%)"));
+					document.getElementById("emergency_patient_num").appendChild(document.createTextNode(person_data.visit.emergency + "명(" + emergency_percent + "%)"));
+
+					var visit = person_data.visit.in + ", " + person_data.visit.out + ", " + person_data.visit.emergency;
+
+					var tmp_chart_data_visit = visit.split(", ").map(Number);
+					for (var i = 0; i < tmp_chart_data_visit.length; i++) {
+						chart_data_visit[i] = 0;
+						chart_data_visit[i] = chart_data_visit[i] + tmp_chart_data_visit[i];
+					}
+
+					new Chart(document.getElementById("chartjs-visit-pie"), {
+						type: 'pie',
+						data: {
+							labels: ["INPATIENT", "OUTPATIENT", "EMERGENCY"],
+							datasets: [{
+								data: chart_data_visit,
+								backgroundColor: ["#0cc2aa", "#fcc100", "#f44455"],
+								borderColor: "transparent"
+							}]
+						},
+						options: {
+							responsive: !window.MSInputMethodContext,
+							maintainAspectRatio: false,
+							legend: {
+								display: false
+							},
+							animation: {
+								duration: 500,
+								easing: "easeOutQuart",
+								onComplete: function () {
+									var ctx = this.chart.ctx;
+									ctx.font = Chart.helpers.fontString(Chart.defaults.global.defaultFontFamily, 'normal', Chart.defaults.global.defaultFontFamily);
+									ctx.textAlign = 'center';
+									ctx.textBaseline = 'bottom';
+
+									this.data.datasets.forEach(function (dataset) {
+
+										for (var i = 0; i < dataset.data.length; i++) {
+											var model = dataset._meta[Object.keys(dataset._meta)[0]].data[i]._model,
+												total = dataset._meta[Object.keys(dataset._meta)[0]].total,
+												mid_radius = model.innerRadius + (model.outerRadius - model.innerRadius) / 2,
+												start_angle = model.startAngle,
+												end_angle = model.endAngle,
+												mid_angle = start_angle + (end_angle - start_angle) / 2;
+
+											var x = mid_radius * Math.cos(mid_angle);
+											var y = mid_radius * Math.sin(mid_angle) - i * 10;
+
+											ctx.fillStyle = 'black';
+											if (i == 3) { // Darker text color for lighter background
+												ctx.fillStyle = '#444';
+											}
+											var percent = "(" + String(Math.round(dataset.data[i] / total * 100)) + "%)";
+											ctx.fillText(dataset.data[i] + "명" + percent, model.x + x, model.y + y);
+										}
+									});
+								}
+							}
+
+						}
+					});
+
+				}
+			}
+			xhttp.open("GET", "./result_basic.jsp?action=load&Project_id=" + Project_id + "&Eligibility_id=" + Eligibility_id);
+			xhttp.send();
+		});
+
+	</script>
+</head>
+
+<body>
+	<div class="wrapper">
+		<div class="d-flex">
+			<nav class="sidebar" id="sidebar_navi">
+			</nav>
+
+			<div class="main bg-white">
+				<nav class="navbar navbar-expand navbar-light bg-white">
+					<a class="sidebar-toggle d-flex mr-2">
+						<i class="hamburger align-self-center"></i>
+					</a>
+
+					<form class="form-inline d-none d-sm-inline-block" id="upper_navi">
+					</form>
+
+					<div class="navbar-collapse collapse">
+						<ul class="navbar-nav ml-auto">
+							<li class="nav-item dropdown">
+								<a class="nav-link dropdown-toggle" href="#" id="userDropdown" data-toggle="dropdown">
+									<span class="d-inline-block d-md-none">
+										<i class="align-middle" data-feather="settings"></i>
+									</span>
+									<span class="d-none d-sm-inline-block">
+										<img id="nav_img" class="avatar img-fluid rounded-circle mr-1" /> <span class="font-weight-bold text-dark" id="user_name"></span>
+									</span>
+								</a>
+								<div class="dropdown-menu dropdown-menu-right" aria-labelledby="userDropdown">
+									<a class="dropdown-item" href="account.html"><i class="align-middle mr-1" data-feather="user"></i> Profile</a>
+									<div class="dropdown-divider"></div>
+									<a class="dropdown-item" href="logout.jsp">Sign out</a>
+								</div>
+							</li>
+						</ul>
+					</div>
+				</nav>
+
+				<main class="content">
+					<div class="container-fluid p-0">
+
+						<h1 class="h2 mb-3" style="color:rgb(52, 60, 67); font-weight: bold" id="project_title"></h1>
+						<h3 class="h2 mb-3" style="color:rgb(52, 60, 67); font-weight: bold" id="eligibility_title"></h3>
+						<div class="row">
+							<label type="text" id="criteria_label" style="margin-left:3%; margin-bottom: 0%; font-size: 20px; font-weight: bold"></label>
+							<div class="col-12 mt-1 mb-1" id="cirteria" style="margin-top : 20px">
+								<div class="card flex-fill w-100">
+									<div class="card-header">
+										<h5 class="card-title mb-0"></h5>
+									</div>
+								</div>
+							</div>
+							<label type="text" id="criteria_result" style="margin-left:3%; margin-top: 0%; font-size: 20px; font-weight: bold"></label>
+						</div>
+						<div class="row mt-5">
+							<div class="col-6">
+								<div class="card flex-fill w-100">
+									<div class="card-header">
+										<h5 class="card-title mb-0">Age</h5>
+									</div>
+									<div class="card-body d-flex w-100">
+										<div class="align-self-center chart chart-lg">
+											<canvas id="chartjs-dashboard-bar"></canvas>
+										</div>
+									</div>
+								</div>
+							</div>
+
+
+							<div class="col-3">
+								<div class="card">
+									<div class="card-header">
+										<h5 class="card-title mb-0">Gender</h5>
+									</div>
+									<div class="card-body d-flex">
+										<div class="align-self-center w-100">
+											<div class="py-3">
+												<div class="chart chart-sm">
+													<canvas id="chartjs-dashboard-pie"></canvas>
+												</div>
+
+												<table class="table mb-0">
+													<tbody>
+														<tr>
+															<td><i class="fas fa-square-full text-primary"></i> MALE</td>
+															<td class="text-right" id="male_num"></td>
+														</tr>
+														<tr>
+															<td><i class="fas fa-square-full text-warning"></i> FEMALE</td>
+															<td class="text-right" id="female_num"></td>
+														</tr>
+													</tbody>
+												</table>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="col-3">
+								<div class="card">
+									<div class="card-header">
+										<h5 class="card-title mb-0">Last Visit</h5>
+									</div>
+									<div class="card-body d-flex">
+										<div class="align-self-center w-100">
+											<div class="py-3">
+												<div class="chart chart-sm">
+													<canvas id="chartjs-visit-pie"></canvas>
+												</div>
+
+												<table class="table mb-0">
+													<tbody>
+														<tr>
+															<td><i class="fas fa-square-full text-primary"></i> INPATIENT</td>
+															<td class="text-right" id="inpatient_num"></td>
+														</tr>
+														<tr>
+															<td><i class="fas fa-square-full text-warning"></i> OUTPATIENT</td>
+															<td class="text-right" id="outpatient_num"></td>
+														</tr>
+														<tr>
+															<td><i class="fas fa-square-full text-danger"></i> EMERGENCY</td>
+															<td class="text-right" id="emergency_patient_num"></td>
+														</tr>
+
+													</tbody>
+												</table>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+				</main>
+
+				<footer class="footer" id="footer"></footer>
+				
+			</div>
+		</div>
+	</div>
+
+	<script src="../js/app.js"></script>
+	<script src="../js/charts.js"></script>
+	<script src="../js/feather.js"></script>
+	<script src="upper_navi.js?version=19"></script>
+	<script src="chart_plugin.js"></script>
+
+
+</body>
+
+</html>

@@ -1,0 +1,234 @@
+<script type="text/javascript">
+    var message_array;
+    var clicked_message;
+    var message_length;
+
+    jQuery(document).ready(function(){
+        xhttp = new XMLHttpRequest();
+
+        xhttp.onreadystatechange=function(){
+            if(this.readyState == this.DONE && this.status == 200){
+
+                var result_array = xhttp.responseText;
+                var message_array_pre = result_array;
+                message_array = eval(message_array_pre);
+                var message_array_output = Object.keys(message_array);
+
+                message_length = message_array_output.length;
+                document.getElementById("new_message_count").appendChild(document.createTextNode(message_array_output.length));
+                document.getElementById("new_message_count_message").appendChild(document.createTextNode(message_array_output.length+" New Messages"));
+                for(var i = 0; i < message_array_output.length; i++){
+                    var message_list_a = document.createElement("a");
+                    document.getElementById("new_message_group").appendChild(message_list_a);
+
+                    message_list_a.setAttribute("href", "#");
+                    message_list_a.setAttribute("onclick", "message_item_clicked("+i+")");
+                    message_list_a.setAttribute("id", "message_"+i);
+                    message_list_a.setAttribute("class", "list-group-item");
+
+                    var message_list_div = document.createElement("div");
+                    message_list_div.setAttribute("class", "row no-gutters align-items-center");
+                    message_list_a.appendChild(message_list_div);
+
+                    var message_list_img_div = document.createElement("div");
+                    message_list_img_div.setAttribute("class", "col-2");
+
+                    var creator_img = document.createElement("img");
+                    creator_img.setAttribute("src", message_array[i].creator_img);
+                    creator_img.setAttribute("class", "avatar img-fluid rounded-circle");
+                    creator_img.setAttribute("alt", message_array[i].creator);
+
+                    message_list_img_div.appendChild(creator_img);
+                    message_list_div.appendChild(message_list_img_div);
+
+                    var message_list_content_div = document.createElement("div");
+                    var message_creator_name = document.createElement("div");
+                    message_creator_name.setAttribute("class", "text-dark");
+                    message_creator_name.appendChild(document.createTextNode(message_array[i].creator));
+                    message_list_content_div.appendChild(message_creator_name);
+
+                    var message_project_title = document.createElement("div");
+                    message_project_title.setAttribute("class", "text-muted small mt-1");
+                    message_project_title.appendChild(document.createTextNode(message_array[i].project_title));
+                    message_list_content_div.appendChild(message_project_title);
+
+                    message_list_div.appendChild(message_list_content_div);
+
+                }
+
+                var currentMessageIndex = -1;
+
+                function getMessage() {
+                    var messages = [
+                    'New Messages!'
+                    ];
+                    currentMessageIndex++;
+                    if (currentMessageIndex === messages.length) {
+                        currentMessageIndex = 0;
+                    }
+                    return messages[currentMessageIndex];
+                };
+                if(message_length > 0) {
+                    var message = getMessage();
+                    var title = '';
+                    var type = 'info';
+                    toastr[type](message, title, {
+                        positionClass:"toast-top-right",
+                        closeButton: true,
+                        progressBar: true,
+                        newestOnTop: true,
+                        timeOut: "2500"
+                    });
+                };
+                
+            }
+        }
+        xhttp.open("GET", "./navbar_fill.jsp?action=load");
+        xhttp.send();
+    })
+
+    function nav_account_clicked() {
+        if (opened == false) {
+            document.getElementById("userDropdown").setAttribute("aria-expanded", "true");
+            document.getElementById("userDropdowndiv").setAttribute("class", "dropdown-menu dropdown-menu-right show");
+            opened = true;
+        }
+        else {
+            document.getElementById("userDropdown").setAttribute("aria-expanded", "false");
+            document.getElementById("userDropdowndiv").setAttribute("class", "dropdown-menu dropdown-menu-right");
+            opened = false;
+        }
+    }
+
+    function navbar_clicked(){
+        if(navbar_opened == false){
+            document.getElementById("messagesDropdown").setAttribute("aria-expanded", "true");
+            document.getElementById("messageDropdownDiv").setAttribute("class", "dropdown-menu dropdown-menu-lg dropdown-menu-right py-0 show");
+            navbar_opened = true;
+        }
+
+        else{
+            document.getElementById("messagesDropdown").setAttribute("aria-expanded", "false");
+            document.getElementById("messageDropdownDiv").setAttribute("class", "dropdown-menu dropdown-menu-lg dropdown-menu-right py-0");
+            navbar_opened = false;
+        }
+
+    }
+
+    function message_item_clicked(i){
+        var modal_head_title = document.getElementById("selected_project_title");
+        var modal_content_protocol_id = document.getElementById("selected_content_protocol_id");
+        var modal_content_title = document.getElementById("selected_content_title");
+        var modal_content_description = document.getElementById("selected_content_description");
+
+        while(modal_head_title.hasChildNodes()) modal_head_title.removeChild(modal_head_title.firstChild);
+        while(modal_content_protocol_id.hasChildNodes()) modal_content_protocol_id.removeChild(modal_content_protocol_id.firstChild);
+        while(modal_content_title.hasChildNodes()) modal_content_title.removeChild(modal_content_title.firstChild);
+        while(modal_content_description.hasChildNodes()) modal_content_description.removeChild(modal_content_description.firstChild);
+
+        modal_head_title.appendChild(document.createTextNode(message_array[i].project_title));
+        modal_content_protocol_id.appendChild(document.createTextNode(message_array[i].project_protocol_id));
+        modal_content_title.appendChild(document.createTextNode(message_array[i].project_title));
+        modal_content_description.appendChild(document.createTextNode(message_array[i].project_description));
+
+        clicked_message = i;
+        newj('#showmessage').modal('show');
+    }
+
+    function response_message(response){
+        var parti_id = message_array[clicked_message].participant_id;
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function(){
+            if(this.readyState == this.DONE && this.status == 200){
+                newj('#message_'+clicked_message).remove();
+                var message_count = document.getElementById("new_message_count");
+                var message_count_message = document.getElementById("new_message_count_message");
+
+                while(message_count.hasChildNodes()) message_count.removeChild(message_count.firstChild);
+                while(message_count_message.hasChildNodes()) message_count_message.removeChild(message_count_message.firstChild);
+
+                message_length = message_length-1;
+                message_count.appendChild(document.createTextNode(message_length));
+                message_count_message.appendChild(document.createTextNode(message_length+" New Messages"))
+            }
+        }
+        xhttp.open("GET", "./navbar_fill.jsp?action=save&parti_id="+parti_id+"&response="+response);
+        xhttp.send();
+    }
+
+</script>
+<li class="nav-item dropdown">
+    <a class="nav-icon dropdown-toggle" href="#" id="messagesDropdown" onclick="navbar_clicked()" data-toggle="dropdown">
+        <div class="position-relative">
+            <i class="align-middle" data-feather="message-circle"></i>
+            <span class="indicator" id="new_message_count"></span>
+        </div>
+    </a>
+    <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right py-0" id="messageDropdownDiv" aria-labelledby="messagesDropdown">
+        <div class="dropdown-menu-header">
+            <div class="position-relative" id="new_message_count_message">
+            </div>
+        </div>
+        <div class="list-group" id="new_message_group">
+        </div>
+    </div>
+</li>
+
+<li class="nav-item dropdown">
+    <a class="nav-link dropdown-toggle" href="#" id="userDropdown" onclick="nav_account_clicked()" data-toggle="dropdown">
+        <span class="d-inline-block d-md-none">
+            <i class="align-middle" data-feather="settings"></i>
+        </span>
+        <span class="d-none d-sm-inline-block">
+            <img id="nav_img" class="avatar img-fluid rounded-circle mr-1" /> <span class="font-weight-bold text-dark"
+                id="user_name"></span>
+        </span>
+    </a>
+    <div class="dropdown-menu dropdown-menu-right" id="userDropdowndiv" aria-labelledby="userDropdown">
+        <a class="dropdown-item" href="account.html"><i class="align-middle mr-1" data-feather="user"></i> Profile</a>
+        <div class="dropdown-divider"></div>
+        <a class="dropdown-item" href="logout.jsp">Sign out</a>
+    </div>
+</li>
+
+<div class="modal fade" id="showmessage" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="selected_project_title"></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body m-3">
+                <table class="table table-borderless">
+                    <tbody>
+                        <tr>
+                            <td style="width: 20%;">Protocol ID</td>
+                            <td id="selected_content_protocol_id"></td>
+                        </tr>
+
+                        <tr>
+                            <td style="width: 20%;">Title</td>
+                            <td id="selected_content_title"></td>
+                        </tr>
+                        <tr>
+                            <td style="width: 20%;" class="align-top">Description</td>
+                            <td id="selected_content_description"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" onclick="response_message(2)" data-dismiss="modal">Refuse</button>
+                <button type="button" class="btn btn-primary" onclick="response_message(1)" data-dismiss="modal">Accept</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    feather.replace()
+</script>
+<script src="../js/feather.js"></script>

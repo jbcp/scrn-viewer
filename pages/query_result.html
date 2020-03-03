@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<meta name="description" content="Responsive Bootstrap 4 Admin Template">
+	<meta name="author" content="Bootlab">
+
+	<title>SCRN(Smart Clinical Research Navigator)</title>
+
+	<link href="../css/app.css" rel="stylesheet">
+	<script src="../js/jquery-latest.js"></script>
+
+	<script type="text/javascript">
+		var male_chart_datas = [];
+		var female_chart_datas= [];
+
+		var chart_data_male = [0, 0, 0, 0, 0, 0, 0, 0];
+		var chart_data_female = [0, 0, 0, 0, 0, 0, 0, 0];
+
+		var now_doctor;
+		var study_id, query_id;
+		$(document).ready(function(){
+			study_id = localStorage.getItem("project_id");
+			query_id = localStorage.getItem("eligibility_id");
+			
+			$('#sidebar_navi').load('result_menu.html');
+			$('#footer').load('footer.html');
+			upper_navi_1("Site");
+			upper_navi_4(study_id, query_id)
+
+			var xhttp = new XMLHttpRequest();
+
+			xhttp.onreadystatechange=function(){
+				if(this.readyState == this.DONE && this.status == 200){
+					var result_array = xhttp.responseText.split("&");
+
+					var patient_max = result_array[5];
+					var img_src = result_array[3];
+					var rand = Math.random();
+					document.getElementById("nav_img").setAttribute("src", img_src+"?"+rand);
+
+					var user_name = result_array[4];
+					document.getElementById("user_name").appendChild(document.createTextNode(user_name));
+					var result_data_pre = result_array[0];
+					var result_data = eval(result_data_pre);
+					var result_output = Object.keys(result_data);
+
+					for(var i = 0; i<result_output.length; i++){
+						male_chart_datas.push(result_data[i].male_num);
+						female_chart_datas.push(result_data[i].female_num);
+
+						var createTR = document.createElement("tr");
+						document.getElementById("doctor_result").appendChild(createTR);
+						var favor_TD = document.createElement("td");
+						var favor_button = document.createElement("button");
+						favor_button.setAttribute("class", "btn");
+						favor_button.setAttribute("style", "background-color:transparent; color:transparent")
+						favor_button.setAttribute("disabled","");
+						favor_button.setAttribute("id", "favor_"+result_data[i].doctor_id);
+						var star = document.createElement("i");
+						star.setAttribute("id", "star_"+result_data[i].interest+"_"+result_data[i].doctor_id);
+						if(result_data[i].interest == 1){
+							star.setAttribute("class", "align-middle mr-2 fas fa-fw fa-star");
+							favor_button.appendChild(document.createTextNode("0"));
+						}
+						else {
+							star.setAttribute("class", "align-middle mr-2 far fa-fw fa-star");
+							favor_button.appendChild(document.createTextNode("1"));
+						}
+						star.setAttribute("style", "color:rgb(252,193,0)");
+						star.setAttribute("onclick","star_clicked(id);");
+						favor_button.appendChild(star);
+						favor_TD.appendChild(favor_button);
+
+						createTR.appendChild(favor_TD);
+
+						var site_name_TD = document.createElement("td");
+						var site_name_data = document.createTextNode(result_data[i].site);
+						site_name_TD.appendChild(site_name_data);
+						createTR.appendChild(site_name_TD);
+
+						var site_dept_TD = document.createElement("td");
+						var site_dept_data = document.createTextNode(result_data[i].doctor_dept);
+						site_dept_TD.appendChild(site_dept_data);
+						createTR.appendChild(site_dept_TD);
+
+						var doctor_name_TD = document.createElement("td");
+						var doctor_name_data = document.createTextNode(result_data[i].doctor_name);
+						doctor_name_TD.appendChild(doctor_name_data);
+						createTR.appendChild(doctor_name_TD);
+
+						var patient_num_TD = document.createElement("td");
+						var patient_num_button = document.createElement("button");
+						if(result_data[i].patient_num < 10){
+							patient_num_button.setAttribute("class", "btn btn-danger btn-sm");
+							patient_num_button.setAttribute("style", "width:"+(result_data[i].patient_num*90)/patient_max+"%; margin-right:5px; color:transparent");
+						}
+						else if(result_data[i].patient_num >= 10 && result_data[i].patient_num < 100){
+							patient_num_button.setAttribute("class", "btn btn-warning btn-sm");
+							patient_num_button.setAttribute("style", "width:"+(result_data[i].patient_num*90)/patient_max+"%; margin-right:5px; color:transparent");
+						}
+						else {
+							patient_num_button.setAttribute("class", "btn btn-success btn-sm");
+							patient_num_button.setAttribute("style", "width:"+(result_data[i].patient_num*90)/patient_max+"%; margin-right:5px; color:transparent");
+						}
+						
+						var patient_num_data = document.createTextNode(result_data[i].patient_num);
+						patient_num_button.appendChild(document.createTextNode( result_data[i].patient_num));
+						patient_num_TD.appendChild(patient_num_button);
+						patient_num_TD.appendChild(patient_num_data);
+
+						createTR.appendChild(patient_num_TD);
+
+						var doctor_action_button_TD = document.createElement("td");
+						doctor_action_button_TD.setAttribute("class", "table-action float-right");
+						
+						var check_button = document.createElement("button");
+						check_button.setAttribute("class", "btn btn-primary float-right");
+						check_button.setAttribute("style", "background-color:transparent; border-color:transparent; color: rgb(52, 60, 67)");
+						var check_button_icon = document.createElement("i");
+						if(result_data[i].contact == 0){
+							check_button_icon.setAttribute("class", "fas fa-plus-circle");
+							check_button.setAttribute("onclick", "check_button_click(id);");
+						}
+						else{
+							check_button_icon.setAttribute("class", "fas fa-minus-circle");
+							check_button.setAttribute("onclick", "minus_button_click(id);");
+						}
+						check_button.setAttribute("id", result_data[i].doctor_id);
+						check_button.appendChild(check_button_icon);
+						doctor_action_button_TD.appendChild(check_button);
+
+						var chart_button = document.createElement("button");
+						chart_button.setAttribute("class", "btn btn-primary float-right");
+						chart_button.setAttribute("style", "background-color:transparent; border-color:transparent; color: rgb(52, 60, 67)");
+						chart_button.setAttribute("id", i);
+						chart_button.setAttribute("onclick", "chart_button_click(id);");			
+						var chart_button_icon = document.createElement("i");
+						chart_button_icon.setAttribute("class", "fas fa-chart-bar");
+						chart_button.appendChild(chart_button_icon);
+						doctor_action_button_TD.appendChild(chart_button);
+
+						var mail_button = document.createElement("button");
+						mail_button.setAttribute("class", "btn btn-primary float-right");
+						mail_button.setAttribute("style", "background-color:transparent; border-color:transparent; color: rgb(52, 60, 67)");
+						mail_button.setAttribute("id", "mail_"+result_data[i].doctor_id);
+						mail_button.setAttribute("onclick", "mail_button_click(id);");
+						var mail_button_icon = document.createElement("i");
+						mail_button_icon.setAttribute("class", "fas fa-envelope");
+						mail_button.appendChild(mail_button_icon);
+						doctor_action_button_TD.appendChild(mail_button);
+
+						createTR.appendChild(doctor_action_button_TD);
+
+					}
+					$('#datatables-basic').DataTable({
+						responsive: true,
+						"order": [[ 4, "desc" ], [3, "asc"]]
+					});
+
+					var graph_data_pre = result_array[1];
+					var graph_data = eval(graph_data_pre);
+					
+					var hospital_num_data = document.createTextNode(graph_data[0].query_site+"/"+graph_data[0].total_site);
+					document.getElementById("hospital_num").appendChild(hospital_num_data);
+
+					var doctor_num_data = document.createTextNode(graph_data[1].query_doctor+"/"+graph_data[1].total_doctor);
+					document.getElementById("doctor_num").appendChild(doctor_num_data);
+
+					var patient_num_data = document.createTextNode(graph_data[2].query_patient+"/"+graph_data[2].total_patient);
+					document.getElementById("patient_num").appendChild(patient_num_data);
+				}
+			}
+			xhttp.open("GET", "./query_result.jsp?action=load&study_id="+study_id+"&query_id="+query_id);
+			xhttp.send();
+		});
+
+		function chart_button_click(id){
+
+			$('#chartjs-dashboard-bar').remove();
+			var chart_canvas = document.createElement("canvas");
+			chart_canvas.setAttribute("id", "chartjs-dashboard-bar");
+			document.getElementById("chart_div").appendChild(chart_canvas);
+
+			now_doctor = id;
+			var tmp_chart_data_male = male_chart_datas[now_doctor].split(", ").map(Number);
+			var tmp_chart_data_female = female_chart_datas[now_doctor].split(", ").map(Number);
+
+			for(var i = 0; i <tmp_chart_data_male.length; i++){
+				chart_data_male[i] = 0;
+				chart_data_female[i] = 0;
+				chart_data_male[i] = chart_data_male[i]+tmp_chart_data_male[i];
+				chart_data_female[i] = chart_data_female[i]+tmp_chart_data_female[i];
+			}
+
+			var ctx = document.getElementById("chartjs-dashboard-bar");
+			new Chart(ctx, {
+				type: 'bar',
+				data: {
+					labels: ["0-9", "10'", "20'", "30'", "40'", "50", "60", "70+"],
+					datasets: [{
+						label: "Male",
+						backgroundColor: "#0cc2aa",
+						borderColor: "#0cc2aa",
+						hoverBackgroundColor: "#0cc2aa",
+						hoverBorderColor: "#0cc2aa",
+						data: chart_data_male
+					}, {
+						label: "Female",
+						backgroundColor: "#E8EAED",
+						borderColor: "#E8EAED",
+						hoverBackgroundColor: "#E8EAED",
+						hoverBorderColor: "#E8EAED",
+						data: chart_data_female
+					}]
+				},
+				options: {
+					maintainAspectRatio: false,
+					legend: {
+						display: false
+					},
+					scales: {
+						yAxes: [{
+							gridLines: {
+								display: false
+							},
+							stacked: false,
+							ticks: {
+							},
+							scaleLabel: {
+								display: true,
+								labelString: 'Number'
+							}
+						}],
+						xAxes: [{
+							barPercentage: .75,
+							categoryPercentage: .5,
+							stacked: false,
+							gridLines: {
+								color: "transparent"
+							},
+							scaleLabel: {
+								display: true,
+								labelString: 'Age'
+							}
+						}]
+					}
+				}
+			});
+
+			$("#doctorchartModal").modal('show');
+		}
+
+		function result_analyze_clicked(){
+			location.href("site_result_all.html?study_id="+study_id+"&query_id="+query_id);
+		}
+
+		function check_button_click(id){
+			var mem_id = id;
+            var delete_ok = confirm("해당 연구자를 추가하시겠습니까?");
+            if(delete_ok == true){
+                var xhttp = new XMLHttpRequest();
+                xhttp.onreadystatechange=function(){
+                    if(this.readyState==this.DONE && this.status == 200){
+						alert("연구자를 추가했습니다.");
+						var check_button = document.getElementById(id);
+						var minus_button = document.createElement("i");
+						minus_button.setAttribute("class", "fas fa-minus-circle");
+
+						check_button.replaceChild(minus_button, check_button.childNodes[0]);
+						check_button.setAttribute("onclick", "minus_button_click(id);");
+                    }
+                }
+                xhttp.open("GET","./query_result.jsp?action=memberadd&study_id="+study_id+"&mem_id="+mem_id);
+                xhttp.send();
+            }
+			xhttp.open("GET", "");
+			xhttp.send();
+
+		}
+
+		function minus_button_click(id){
+			var mem_id = id;
+            var delete_ok = confirm("해당 연구자를 삭제하시겠습니까?");
+            if(delete_ok == true){
+                var xhttp = new XMLHttpRequest();
+                xhttp.onreadystatechange=function(){
+                    if(this.readyState==this.DONE && this.status == 200){
+						alert("연구자를 삭제했습니다.");
+						var check_button = document.getElementById(id);
+						var plus_button = document.createElement("i");
+						plus_button.setAttribute("class", "fas fa-plus-circle");
+
+						check_button.replaceChild(plus_button, check_button.childNodes[0]);
+						check_button.setAttribute("onclick", "check_button_click(id);");
+                    }
+                }
+                xhttp.open("GET","./query_result.jsp?action=memberdelete&study_id="+study_id+"&mem_id="+mem_id);
+                xhttp.send();
+            }
+			xhttp.open("GET", "");
+			xhttp.send();
+		}
+
+		function star_clicked(id){
+			var array = id.split("_");
+			var mem_id = array[2];
+			var button = document.getElementById(id);
+			var input = array[1];
+			var icon = document.getElementById(id);
+
+			if(input == 1){				
+				var xhttp = new XMLHttpRequest();
+				xhttp.onreadystatechange = function(){
+					if(this.readyState==this.DONE && this.status== 200){
+						icon.setAttribute("id", "star_0_"+array[2]);
+						button.removeAttribute("class");
+						icon.setAttribute("class", "align-middle mr-2 far fa-fw fa-star");
+						console.log("input==1");
+						var text = document.getElementById("favor_"+array[2]);
+						text.replaceChild(document.createTextNode("0"),text.childNodes[0]);						
+					}
+				}
+                xhttp.open("GET","./query_result.jsp?action=memberinterestdelete&study_id="+study_id+"&mem_id="+mem_id);
+                xhttp.send();
+
+			}
+
+			else{				
+				var xhttp = new XMLHttpRequest();
+				xhttp.onreadystatechange = function(){
+					if(this.readyState==this.DONE && this.status== 200){
+						icon.setAttribute("id", "star_1_"+array[2]);
+						icon.setAttribute("class", "align-middle mr-2 fas fa-fw fa-star");
+						console.log("input==0");
+						var text = document.getElementById("favor_"+array[2]);
+						text.replaceChild(document.createTextNode("1"),text.childNodes[0]);	
+											
+					}
+				}
+                xhttp.open("GET","./query_result.jsp?action=memberinterestadd&study_id="+study_id+"&mem_id="+mem_id);
+				xhttp.send();
+
+			}
+		}
+
+		function mail_button_click(id){
+			var input = id.split("_");
+			var mem_id = input[1];
+			var d_name = document.getElementById("modal_doctor_name");
+			var d_site = document.getElementById("modal_doctor_site");
+			var d_mail = document.getElementById("modal_doctor_mail");
+
+			var xhttp = new XMLHttpRequest();
+			xhttp.onreadystatechange=function(){
+				if(this.readyState==this.DONE && this.status== 200){
+					var info_data_input = xhttp.responseText;
+					info_data = eval(info_data_input);
+					if(d_name.hasChildNodes()){
+						d_name.removeChild(d_name.firstChild);
+						d_site.removeChild(d_site.firstChild);
+						d_mail.removeChild(d_mail.firstChild);
+					}
+
+					d_name.appendChild(document.createTextNode(info_data[0].name));
+					d_site.appendChild(document.createTextNode(info_data[0].site));
+					d_mail.appendChild(document.createTextNode(info_data[0].mail));	
+					$('#doctorinfoModal').modal('show');									
+				}
+			}
+			xhttp.open("GET","./query_result.jsp?action=memberinfoload&mem_id="+mem_id);
+			xhttp.send();
+
+		}
+	</script>
+
+</head>
+
+<body>
+	<div class="wrapper">
+		<div class="d-flex">
+			<nav class="sidebar" id="sidebar_navi">
+			</nav>
+
+			<div class="main bg-white">
+				<nav class="navbar navbar-expand navbar-light bg-white">
+					<a class="sidebar-toggle d-flex mr-2">
+            <i class="hamburger align-self-center"></i>
+          </a>
+
+					<form class="form-inline d-none d-sm-inline-block" id="upper_navi">
+					</form>
+
+					<div class="navbar-collapse collapse">
+						<ul class="navbar-nav ml-auto">
+							<li class="nav-item dropdown">
+								<a class="nav-link dropdown-toggle" href="#" id="userDropdown" data-toggle="dropdown">
+                  <span class="d-inline-block d-md-none">
+                    <i class="align-middle" data-feather="settings"></i>
+                  </span>
+                  <span class="d-none d-sm-inline-block">
+                    <img id="nav_img" class="avatar img-fluid rounded-circle mr-1"/> <span class="font-weight-bold text-dark" id="user_name"></span>
+                  </span>
+                </a>
+								<div class="dropdown-menu dropdown-menu-right" aria-labelledby="userDropdown">
+										<a class="dropdown-item" href="account.html"><i class="align-middle mr-1" data-feather="user"></i> Profile</a>
+										<div class="dropdown-divider"></div>
+										<a class="dropdown-item" href="logout.jsp">Sign out</a>
+								</div>
+							</li>
+						</ul>
+					</div>
+				</nav>
+
+				<main class="content bg-white">
+					<div class="container-fluid p-0">
+
+						<h2 class="h2 mb-3" style="color:rgb(52, 60, 67); font-weight: bold" id="study_title">
+						</h2>
+						
+						<div class="row">
+								<div class="col-12 col-md-6 col-xl d-flex">
+									<div class="card flex-fill">
+										<div class="card-body py-4 text-center">
+											<h2 class="text-primary" id="hospital_num"></h2>
+											<strong class="mb-0" style="font-size:18px">NO. OF HOSPITAL</strong>
+										</div>	
+									</div>
+								</div>
+								<div class="col-12 col-md-6 col-xl d-flex">
+									<div class="card flex-fill">
+										<div class="card-body py-4 text-center">
+											<h2 class="text-primary" id="doctor_num"></h2>
+											<strong class="mb-0" style="font-size:18px">NO. OF DOCTOR</strong>
+										</div>	
+									</div>
+								</div>
+								<div class="col-12 col-md-6 col-xl d-flex">
+									<div class="card flex-fill">
+										<div class="card-body py-4 text-center">
+											<h2 class="text-primary" id="patient_num"></h2>
+											<strong class="mb-0" style="font-size:18px">NO. OF PATIENT</strong>
+										</div>	
+									</div>
+								</div>
+								
+							<div class="col-12">
+								<div class="card">
+									<div class="card-body">
+										<table id="datatables-basic" class="table table-borderless" style="width: 100%">
+											<thead>
+												<tr>
+													<th style="width: 1%">&nbsp;</th>
+													<th style="width: 15%">Site</th>
+													<th style="width: 15%">Department</th>
+													<th style="width: 9%">PI</th>
+													<th style="width: 40%">Number of Patients</th>
+													<th style="width: 20%">Action</th>
+												</tr>
+											</thead>
+											<tbody id="doctor_result">
+											</tbody>
+										</table>
+									</div>
+								</div>	
+							</div>
+						</div>
+					</div>
+				</main>
+
+				<footer class="footer" id="footer"></footer>
+				<div class="modal fade" id="doctorchartModal" tabindex="-1" role="dialog" aria-hidden="true">
+					<div class="modal-dialog modal-md" role="document">
+						<div class="modal-content">
+							<div class="modal-header">
+								<h5 class="modal-title" id="item_modal_title">DEMOGRAPHIC</h5>
+								<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+									<span aria-hidden="true">&times;</span>
+								</button>
+							</div>
+							<div class="modal-body m-3">
+								<div class="align-self-center chart chart-lg" id="chart_div">
+									<canvas id="chartjs-dashboard-bar"></canvas>
+								</div>
+							</div>
+							<div class="modal-footer">
+								<button type="button" class="btn btn-primary" data-dismiss="modal" onclick= "addtion_save_button_cliked_ex()">OK</button>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="modal fade" id="doctorinfoModal" tabindex="-1" role="dialog" aria-hidden="true">
+					<div class="modal-dialog modal-sm" role="document">
+						<div class="modal-content">
+							<div class="modal-header">
+								<h5 class="modal-title" id="item_modal_title">DOCTOR INFO</h5>
+								<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+									<span aria-hidden="true">&times;</span>
+								</button>
+							</div>
+							<div class="modal-body m-3">
+								<table class="table table-borderless">
+									<tbody>
+										<tr>
+											<td style="width: 30%;">NAME</td>
+											<td id="modal_doctor_name">
+											</td>
+										</tr>
+										<tr>
+											<td>SITE</td>
+											<td id="modal_doctor_site">
+											</td>
+										</tr>
+										<tr>
+											<td>E-MAIL</td>
+											<td id="modal_doctor_mail">
+											</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+							<div class="modal-footer">
+								<button type="button" class="btn btn-primary" data-dismiss="modal">OK</button>
+							</div>
+						</div>
+					</div>
+				</div>	
+			</div>
+		</div>
+	</div>
+
+	<script src="../js/app.js"></script>
+	<script src="../js/tables.js"></script>
+	<script src="../js/charts.js"></script>
+	<script src="../js/feather.js"></script>
+	<script src="upper_navi.js?version=12"></script>
+
+</body>
+
+</html>
